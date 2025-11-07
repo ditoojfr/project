@@ -1,6 +1,7 @@
 <?php
 session_start();
 include "config/db.php";
+$error = '';
 if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = md5($_POST['password']);
@@ -16,17 +17,47 @@ if (isset($_POST['login'])) {
 ?>
 <!DOCTYPE html>
 <html lang="id">
-<head><meta charset="utf-8"><title>Login</title>
-<link rel="stylesheet" href="assets/css/style.css"></head>
-<body style="display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#1E3A8A,#3B82F6)">
-  <div style="width:340px;background:#fff;padding:22px;border-radius:10px;box-shadow:0 8px 30px rgba(2,6,23,0.2)">
-    <h2 style="color:#1E3A8A;margin-bottom:12px">E-DESLAY Admin</h2>
-    <?php if(isset($error)) echo '<p style="color:#ef4444">'.htmlspecialchars($error).'</p>'; ?>
-    <form method="post">
-      <input type="text" name="username" placeholder="Username" required style="width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb">
-      <input type="password" name="password" placeholder="Password" required style="width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb">
-      <button type="submit" name="login" class="btn primary" style="width:100%">Login</button>
+<head>
+  <meta charset="utf-8">
+  <meta name="veiwport" content="width=device-width, initial-scale=1">
+  <title>Login Admin - Desa Banjar Dowo</title>
+  <link rel="stylesheet" href="assets/css/style.css?v=1.0">
+</head>
+<body class="login-body"">
+  <header class="login-header">
+    <div class="logo-container">
+      <img src="assets/images/logo-nganjuk.png" alt="Logo Kabupaten Nganjuk" class="logo-kabupaten">
+      <div class="desa-info">
+        <h1>Desa Banjardowo</h1>
+        <p>Kecamatan Lengkong, Kabupaten Nganjuk</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="login-container">
+  <div class="glass-card">
+    <h2>Login Admin</h2>
+
+    <?php if (!empty($error)): ?>
+      <div class="message error"><?= htmlspecialchars($error) ?></div>
+    <?php endif; ?>
+
+    <form method="POST" class="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+
+      <button type="submit" name="login" class="btn-login">Login</button>
+      <a href="lupa_password.php" class="forgot-password">Forgot Password?</a>
     </form>
   </div>
+  </div>
+    <script src="assets/js/script.js"></script>
 </body>
 </html>
