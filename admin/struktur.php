@@ -60,17 +60,17 @@ $list = mysqli_query($conn, "SELECT * FROM struktur_desa ORDER BY id ASC");
       <form method="post">
         <input type="hidden" name="id" value="<?php echo $edit['id'] ?? ''; ?>">
         <label>Jabatan</label>
-        <input type="text" name="jabatan" required value="<?php echo htmlspecialchars($edit['jabatan'] ?? ''); ?>" style="width:100%;padding:8px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb">
+        <input type="text" name="jabatan" required value="<?php echo htmlspecialchars($edit['jabatan'] ?? ''); ?>" class="x-struktur-1">
         <label>Nama</label>
-        <input type="text" name="nama" required value="<?php echo htmlspecialchars($edit['nama'] ?? ''); ?>" style="width:100%;padding:8px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb">
+        <input type="text" name="nama" required value="<?php echo htmlspecialchars($edit['nama'] ?? ''); ?>" class="x-struktur-2">
         <button type="submit" name="save_struktur" class="btn primary"><?php echo $edit ? 'Update' : 'Simpan'; ?></button>
         <?php if($edit): ?>
-          <a href="struktur.php" class="btn" style="margin-left:8px;">Batal</a>
+          <a href="struktur.php" class="btn xin-left:8px;">Batal</a>
         <?php endif; ?>
       </form>
     </div>
 
-    <div class="table" style="margin-top:12px;">
+    <div class="table xin-top:12px;">
       <h3>Daftar Struktur</h3>
       <table width="100%">
         <tr><th>Jabatan</th><th>Nama</th><th>Aksi</th></tr>

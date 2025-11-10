@@ -26,7 +26,7 @@ $latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM saran ORDER BY 
     </ul>
   </aside>
   <div class="main">
-    <header style="display:flex;justify-content:space-between;align-items:center">
+    <header class="x-dashboard-1">
       <h1>Dashboard</h1>
       <div>Halo, <?php echo htmlspecialchars($_SESSION['username']); ?></div>
     </header>
@@ -37,8 +37,8 @@ $latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM saran ORDER BY 
       <div class="stat"><h2><?php echo $saran; ?></h2><p>Total Saran</p></div>
     </div>
 
-    <div style="display:flex;gap:18px;margin-top:18px" class="tables">
-      <div style="flex:1" class="table">
+    <div  class="tables x-dashboard-2">
+      <div  class="table x-dashboard-3">
         <h3>Terbaru - Kegiatan</h3>
         <table width="100%">
           <tr><th>Judul</th><th>Tanggal</th><th></th></tr>
@@ -52,7 +52,7 @@ $latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM saran ORDER BY 
         </table>
       </div>
 
-      <div style="flex:1" class="table">
+      <div  class="table x-dashboard-4">
         <h3>Terbaru - Prestasi</h3>
         <table width="100%">
           <tr><th>Judul</th><th>Tanggal</th><th></th></tr>
@@ -66,7 +66,7 @@ $latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM saran ORDER BY 
         </table>
       </div>
 
-      <div style="flex:1" class="table">
+      <div  class="table x-dashboard-5">
         <h3>Terbaru - Saran</h3>
         <table width="100%">
           <tr><th>Nama</th><th>Tanggal</th><th></th></tr>

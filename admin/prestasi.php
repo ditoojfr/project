@@ -63,14 +63,14 @@ $list = mysqli_query($conn, "SELECT id, judul, tanggal FROM prestasi ORDER BY id
       <h3><?php echo $edit? 'Edit Prestasi':'Tambah Prestasi'; ?></h3>
       <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<?php echo $edit['id']??''; ?>">
-        <input type="text" name="judul" placeholder="Judul" required value="<?php echo htmlspecialchars($edit['judul']??''); ?>" style="width:100%;padding:8px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb">
-        <input type="date" name="tanggal" required value="<?php echo $edit['tanggal']??''; ?>" style="padding:8px;border-radius:8px;border:1px solid #e5e7eb">
-        <textarea name="keterangan" rows="6" placeholder="Keterangan" style="width:100%;padding:8px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb"><?php echo htmlspecialchars($edit['keterangan']??''); ?></textarea>
+        <input type="text" name="judul" placeholder="Judul" required value="<?php echo htmlspecialchars($edit['judul']??''); ?>" class="x-prestasi-1">
+        <input type="date" name="tanggal" required value="<?php echo $edit['tanggal']??''; ?>" class="x-prestasi-2">
+        <textarea name="keterangan" rows="6" placeholder="Keterangan" class="x-prestasi-3"><?php echo htmlspecialchars($edit['keterangan']??''); ?></textarea>
         <input type="file" name="foto" accept="image/*">
         <?php if($edit && $edit['foto']): ?>
-          <?php echo '<div style="margin-top:8px"><img src="data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto']) . '" style="width:180px;border-radius:8px"></div>'; ?>
+          <?php echo '<div class="x-prestasi-4"><img src="data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto']) . '" class="x-prestasi-5"></div>'; ?>
         <?php endif; ?>
-        <button type="submit" name="save_prestasi" class="btn primary" style="margin-top:12px"><?php echo $edit? 'Update':'Simpan'; ?></button>
+        <button type="submit" name="save_prestasi" class="btn primary xgin-top:12px"><?php echo $edit? 'Update':'Simpan'; ?></button>
       </form>
     </div>
 

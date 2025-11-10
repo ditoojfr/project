@@ -36,15 +36,15 @@ $user = mysqli_fetch_assoc($res);
   </aside>
   <div class="main">
     <h1>Profil Saya</h1>
-    <?php if(isset($msg)) echo '<p style="color:green">'.htmlspecialchars($msg).'</p>'; ?>
+    <?php if(isset($msg)) echo '<p class="x-profile-1">'.htmlspecialchars($msg).'</p>'; ?>
     <div class="form">
       <form method="post">
         <label>Nama Lengkap</label>
-        <input type="text" name="nama_lengkap" required value="<?php echo htmlspecialchars($user['nama_lengkap']); ?>" style="width:100%;padding:8px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb">
+        <input type="text" name="nama_lengkap" required value="<?php echo htmlspecialchars($user['nama_lengkap']); ?>" class="x-profile-2">
         <label>Email</label>
-        <input type="email" name="email" required value="<?php echo htmlspecialchars($user['email']); ?>" style="width:100%;padding:8px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb">
+        <input type="email" name="email" required value="<?php echo htmlspecialchars($user['email']); ?>" class="x-profile-3">
         <label>Ganti Password (kosongkan jika tidak ingin mengubah)</label>
-        <input type="password" name="password" style="width:100%;padding:8px;margin:8px 0;border-radius:8px;border:1px solid #e5e7eb">
+        <input type="password" name="password" class="x-profile-4">
         <button type="submit" name="update_profile" class="btn primary">Simpan</button>
       </form>
     </div>

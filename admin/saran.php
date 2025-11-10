@@ -34,7 +34,7 @@ $list = mysqli_query($conn, "SELECT * FROM saran ORDER BY id DESC");
           <tr>
             <td><?php echo htmlspecialchars($r['nama']); ?></td>
             <td><?php echo htmlspecialchars($r['email']); ?></td>
-            <td style="max-width:360px"><?php echo nl2br(htmlspecialchars($r['isi_saran'])); ?></td>
+            <td class="x-saran-1"><?php echo nl2br(htmlspecialchars($r['isi_saran'])); ?></td>
             <td><?php echo $r['tanggal']; ?></td>
             <td><a href="saran.php?del=<?php echo $r['id']; ?>" onclick="return confirm('Hapus?')">Hapus</a></td>
           </tr>
