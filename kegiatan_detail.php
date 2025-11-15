@@ -3,7 +3,7 @@ include "config/db.php";
 $id = intval($_GET['id'] ?? 0);
 $res = mysqli_query($conn, "SELECT * FROM kegiatan WHERE id={$id}");
 $row = mysqli_fetch_assoc($res);
-if(!$row){ header('Location: index.php'); exit; }
+if(!$row){ header('Location: kegiatan_detail.php'); exit; }
 ?>
 <!DOCTYPE html>
 <html lang="id">
