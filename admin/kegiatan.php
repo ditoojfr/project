@@ -122,8 +122,7 @@ $queryList = mysqli_query($conn, "SELECT * FROM kegiatan ORDER BY id DESC");
    ================ START OF INLINE CSS =================
    ====================================================== */
 
-/* seluruh CSS teman mu tetap aku pertahankan */
-
+/* DAFTAR KEGIATAN */
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
@@ -346,6 +345,129 @@ td {
   object-fit: cover;
 }
 
+.breadcrumb a {
+    color: #5E63BB;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.page-title {
+    font-size: 28px;   /* lebih besar */
+    font-weight: 700;  /* bold */
+    color: #000;        /* opsional */
+}
+
+
+/* ====== FORM TAMBAH / EDIT (DESAIN BARU) ====== */
+.form-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+    align-items: flex-start;
+}
+
+/* Box kiri (form input) */
+.form-left {
+    width: 55%;
+    background: white;
+    padding: 28px;
+    border-radius: 14px;
+    border: 1px solid #e2e2e2;
+}
+
+.form-left h3 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.breadcrumb {
+    margin-bottom: 18px;
+    font-size: 14px;
+    color: #777;
+}
+
+/* Input style */
+.form-left input,
+.form-left textarea {
+    width: 100%;
+    padding: 13px 14px;
+    margin-top: 14px;
+    border-radius: 10px;
+    border: 1px solid #c8c8c8;
+    font-size: 14px;
+}
+
+/* Tombol kembali */
+.back-btn {
+    margin-top: 10px;
+    display: inline-block;
+    color: #444;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* Tombol simpan */
+.btn-simpan {
+    margin-top: 18px;
+    background: #48C774;
+    padding: 12px 22px;
+    border-radius: 10px;
+    border: none;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ====== Upload Image (kanan) ====== */
+
+.form-right {
+    width: 40%;
+    padding-top: 10px;
+}
+
+.upload-box {
+    width: 100%;
+    height: 230px;
+    border: 2px dashed #bfbfbf;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #777;
+    font-size: 15px;
+}
+
+.upload-box i {
+    font-size: 36px;
+    color: #5E63BB;
+    margin-bottom: 10px;
+}
+
+.upload-box:hover {
+    background: #f5f6ff;
+}
+
+/* Preview image */
+.preview-img {
+    width: 100%;
+    max-height: 230px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin-top: 14px;
+}
+
+
+
 
 /* ======================================================
    ================= END OF INLINE CSS ==================
@@ -443,44 +565,78 @@ td {
   <?php endif; ?>
 </div>
 
-<div class="breadcrumb">Dashboard / Kegiatan Desa</div>
-
+<div class="breadcrumb">
+    <a href="dashboard.php">Dashboard</a> / 
+    <a href="kegiatan.php">Kegiatan Desa</a>
+</div>
 
 <!-- ===================================================
      5. FORM TAMBAH / EDIT
      =================================================== -->
 <?php if($mode != "list"): ?>
 
-<div class="form-box">
-  <h3><?= ($mode == "edit" ? "Edit Kegiatan" : "Tambah Kegiatan") ?></h3>
+<div class="form-container">
 
-  <a href="kegiatan.php">&larr; Kembali</a>
+    <!-- ================= LEFT FORM ================= -->
+    <div class="form-left">
 
-  <form method="POST" enctype="multipart/form-data">
+        <h3><?= ($mode == "edit" ? "Edit Kegiatan Desa" : "Tambah Kegiatan Desa") ?></h3>
 
-    <!-- ID untuk edit -->
-    <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
+        <div class="breadcrumb">
+            <a href="kegiatan.php">Kegiatan Desa</a> /
+            <?= ($mode == "edit" ? "Edit" : "Tambah Kegiatan Desa") ?>
+        </div>
 
-    <input type="text" name="judul" placeholder="Judul" required
-           value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
+        <a href="kegiatan.php" class="back-btn">&larr; Kembali</a>
 
-    <input type="date" name="tanggal" required
-           value="<?= $edit['tanggal'] ?? '' ?>">
+        <form method="POST" enctype="multipart/form-data">
 
-    <textarea name="deskripsi" rows="5" placeholder="Deskripsi"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
+            <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
 
-    <label>Foto (opsional)</label>
-    <input type="file" name="foto" accept="image/*">
+            <label>No</label>
+            <input type="text" placeholder="No otomatis / opsional">
 
-    <?php if($mode == "edit" && $edit['foto']): ?>
-      <img src="data:<?= $edit['foto_type'] ?>;base64,<?= base64_encode($edit['foto']) ?>" 
-           style="width:180px; margin-top:10px; border-radius:10px;">
-    <?php endif; ?>
+            <label>Nama Kegiatan Desa</label>
+            <input type="text" name="judul" required
+                   value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
 
-    <button type="submit" name="save_kegiatan"><?= ($mode == "edit" ? "Update" : "Simpan") ?></button>
+            <label>Lokasi</label>
+            <input type="text" placeholder="Lokasi kegiatan">
 
-  </form>
+            <label>Deskripsi</label>
+            <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
+
+            <label>Tanggal</label>
+            <input type="date" name="tanggal" required
+                   value="<?= $edit['tanggal'] ?? '' ?>">
+
+            <button class="btn-simpan" type="submit" name="save_kegiatan">
+                <i class="fa-solid fa-plus"></i>
+                <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- ================= RIGHT UPLOAD IMAGE ================= -->
+    <div class="form-right">
+
+        <label>Upload Image</label>
+
+        <label class="upload-box" for="uploadFoto">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            Pilih Image
+        </label>
+
+        <input type="file" id="uploadFoto" name="foto" accept="image/*" style="display:none">
+
+        <?php if ($mode == "edit" && $edit['foto']): ?>
+            <img class="preview-img"
+                 src="data:<?= $edit['foto_type'] ?>;base64,<?= base64_encode($edit['foto']) ?>">
+        <?php endif; ?>
 </div>
+
 
 <?php endif; ?>
 
