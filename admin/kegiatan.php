@@ -1,96 +1,551 @@
 <?php
 session_start();
 include "../config/db.php";
-if(!isset($_SESSION['user_id'])){ header('Location: ../login.php'); exit; }
 
-// handle delete
+// CEK LOGIN
+if(!isset($_SESSION['user_id'])){ 
+    header('Location: ../login.php'); 
+    exit; 
+}
+
+// AMBIL DATA USER UNTUK PROFILE DI TOP-BAR
+$user_id = $_SESSION['user_id'];
+$userQuery = mysqli_query($conn, "SELECT nama_lengkap FROM users WHERE id = $user_id");
+$userData = mysqli_fetch_assoc($userQuery);
+
+
+/* ======================================================
+   1. HAPUS DATA
+   ====================================================== */
 if(isset($_GET['del'])){
-  $id = intval($_GET['del']);
-  mysqli_query($conn, "DELETE FROM kegiatan WHERE id={$id}");
-  header('Location: kegiatan.php'); exit;
+    $id = intval($_GET['del']);
+    mysqli_query($conn, "DELETE FROM kegiatan WHERE id={$id}");
+    header("Location: kegiatan.php"); 
+    exit;
 }
 
-// handle add/edit form submission
-if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_kegiatan'])){
-  $judul = mysqli_real_escape_string($conn, $_POST['judul']);
-  $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
-  $tanggal = $_POST['tanggal'];
-  if(isset($_FILES['foto']) && $_FILES['foto']['size']>0){
-    $foto = addslashes(file_get_contents($_FILES['foto']['tmp_name']));
-    $ftype = $_FILES['foto']['type'];
-  } else { $foto = null; $ftype = null; }
 
-  if(!empty($_POST['id'])) {
-    $id = intval($_POST['id']);
-    if($foto){
-      mysqli_query($conn, "UPDATE kegiatan SET judul='{$judul}', deskripsi='{$deskripsi}', tanggal='{$tanggal}', foto='{$foto}', foto_type='{$ftype}' WHERE id={$id}");
-    } else {
-      mysqli_query($conn, "UPDATE kegiatan SET judul='{$judul}', deskripsi='{$deskripsi}', tanggal='{$tanggal}' WHERE id={$id}");
-    }
-  } else {
-    mysqli_query($conn, "INSERT INTO kegiatan (judul, deskripsi, tanggal, foto, foto_type) VALUES ('{$judul}','{$deskripsi}','{$tanggal}',".($foto?"'{$foto}'":"NULL").",".($ftype?"'{$ftype}'":"NULL").")");
-  }
-  header('Location: kegiatan.php'); exit;
+/* ======================================================
+   2. MODE TAMPILAN (LIST / TAMBAH / EDIT)
+   ====================================================== */
+$mode = "list"; 
+
+// tombol tambah
+if(isset($_GET['tambah'])) {
+    $mode = "tambah";
 }
 
-// fetch for edit
+// tombol edit
 $edit = null;
 if(isset($_GET['edit'])){
-  $id = intval($_GET['edit']);
-  $res = mysqli_query($conn, "SELECT * FROM kegiatan WHERE id={$id}");
-  $edit = mysqli_fetch_assoc($res);
+    $mode = "edit";
+    $id = intval($_GET['edit']);
+    $res = mysqli_query($conn, "SELECT * FROM kegiatan WHERE id=$id");
+    $edit = mysqli_fetch_assoc($res);
 }
-$list = mysqli_query($conn, "SELECT id, judul, tanggal FROM kegiatan ORDER BY id DESC");
+
+
+/* ======================================================
+   3. SIMPAN DATA (TAMBAH / EDIT)
+   ====================================================== */
+if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_kegiatan'])){
+
+    $judul = mysqli_real_escape_string($conn, $_POST['judul']);
+    $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
+    $tanggal = $_POST['tanggal'];
+
+    // upload foto
+    if(isset($_FILES['foto']) && $_FILES['foto']['size'] > 0){
+        $foto = addslashes(file_get_contents($_FILES['foto']['tmp_name']));
+        $ftype = $_FILES['foto']['type'];
+    } else {
+        $foto = null;
+        $ftype = null;
+    }
+
+    // MODE EDIT
+    if(!empty($_POST['id'])){
+        $id = intval($_POST['id']);
+
+        if($foto){
+            mysqli_query($conn, "UPDATE kegiatan SET 
+                judul='$judul',
+                deskripsi='$deskripsi',
+                tanggal='$tanggal',
+                foto='$foto',
+                foto_type='$ftype'
+            WHERE id=$id");
+        } else {
+            mysqli_query($conn, "UPDATE kegiatan SET 
+                judul='$judul',
+                deskripsi='$deskripsi',
+                tanggal='$tanggal'
+            WHERE id=$id");
+        }
+    }
+
+    // MODE TAMBAH
+    else {
+        mysqli_query($conn, "INSERT INTO kegiatan 
+            (judul, deskripsi, tanggal, foto, foto_type) 
+            VALUES (
+                '$judul', 
+                '$deskripsi', 
+                '$tanggal',
+                ".($foto ? "'$foto'" : "NULL").",
+                ".($ftype ? "'$ftype'" : "NULL")."
+            )");
+    }
+
+    header("Location: kegiatan.php");
+    exit;
+}
+
+
+/* ======================================================
+   4. AMBIL DATA LIST KEGIATAN
+   ====================================================== */
+$queryList = mysqli_query($conn, "SELECT * FROM kegiatan ORDER BY id DESC");
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
-<head><meta charset="utf-8"><title>Kelola Kegiatan</title>
-<link rel="stylesheet" href="../assets/css/style.css"></head>
+<head>
+<meta charset="UTF-8">
+<title>Daftar Kegiatan Desa</title>
+
+<!-- ICON -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+<style>
+/* ======================================================
+   ================ START OF INLINE CSS =================
+   ====================================================== */
+
+/* seluruh CSS teman mu tetap aku pertahankan */
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #f7f8fa;
+}
+
+.title-row {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  left: 20px;
+  top: 100px;
+  width: 220px;
+  height: calc(100vh - 166px);
+  background: #5E63BB;
+  padding: 24px 20px;
+  color: white;
+  border-radius: 20px;
+}
+
+.sidebar-header {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 220px;
+  background: transparent;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-header img {
+  width: 42px;
+  height: 42px;
+}
+
+/* MENU */
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu a {
+  display: flex;
+  gap: 12px;
+  color: white;
+  padding: 12px 16px;
+  text-decoration: none;
+  border-radius: 10px;
+}
+
+.menu a.active {
+  background: #38BDF8;
+}
+
+.menu a:hover {
+  background: #3047d3;
+}
+
+/* LOGOUT */
+.logout {
+  position: absolute;
+  bottom: 24px;
+  left: 20px;
+  right: 20px;
+}
+
+.logout a {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+}
+
+/* ===== MAIN ===== */
+.main {
+  margin-left: 260px;
+  padding: 30px 40px;
+}
+
+/* ===== TOP BAR (DIPERBAIKI) ===== */
+.top-bar {
+    display: flex;
+    justify-content: flex-end;  /* semua elemen di kanan */
+    align-items: center;
+    gap: 16px;
+    padding: 10px 40px; /* sesuaikan padding agar tidak terlalu nempel */
+    background: #fff;
+    height: 56px; /* tinggi bar */
+    box-sizing: border-box;
+}
+
+/* Container untuk grup kanan */
+.right-group {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* jarak antar search, nama, foto */
+}
+
+/* Search input */
+.search-input-wrapper {
+    background: #f3f4f8;
+    border-radius: 999px;
+    padding: 10px 22px;
+    display: flex;
+    align-items: center;
+    width: 250px;
+    box-shadow: none;
+    border: 1px solid #ccc;
+}
+
+.search-input-wrapper input {
+    border: none;
+    outline: none;
+    background: transparent;
+    flex: 1;
+    font-size: 13px;
+    color: #717bbc;
+}
+
+.search-input-wrapper i {
+    color: #717bbc;
+}
+
+/* Nama user */
+.user-text {
+    display: flex;
+    align-items: center;
+    white-space: nowrap; /* supaya nama tidak pecah */
+}
+
+.user-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #000;
+}
+
+/* Foto profil */
+.user-photo {
+  width: 42px;
+  height: 42px;
+  border-radius: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* BUTTON TAMBAH */
+.btn-tambah {
+  background: #5E63BB;
+  padding: 10px 18px;
+  color: white;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* FORM TAMBAH / EDIT */
+.form-box {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 500px;
+}
+
+.form-box input, 
+.form-box textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.form-box button {
+  margin-top: 15px;
+  padding: 10px 16px;
+  background: #5E63BB;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #f0f0f8;
+  padding: 14px;
+}
+
+td {
+  padding: 14px;
+}
+
+.foto-kegiatan {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+
+/* ======================================================
+   ================= END OF INLINE CSS ==================
+   ====================================================== */
+</style>
+</head>
+
 <body>
-  <aside class="sidebar">
-    <h2>E-DESLAY</h2><ul>
-      <li><a href="dashboard.php">Dashboard</a></li>
-      <li><a href="kegiatan.php" class="active">Kegiatan</a></li>
-      <li><a href="prestasi.php">Prestasi</a></li>
-      <li><a href="saran.php">Kotak Saran</a></li>
-      <li><a href="profile.php">Profil</a></li>
-      <li><a href="../logout.php">Logout</a></li>
-    </ul>
-  </aside>
-  <div class="main">
-    <h1>Kelola Kegiatan</h1>
-    <div class="form">
-      <h3><?php echo $edit? 'Edit Kegiatan':'Tambah Kegiatan'; ?></h3>
-      <form method="post" enctype="multipart/form-data">
-        <input type="hidden" name="id" value="<?php echo $edit['id']??''; ?>">
-        <input type="text" name="judul" placeholder="Judul" required value="<?php echo htmlspecialchars($edit['judul']??''); ?>" class="x-kegiatan-1">
-        <input type="date" name="tanggal" required value="<?php echo $edit['tanggal']??''; ?>" class="x-kegiatan-2">
-        <textarea name="deskripsi" rows="6" placeholder="Deskripsi" class="x-kegiatan-3"><?php echo htmlspecialchars($edit['deskripsi']??''); ?></textarea>
-        <input type="file" name="foto" accept="image/*">
-        <?php if($edit && $edit['foto']): ?>
-          <?php echo '<div class="x-kegiatan-4"><img src="data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto']) . '" class="x-kegiatan-5"></div>'; ?>
-        <?php endif; ?>
-        <button type="submit" name="save_kegiatan" class="btn primary xgin-top:12px"><?php echo $edit? 'Update':'Simpan'; ?></button>
-      </form>
-    </div>
 
-    <div class="table">
-      <h3>Daftar Kegiatan</h3>
-      <table width="100%">
-        <tr><th>Judul</th><th>Tanggal</th><th>Aksi</th></tr>
-        <?php while($r = mysqli_fetch_assoc($list)): ?>
-          <tr>
-            <td><?php echo htmlspecialchars($r['judul']); ?></td>
-            <td><?php echo $r['tanggal']; ?></td>
-            <td>
-              <a href="kegiatan.php?edit=<?php echo $r['id']; ?>">Edit</a> |
-              <a href="kegiatan.php?del=<?php echo $r['id']; ?>" onclick="return confirm('Hapus?')">Hapus</a>
-            </td>
-          </tr>
-        <?php endwhile; ?>
-      </table>
-    </div>
+<!-- SIDEBAR HEADER -->
+<div class="sidebar-header">
+  <img src="../assets/images/logo-nganjuk.png">
+  <div class="title">Desa Banjardowo</div>
+</div>
 
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <ul class="menu">
+    <li>
+      <a href="dashboard.php">
+        <img src="../assets/icons/dashboard1.png" alt="Dashboard" style="width:20px; height:20px; margin-right:8px;">
+        Dashboard
+      </a>
+    </li>
+    <li>
+      <a href="kegiatan.php" class="active">
+        <img src="../assets/icons/kegiatandesa.png" alt="Kegiatan" style="width:20px; height:20px; margin-right:8px;">
+        Kegiatan Desa
+      </a>
+    </li>
+    <li>
+      <a href="prestasi.php">
+        <img src="../assets/icons/prestasi.png" alt="Prestasi" style="width:20px; height:20px; margin-right:8px;">
+        Prestasi
+      </a>
+    </li>
+    <li>
+      <a href="saran.php">
+        <img src="../assets/icons/kotaksaran1.png" alt="Kotak Saran" style="width:20px; height:20px; margin-right:8px;">
+        Kotak Saran
+      </a>
+    </li>
+    <li>
+      <a href="pelayanan.php">
+        <img src="../assets/icons/pelayanan1.png" alt="Pelayanan" style="width:20px; height:20px; margin-right:8px;">
+        Pelayanan
+      </a>
+    </li>
+  </ul>
+
+  <div class="logout">
+    <a href="../logout.php">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>Keluar
+    </a>
   </div>
+</aside>
+
+
+
+<div class="main">
+<div class="top-bar">
+  <div class="right-group">
+    <div class="search-input-wrapper">
+        <input type="text" placeholder="Search...">
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </div>
+
+    <div class="user-text">
+        <div class="user-name"><?= htmlspecialchars($userData['nama_lengkap']); ?></div>
+    </div>
+
+    <a href="profile.php" class="user-photo">
+      <svg viewBox="0 0 24 24" fill="#ffffff" width="42" height="42">
+          <circle cx="12" cy="12" r="12" fill="#b4b4b4"></circle>
+          <circle cx="12" cy="10" r="4" fill="#ffffff"></circle>
+          <path d="M4 20c1.5-4 6.5-4 8-4s6.5 0 8 4" fill="#ffffff"></path>
+      </svg>
+    </a>
+  </div>
+</div>
+
+
+
+
+
+<!-- TITLE ROW -->
+<div class="title-row">
+  <div class="page-title">Daftar Kegiatan Desa</div>
+
+  <?php if($mode == "list"): ?>
+    <a href="kegiatan.php?tambah=1">
+      <button class="btn-tambah"><i class="fa-solid fa-plus"></i> Tambah</button>
+    </a>
+  <?php endif; ?>
+</div>
+
+<div class="breadcrumb">Dashboard / Kegiatan Desa</div>
+
+
+<!-- ===================================================
+     5. FORM TAMBAH / EDIT
+     =================================================== -->
+<?php if($mode != "list"): ?>
+
+<div class="form-box">
+  <h3><?= ($mode == "edit" ? "Edit Kegiatan" : "Tambah Kegiatan") ?></h3>
+
+  <a href="kegiatan.php">&larr; Kembali</a>
+
+  <form method="POST" enctype="multipart/form-data">
+
+    <!-- ID untuk edit -->
+    <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
+
+    <input type="text" name="judul" placeholder="Judul" required
+           value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
+
+    <input type="date" name="tanggal" required
+           value="<?= $edit['tanggal'] ?? '' ?>">
+
+    <textarea name="deskripsi" rows="5" placeholder="Deskripsi"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
+
+    <label>Foto (opsional)</label>
+    <input type="file" name="foto" accept="image/*">
+
+    <?php if($mode == "edit" && $edit['foto']): ?>
+      <img src="data:<?= $edit['foto_type'] ?>;base64,<?= base64_encode($edit['foto']) ?>" 
+           style="width:180px; margin-top:10px; border-radius:10px;">
+    <?php endif; ?>
+
+    <button type="submit" name="save_kegiatan"><?= ($mode == "edit" ? "Update" : "Simpan") ?></button>
+
+  </form>
+</div>
+
+<?php endif; ?>
+
+
+<!-- ===================================================
+     6. LIST DATA
+     =================================================== -->
+<?php if($mode == "list"): ?>
+
+<table>
+<tr>
+  <th></th>
+  <th>No</th>
+  <th>Nama Kegiatan Desa</th>
+  <th>Lokasi</th>
+  <th>Deskripsi</th>
+  <th>Tanggal</th>
+  <th>Aksi</th>
+</tr>
+
+<?php 
+$no = 1;
+while($row = mysqli_fetch_assoc($queryList)): 
+?>
+<tr>
+
+  <td>
+    <?php if(!empty($row['foto'])): ?>
+      <img class="foto-kegiatan" src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto']) ?>">
+    <?php endif; ?>
+  </td>
+
+  <td><?= $no++; ?></td>
+  <td><?= htmlspecialchars($row['judul']) ?></td>
+  <td>-</td>
+  <!-- Pembatas Deskripsi -->
+  <td>
+  <?php 
+    $maxLength = 250; // batas maksimal karakter
+    $desc = strip_tags($row['deskripsi']); // hapus tag HTML supaya aman
+    if(strlen($desc) > $maxLength){
+      echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
+    } else {
+      echo nl2br(htmlspecialchars($desc));
+    }
+  ?>
+</td>
+
+  <td><?= date("d F Y", strtotime($row['tanggal'])) ?></td>
+
+  <td class="aksi-btn">
+    <a href="kegiatan.php?edit=<?= $row['id'] ?>"><i class="fa-solid fa-pen"></i></a>
+    <a href="kegiatan.php?del=<?= $row['id'] ?>" onclick="return confirm('Hapus kegiatan ini?')">
+      <i class="fa-solid fa-trash" style="color:red;"></i>
+    </a>
+  </td>
+
+</tr>
+<?php endwhile; ?>
+
+</table>
+
+<?php endif; ?>
+
+
+</div> <!-- END MAIN -->
 </body>
 </html>
