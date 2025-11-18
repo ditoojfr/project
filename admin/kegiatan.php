@@ -35,6 +35,15 @@ if(isset($_GET['tambah'])) {
     $mode = "tambah";
 }
 
+// === JUDUL DINAMIS ===
+if ($mode == "tambah") {
+    $page_title = "Tambah Kegiatan Desa";
+} elseif ($mode == "edit") {
+    $page_title = "Edit Kegiatan Desa";
+} else {
+    $page_title = "Daftar Kegiatan Desa";
+}
+
 // tombol edit
 $edit = null;
 if(isset($_GET['edit'])){
@@ -361,6 +370,35 @@ td {
     color: #000;        /* opsional */
 }
 
+/* ====== Aksi Tombol (Edit & Hapus) ====== */
+.aksi-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    padding: 0 !important;
+}
+
+.aksi-btn a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: #5E63BB;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.aksi-btn a:hover {
+    background: #f0f0f8;
+}
+
+.aksi-btn .fa-trash {
+    color: red !important;
+}
 
 /* ====== FORM TAMBAH / EDIT (DESAIN BARU) ====== */
 .form-container {
@@ -428,10 +466,14 @@ td {
 
 /* ====== Upload Image (kanan) ====== */
 
+/* ====== Upload Image (kanan) ====== */
 .form-right {
     width: 40%;
     padding-top: 10px;
+    position: relative;
 }
+
+/* ====== UPLOAD BOX & OVERLAY ====== */
 
 .upload-box {
     width: 100%;
@@ -439,18 +481,14 @@ td {
     border: 2px dashed #bfbfbf;
     border-radius: 16px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     color: #777;
     font-size: 15px;
-}
-
-.upload-box i {
-    font-size: 36px;
-    color: #5E63BB;
-    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
 }
 
 .upload-box:hover {
@@ -459,11 +497,67 @@ td {
 
 /* Preview image */
 .preview-img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-height: 230px;
+    height: 100%;
     object-fit: cover;
     border-radius: 16px;
-    margin-top: 14px;
+    z-index: 1;
+}
+
+/* Overlay: ikon + teks */
+.upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.upload-overlay i {
+    font-size: 36px;
+    color: #5E63BB;
+    margin-bottom: 10px;
+}
+
+.upload-overlay span {
+    font-size: 16px;
+    color: #000000ff;
+    font-weight: 500;
+}
+
+/* Trigger upload (transparan) */
+.upload-trigger {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    opacity: 0;
+    z-index: 3;
+}
+
+/* Preview image */
+.preview-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+    z-index: 1;
 }
 
 
@@ -487,13 +581,13 @@ td {
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <ul class="menu">
-    <li>
+    <li> 
       <a href="dashboard.php">
         <img src="../assets/icons/dashboard1.png" alt="Dashboard" style="width:20px; height:20px; margin-right:8px;">
         Dashboard
       </a>
     </li>
-    <li>
+    <li> 
       <a href="kegiatan.php" class="active">
         <img src="../assets/icons/kegiatandesa.png" alt="Kegiatan" style="width:20px; height:20px; margin-right:8px;">
         Kegiatan Desa
@@ -556,7 +650,7 @@ td {
 
 <!-- TITLE ROW -->
 <div class="title-row">
-  <div class="page-title">Daftar Kegiatan Desa</div>
+  <div class="page-title"><?= htmlspecialchars($page_title) ?></div>
 
   <?php if($mode == "list"): ?>
     <a href="kegiatan.php?tambah=1">
@@ -568,6 +662,11 @@ td {
 <div class="breadcrumb">
     <a href="dashboard.php">Dashboard</a> / 
     <a href="kegiatan.php">Kegiatan Desa</a>
+    <?php if ($mode == "tambah"): ?>
+        / Tambah Kegiatan Desa
+    <?php elseif ($mode == "edit"): ?>
+        / Edit Kegiatan Desa
+    <?php endif; ?>
 </div>
 
 <!-- ===================================================
@@ -579,15 +678,8 @@ td {
 
     <!-- ================= LEFT FORM ================= -->
     <div class="form-left">
-
-        <h3><?= ($mode == "edit" ? "Edit Kegiatan Desa" : "Tambah Kegiatan Desa") ?></h3>
-
-        <div class="breadcrumb">
-            <a href="kegiatan.php">Kegiatan Desa</a> /
-            <?= ($mode == "edit" ? "Edit" : "Tambah Kegiatan Desa") ?>
-        </div>
-
-        <a href="kegiatan.php" class="back-btn">&larr; Kembali</a>
+        
+    <a href="kegiatan.php" class="back-btn">&larr; Kembali</a>
 
         <form method="POST" enctype="multipart/form-data">
 
@@ -622,19 +714,25 @@ td {
     <!-- ================= RIGHT UPLOAD IMAGE ================= -->
     <div class="form-right">
 
-        <label>Upload Image</label>
+    <label>Upload Image</label>
 
-        <label class="upload-box" for="uploadFoto">
-            <i class="fa-solid fa-cloud-arrow-up"></i>
-            Pilih Image
-        </label>
+    <!-- Upload Box -->
+    <div class="upload-box">
+    <!-- Preview foto (jika ada) -->
+    <?php if ($mode == "edit" && $edit['foto']): ?>
+        <img class="preview-img"
+             src="data:<?= $edit['foto_type'] ?>;base64,<?= base64_encode($edit['foto']) ?>"
+             alt="Preview">
+    <?php endif; ?>
 
-        <input type="file" id="uploadFoto" name="foto" accept="image/*" style="display:none">
+    <!-- Overlay: ikon + teks (selalu tampil) -->
+    <div class="upload-overlay">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span><?php echo ($mode == "edit" && $edit['foto']) ? 'Klik untuk Ganti Gambar' : 'Pilih Image'; ?></span>
+    </div>
 
-        <?php if ($mode == "edit" && $edit['foto']): ?>
-            <img class="preview-img"
-                 src="data:<?= $edit['foto_type'] ?>;base64,<?= base64_encode($edit['foto']) ?>">
-        <?php endif; ?>
+    <!-- Trigger upload (transparan) -->
+    <label for="uploadFoto" class="upload-trigger"></label>
 </div>
 
 
@@ -688,11 +786,13 @@ while($row = mysqli_fetch_assoc($queryList)):
   <td><?= date("d F Y", strtotime($row['tanggal'])) ?></td>
 
   <td class="aksi-btn">
-    <a href="kegiatan.php?edit=<?= $row['id'] ?>"><i class="fa-solid fa-pen"></i></a>
-    <a href="kegiatan.php?del=<?= $row['id'] ?>" onclick="return confirm('Hapus kegiatan ini?')">
-      <i class="fa-solid fa-trash" style="color:red;"></i>
+    <a href="kegiatan.php?edit=<?= $row['id'] ?>">
+        <i class="fa-solid fa-pen"></i>
     </a>
-  </td>
+    <a href="kegiatan.php?del=<?= $row['id'] ?>" onclick="return confirm('Hapus kegiatan ini?')">
+        <i class="fa-solid fa-trash"></i>
+    </a>
+</td>
 
 </tr>
 <?php endwhile; ?>
