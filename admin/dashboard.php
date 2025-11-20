@@ -7,7 +7,7 @@ $prestasi = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM prestasi"
 $saran = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM saran"))[0];
 $latest_keg = mysqli_query($conn, "SELECT id, judul, tanggal FROM kegiatan ORDER BY id DESC LIMIT 5");
 $latest_pre = mysqli_query($conn, "SELECT id, judul, tanggal FROM prestasi ORDER BY id DESC LIMIT 5");
-$latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM saran ORDER BY id DESC LIMIT 5");
+$latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM sarann ORDER BY id DESC LIMIT 5");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -21,6 +21,7 @@ $latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM saran ORDER BY 
       <li><a href="kegiatan.php">Kegiatan</a></li>
       <li><a href="prestasi.php">Prestasi</a></li>
       <li><a href="saran.php">Kotak Saran</a></li>
+      <li><a href="pelayanan.php">pelayanan</a></li>
       <li><a href="profile.php">Profil</a></li>
       <li><a href="../logout.php">Logout</a></li>
     </ul>

@@ -476,7 +476,7 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                 <a href="dashboard.php" class="menu-item"><img src="../assets/icons/dashboard1.png" alt="">Dashboard</a>
                 <a href="kegiatan.php" class="menu-item"><img src="../assets/icons/kegiatandesa.png" alt="">Kegiatan Desa</a>
                 <a href="prestasi.php" class="menu-item"><img src="../assets/icons/prestasi.png" alt="">Prestasi</a>
-                <a href="kotaksaran.php" class="menu-item"><img src="../assets/icons/kotaksaran1.png" alt="">Kotak Saran</a>
+                <a href="saran.php" class="menu-item"><img src="../assets/icons/kotaksaran1.png" alt="">Kotak Saran</a>
                 <a href="pelayanan.php" class="menu-item active"><img src="../assets/icons/pelayanan1.png" alt="">Pelayanan</a>
             </div>
             <div class="sidebar-footer">
