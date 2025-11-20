@@ -465,8 +465,6 @@ td {
 }
 
 /* ====== Upload Image (kanan) ====== */
-
-/* ====== Upload Image (kanan) ====== */
 .form-right {
     width: 40%;
     padding-top: 10px;
