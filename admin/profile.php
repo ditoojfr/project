@@ -104,18 +104,25 @@ body {
 }
 /* Utama */
 .main {
-    margin-left: 260px;
-    padding: 40px 60px;
+    margin-left: 260px;    /* atau sesuai lebar sidebar */
+    padding: 0 20px;       /* kecilkan padding agar header "nyambung" ke kanan */
 }
+
 .profile-header {
     width: 100%;
-    height: 230px;
-    background: url('../assets/images/logo-nganjuk.png') center/cover no-repeat;
-    border-radius: 12px;
+    height: 250px;
+    background: url('../assets/images/logo-nganjuk.png') no-repeat;
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px 10px 0 0;
+    margin-top: 50px;        /* <-- PENTING: pastikan tidak ada margin-top dihapus di bagian lain */
     margin-bottom: -70px;
     position: relative;
     z-index: 1;
+    box-shadow: 0 2px 8px rgba(60,60,60,0.10);
 }
+
+
 /* Foto Profil Bulat */
 .profile-box {
     position: relative;
