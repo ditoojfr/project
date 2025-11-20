@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // =================== KONFIGURASI UPLOAD ===================
-$uploadDir = _DIR_ . "/../assets/img/pelayanan/"; // folder fisik
+$uploadDir = __DIR__ . "/../assets/img/pelayanan/"; // folder fisik
 $uploadUrlPrefix = "assets/img/pelayanan/"; // path yang disimpan di DB
 
 if (!is_dir($uploadDir)) {
@@ -27,7 +27,7 @@ if ($action === 'delete' && isset($_GET['id'])) {
     $res = mysqli_query($conn, "SELECT gambar FROM pelayanan WHERE id={$id}");
     if ($row = mysqli_fetch_assoc($res)) {
         if (!empty($row['gambar'])) {
-            $file = _DIR_ . "/../" . $row['gambar'];
+            $file = __DIR__ . "/../" . $row['gambar'];
             if (is_file($file)) @unlink($file);
         }
     }
