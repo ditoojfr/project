@@ -7,7 +7,7 @@ $prestasi = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM prestasi"
 $saran = mysqli_fetch_row(mysqli_query($conn, "SELECT COUNT(*) FROM saran"))[0];
 $latest_keg = mysqli_query($conn, "SELECT id, judul, tanggal FROM kegiatan ORDER BY id DESC LIMIT 5");
 $latest_pre = mysqli_query($conn, "SELECT id, judul, tanggal FROM prestasi ORDER BY id DESC LIMIT 5");
-$latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM sarann ORDER BY id DESC LIMIT 5");
+$latest_sar = mysqli_query($conn, "SELECT id, judul, tanggal_dikirim FROM saran ORDER BY id DESC LIMIT 5");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -70,11 +70,11 @@ $latest_sar = mysqli_query($conn, "SELECT id, nama, tanggal FROM sarann ORDER BY
       <div  class="table x-dashboard-5">
         <h3>Terbaru - Saran</h3>
         <table width="100%">
-          <tr><th>Nama</th><th>Tanggal</th><th></th></tr>
+          <tr><th>Judul</th><th>Tanggal</th><th></th></tr>
           <?php while($r = mysqli_fetch_assoc($latest_sar)): ?>
             <tr>
-              <td><?php echo htmlspecialchars($r['nama']); ?></td>
-              <td><?php echo $r['tanggal']; ?></td>
+              <td><?php echo htmlspecialchars($r['judul']); ?></td>
+              <td><?php echo $r['tanggal_dikirim']; ?></td>
               <td><a href="saran.php?del=<?php echo $r['id']; ?>">Hapus</a></td>
             </tr>
           <?php endwhile; ?>
