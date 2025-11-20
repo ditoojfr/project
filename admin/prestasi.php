@@ -28,21 +28,31 @@ if(isset($_GET['del'])){
 /* ======================================================
    2. MODE TAMPILAN (LIST / TAMBAH / EDIT)
    ====================================================== */
+// Blok deteksi mode tambah/edit EDIT DULU (biar $mode akurat)
 $mode = "list"; 
-
-// tombol tambah
 if(isset($_GET['tambah'])) {
     $mode = "tambah";
 }
 
-// === JUDUL DINAMIS ===
-if ($mode == "tambah") {
-    $page_title = "Tambah Prestasi ";
-} elseif ($mode == "edit") {
-    $page_title = "Edit Prestasi ";
-} else {
-    $page_title = "Daftar Prestasi ";
+$edit = null;
+if(isset($_GET['edit'])){
+    $mode = "edit";
+    $id = intval($_GET['edit']);
+    $res = mysqli_query($conn, "SELECT * FROM prestasi WHERE id=$id");
+    $edit = mysqli_fetch_assoc($res);
 }
+
+// SETELAH MODE DIPASTIKAN, BARU TENTUKAN JUDUL
+if ($mode == "tambah") {
+    $page_title = "Tambah Prestasi";
+} elseif ($mode == "edit") {
+    $page_title = "Edit Prestasi";
+} else {
+    $page_title = "Daftar Prestasi";
+}
+
+
+
 
 // tombol edit
 $edit = null;
@@ -579,34 +589,37 @@ td {
 
 
 <!-- SIDEBAR -->
+<?php
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
 <aside class="sidebar">
   <ul class="menu">
-    <li> 
-      <a href="dashboard.php">
+    <li>
+      <a href="dashboard.php" class="<?= $current_page == 'dashboard.php' ? 'active' : '' ?>">
         <img src="../assets/icons/dashboard1.png" alt="Dashboard" style="width:20px; height:20px; margin-right:8px;">
         Dashboard
       </a>
     </li>
-    <li> 
-      <a href="kegiatan.php" class="active">
+    <li>
+      <a href="kegiatan.php" class="<?= $current_page == 'kegiatan.php' ? 'active' : '' ?>">
         <img src="../assets/icons/kegiatandesa.png" alt="Kegiatan" style="width:20px; height:20px; margin-right:8px;">
         Kegiatan Desa
       </a>
     </li>
     <li>
-      <a href="prestasi.php">
+      <a href="prestasi.php" class="<?= $current_page == 'prestasi.php' ? 'active' : '' ?>">
         <img src="../assets/icons/prestasi.png" alt="Prestasi" style="width:20px; height:20px; margin-right:8px;">
         Prestasi
       </a>
     </li>
     <li>
-      <a href="saran.php">
+      <a href="saran.php" class="<?= $current_page == 'saran.php' ? 'active' : '' ?>">
         <img src="../assets/icons/kotaksaran1.png" alt="Kotak Saran" style="width:20px; height:20px; margin-right:8px;">
         Kotak Saran
       </a>
     </li>
     <li>
-      <a href="pelayanan.php">
+      <a href="pelayanan.php" class="<?= $current_page == 'pelayanan.php' ? 'active' : '' ?>">
         <img src="../assets/icons/pelayanan1.png" alt="Pelayanan" style="width:20px; height:20px; margin-right:8px;">
         Pelayanan
       </a>
@@ -619,6 +632,7 @@ td {
     </a>
   </div>
 </aside>
+
 
 
 
