@@ -561,7 +561,97 @@ td {
     z-index: 1;
 }
 
+/* ====== LOGOUT ====== */
 
+.modal {
+  position: fixed;
+  z-index: 999999;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);        /* efek blur */
+  background: rgba(0, 0, 0, 0.35);    /* glass dim */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+
+.modal.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-content {
+  width: 340px;
+  padding: 26px 28px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  text-align: center;
+  transform: scale(.85);
+  opacity: 0;
+  transition: all .28s cubic-bezier(.18,.89,.32,1.28);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+/* Animasi pop */
+.modal-content.show {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Icon logout aesthetic */
+.logout-icon {
+  font-size: 52px;
+  color: #e63946;
+  margin-bottom: 10px;
+  animation: rotateIn .45s ease;
+}
+
+@keyframes rotateIn {
+  0% { opacity: 0; transform: rotate(-30deg) scale(.4); }
+  100% { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+.modal-actions {
+  margin-top: 22px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* CANCEL BUTTON */
+.btn-cancel {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 10px;
+  border: none;
+  background: #dcdcdc;
+  cursor: pointer;
+  font-weight: 600;
+  transition: .2s;
+}
+.btn-cancel:hover {
+  background: #bfbfbf;
+}
+
+/* LOGOUT BUTTON */
+.btn-logout {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 10px;
+  border: none;
+  background: #e63946;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  transition: .2s;
+}
+.btn-logout:hover {
+  background: #c92c39;
+}
 
 
 /* ======================================================
@@ -615,11 +705,24 @@ td {
   </ul>
 
   <div class="logout">
-    <a href="../logout.php">
+<a href="#" id="logoutBtn">
       <i class="fa-solid fa-arrow-right-from-bracket"></i>Keluar
     </a>
   </div>
 </aside>
+
+<div id="logoutModal" class="modal">
+  <div class="modal-content">
+    <i class="fa-solid fa-circle-xmark logout-icon"></i>
+    <h3 style="margin: 0; font-size: 20px; font-weight: 700;">Keluar Akun?</h3>
+    <p style="margin-top: 6px; color: #444;">Anda yakin ingin keluar dari akun?</p>
+
+    <div class="modal-actions">
+      <button id="cancelLogout" class="btn-cancel">Batal</button>
+      <a href="../logout.php" class="btn-logout">Keluar</a>
+    </div>
+  </div>
+</div>
 
 
 
@@ -787,5 +890,32 @@ while($row = mysqli_fetch_assoc($queryList)):
 
 
 </div> <!-- END MAIN -->
+<script>
+const logoutBtn = document.getElementById("logoutBtn");
+const logoutModal = document.getElementById("logoutModal");
+const cancelLogout = document.getElementById("cancelLogout");
+const modalContent = document.querySelector(".modal-content");
+
+// TAMPILKAN ANIMASI MODAL
+logoutBtn.onclick = function(e){
+    e.preventDefault();
+
+    logoutModal.classList.add("show");
+
+    // delay kecil agar animasi scale aktif
+    setTimeout(() => {
+        modalContent.classList.add("show");
+    }, 10);
+};
+
+// TUTUP MODAL DENGAN ANIMASI
+cancelLogout.onclick = function(){
+    modalContent.classList.remove("show");
+
+    setTimeout(() => {
+        logoutModal.classList.remove("show");
+    }, 180); // menunggu animasi pop-out
+};
+</script>
 </body>
 </html>

@@ -2,139 +2,148 @@
 session_start();
 include "../config/db.php"; // koneksi MySQL
 
+
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../login.php');
     exit;
 }
 
+
 // =================== KONFIGURASI UPLOAD ===================
-$uploadDir = __DIR__ . "/../assets/img/pelayanan/"; // folder fisik
-$uploadUrlPrefix = "assets/img/pelayanan/"; // path yang disimpan di DB
+$uploadDir       = __DIR__ . "/../assets/img/panduan_surat/"; // folder fisik BARU
+$uploadUrlPrefix = "assets/img/panduan_surat/";               // path yang disimpan di DB BARU
 
 if (!is_dir($uploadDir)) {
     @mkdir($uploadDir, 0777, true);
 }
  
 // =================== LOGIKA AKSI ===================
-$action = $_GET['action'] ?? 'list';
+$action  = $_GET['action'] ?? 'list';
 $message = "";
+
 
 // ---------- HAPUS ----------
 if ($action === 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
 
-    // hapus file gambar kalau ada
-    $res = mysqli_query($conn, "SELECT gambar FROM pelayanan WHERE id={$id}");
+    // hapus file foto_pendukung kalau ada
+    $res = mysqli_query($conn, "SELECT foto_pendukung FROM panduan_surat WHERE id={$id}");
     if ($row = mysqli_fetch_assoc($res)) {
-        if (!empty($row['gambar'])) {
-            $file = __DIR__ . "/../" . $row['gambar'];
+        if (!empty($row['foto_pendukung'])) {
+            $file = __DIR__ . "/../" . $row['foto_pendukung'];
             if (is_file($file)) @unlink($file);
         }
     }
 
-    mysqli_query($conn, "DELETE FROM pelayanan WHERE id={$id}");
-    header("Location: pelayanan.php?msg=Pelayanan+berhasil+dihapus");
+    mysqli_query($conn, "DELETE FROM panduan_surat WHERE id={$id}");
+    header("Location: pelayanan.php?msg=Panduan+surat+berhasil+dihapus");
     exit;
 }
 
+
 // ---------- TAMBAH ----------
 if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $no_pelayanan = (int)($_POST['no_pelayanan'] ?? 0);
-    $judul = mysqli_real_escape_string($conn, trim($_POST['judul'] ?? ''));
+    // no_pelayanan DIHAPUS → tidak dipakai lagi
+    $judul             = mysqli_real_escape_string($conn, trim($_POST['judul'] ?? ''));
     $deskripsi_singkat = mysqli_real_escape_string($conn, trim($_POST['deskripsi_singkat'] ?? ''));
-    $isi_panduan = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
+    $isi_panduan       = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
 
-    // proses upload gambar (opsional)
-    $gambarPath = null;
-    if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
-        $ext = pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION);
-        $newName = 'pelayanan_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-        $dest = $uploadDir . $newName;
+    // proses upload foto_pendukung (opsional)
+    $fotoPath = null;
+    if (isset($_FILES['foto_pendukung']) && $_FILES['foto_pendukung']['error'] === UPLOAD_ERR_OK) {
+        $ext     = pathinfo($_FILES['foto_pendukung']['name'], PATHINFO_EXTENSION);
+        $newName = 'panduan_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+        $dest    = $uploadDir . $newName;
 
-        if (move_uploaded_file($_FILES['gambar']['tmp_name'], $dest)) {
-            $gambarPath = $uploadUrlPrefix . $newName; // disimpan relatif dari root project
+        if (move_uploaded_file($_FILES['foto_pendukung']['tmp_name'], $dest)) {
+            $fotoPath = $uploadUrlPrefix . $newName; // disimpan relatif dari root project
         }
     }
 
-    if ($no_pelayanan && $judul && $deskripsi_singkat && $isi_panduan) {
+    if ($judul && $deskripsi_singkat && $isi_panduan) {
         $stmt = mysqli_prepare(
             $conn,
-            "INSERT INTO pelayanan (no_pelayanan, judul, deskripsi_singkat, isi_panduan, gambar) VALUES (?,?,?,?,?)"
+            "INSERT INTO panduan_surat (judul, deskripsi_singkat, isi_panduan, foto_pendukung) VALUES (?,?,?,?)"
         );
-        mysqli_stmt_bind_param($stmt, "issss", $no_pelayanan, $judul, $deskripsi_singkat, $isi_panduan, $gambarPath);
+        mysqli_stmt_bind_param($stmt, "ssss", $judul, $deskripsi_singkat, $isi_panduan, $fotoPath);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        // setelah tambah, kembali ke daftar pelayanan (gambar ke-3)
-        header("Location: pelayanan.php?msg=Pelayanan+berhasil+ditambahkan");
+        // setelah tambah, kembali ke daftar
+        header("Location: pelayanan.php?msg=Panduan+surat+berhasil+ditambahkan");
         exit;
     } else {
-        $message = "Semua field (No, Judul, Deskripsi, Panduan) wajib diisi.";
+        $message = "Semua field (Judul, Deskripsi, Panduan) wajib diisi.";
     }
 }
 
+
 // ---------- UPDATE ----------
 if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = (int)($_POST['id'] ?? 0);
-    $no_pelayanan = (int)($_POST['no_pelayanan'] ?? 0);
-    $judul = mysqli_real_escape_string($conn, trim($_POST['judul'] ?? ''));
+    $id               = (int)($_POST['id'] ?? 0);
+    // no_pelayanan DIHAPUS → tidak dipakai lagi
+    $judul             = mysqli_real_escape_string($conn, trim($_POST['judul'] ?? ''));
     $deskripsi_singkat = mysqli_real_escape_string($conn, trim($_POST['deskripsi_singkat'] ?? ''));
-    $isi_panduan = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
+    $isi_panduan       = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
 
-    if ($id && $no_pelayanan && $judul && $deskripsi_singkat && $isi_panduan) {
-        // ambil data lama (untuk gambar)
-        $resOld = mysqli_query($conn, "SELECT gambar FROM pelayanan WHERE id={$id}");
-        $old = mysqli_fetch_assoc($resOld);
-        $gambarPath = $old['gambar'] ?? null;
+    if ($id && $judul && $deskripsi_singkat && $isi_panduan) {
+        // ambil data lama (untuk foto_pendukung)
+        $resOld = mysqli_query($conn, "SELECT foto_pendukung FROM panduan_surat WHERE id={$id}");
+        $old    = mysqli_fetch_assoc($resOld);
+        $fotoPath = $old['foto_pendukung'] ?? null;
 
         // jika ada upload baru
-        if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
+        if (isset($_FILES['foto_pendukung']) && $_FILES['foto_pendukung']['error'] === UPLOAD_ERR_OK) {
             // hapus file lama
-            if (!empty($gambarPath)) {
-                $file = _DIR_ . "/../" . $gambarPath;
+            if (!empty($fotoPath)) {
+                $file = __DIR__ . "/../" . $fotoPath;
                 if (is_file($file)) @unlink($file);
             }
 
-            $ext = pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION);
-            $newName = 'pelayanan_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            $dest = $uploadDir . $newName;
+            $ext     = pathinfo($_FILES['foto_pendukung']['name'], PATHINFO_EXTENSION);
+            $newName = 'panduan_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            $dest    = $uploadDir . $newName;
 
-            if (move_uploaded_file($_FILES['gambar']['tmp_name'], $dest)) {
-                $gambarPath = $uploadUrlPrefix . $newName;
+            if (move_uploaded_file($_FILES['foto_pendukung']['tmp_name'], $dest)) {
+                $fotoPath = $uploadUrlPrefix . $newName;
             }
         }
 
         $stmt = mysqli_prepare(
             $conn,
-            "UPDATE pelayanan SET no_pelayanan = ?, judul = ?, deskripsi_singkat = ?, isi_panduan = ?, gambar = ? WHERE id = ?"
+            "UPDATE panduan_surat 
+             SET judul = ?, deskripsi_singkat = ?, isi_panduan = ?, foto_pendukung = ?
+             WHERE id = ?"
         );
-        mysqli_stmt_bind_param($stmt, "issssi", $no_pelayanan, $judul, $deskripsi_singkat, $isi_panduan, $gambarPath, $id);
+        mysqli_stmt_bind_param($stmt, "ssssi", $judul, $deskripsi_singkat, $isi_panduan, $fotoPath, $id);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
         // setelah update, kembali ke daftar
-        header("Location: pelayanan.php?msg=Pelayanan+berhasil+diupdate");
+        header("Location: pelayanan.php?msg=Panduan+surat+berhasil+diupdate");
         exit;
     } else {
         $message = "Semua field wajib diisi.";
     }
 }
 
+
 // =================== AMBIL DATA UNTUK TAMPILAN ===================
-$search = trim($_GET['search'] ?? '');
-$pelayananList = [];
-$detail = null;
+$search         = trim($_GET['search'] ?? '');
+$pelayananList  = [];
+$detail         = null;
 
 if ($action === 'list') {
-    if ($search !== '') {
-        $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
-        $sql = "
-            SELECT * FROM pelayanan
-            WHERE judul LIKE '{$like}' OR deskripsi_singkat LIKE '{$like}' OR isi_panduan LIKE '{$like}'
-            ORDER BY no_pelayanan ASC, id ASC";
-    } else {
-        $sql = "SELECT * FROM pelayanan ORDER BY no_pelayanan ASC, id ASC";
-    }
+  if ($search !== '') {
+    $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
+    $sql  = "
+        SELECT * FROM panduan_surat
+        WHERE LOWER(judul) LIKE LOWER('{$like}')
+        ORDER BY id ASC";
+} else {
+    $sql = "SELECT * FROM panduan_surat ORDER BY id ASC";
+}
+
 
     $res = mysqli_query($conn, $sql);
     while ($row = mysqli_fetch_assoc($res)) {
@@ -143,8 +152,8 @@ if ($action === 'list') {
 }
 
 if (($action === 'edit_form' || $action === 'view') && isset($_GET['id'])) {
-    $id = (int)$_GET['id'];
-    $res = mysqli_query($conn, "SELECT * FROM pelayanan WHERE id={$id}");
+    $id    = (int)$_GET['id'];
+    $res   = mysqli_query($conn, "SELECT * FROM panduan_surat WHERE id={$id}");
     $detail = mysqli_fetch_assoc($res);
 
     if (!$detail) {
@@ -156,9 +165,10 @@ if (isset($_GET['msg'])) {
     $message = htmlspecialchars($_GET['msg']);
 }
 
+
 // =================== DATA PROFIL (ATAS KANAN) ===================
-$namaAdmin = $_SESSION['nama'] ?? $_SESSION['username'] ?? 'Administrator Utama';
-$roleAdmin = $_SESSION['role'] ?? 'Admin';
+$namaAdmin    = $_SESSION['nama'] ?? $_SESSION['username'] ?? 'Administrator Utama';
+$roleAdmin    = $_SESSION['role'] ?? 'Admin';
 $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
 ?>
 <!DOCTYPE html>
@@ -553,38 +563,42 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                                 <th class="aksi-col">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php if (!$pelayananList) : ?>
-                                <tr>
-                                    <td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">Belum ada data pelayanan.</td>
-                                </tr>
-                            <?php else : foreach ($pelayananList as $row) : ?>
-                                <tr>
-                                    <td>
-                                        <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>">
-                                            <?php if (!empty($row['gambar'])) : ?>
-                                                <img src="../<?php echo htmlspecialchars($row['gambar']); ?>" class="thumb-img" alt="Gambar">
-                                            <?php else : ?>
-                                                <div class="thumb-img"></div>
-                                            <?php endif; ?>
-                                        </a>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($row['no_pelayanan']); ?></td>
-                                    <td>
-                                        <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>" class="link-judul">
-                                            <?php echo htmlspecialchars($row['judul']); ?>
-                                        </a>
-                                    </td>
-                                    <td><?php echo nl2br(htmlspecialchars($row['deskripsi_singkat'])); ?></td>
-                                    <td><?php echo nl2br(htmlspecialchars($row['isi_panduan'])); ?></td>
-                                    <td class="aksi-col">
-                                        <button class="icon-btn edit" title="Edit" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $row['id']; ?>'">✏</button>
-                                        <!-- PANGGIL MODAL, BUKAN confirm() -->
-                                        <button class="icon-btn delete" title="Hapus" onclick="openDeleteModal(<?php echo $row['id']; ?>)">🗑</button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; endif; ?>
-                        </tbody>
+                      <tbody>
+    <?php if (!$pelayananList) : ?>
+        <tr>
+            <td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">
+                Belum ada data pelayanan.
+            </td>
+        </tr>
+    <?php else : foreach ($pelayananList as $i => $row) : ?>
+        <tr>
+            <td>
+                <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>">
+                    <?php if (!empty($row['foto_pendukung'])) : ?>
+                        <img src="../<?php echo htmlspecialchars($row['foto_pendukung']); ?>" class="thumb-img" alt="Gambar">
+                    <?php else : ?>
+                        <div class="thumb-img"></div>
+                    <?php endif; ?>
+                </a>
+            </td>
+            <!-- No pakai urutan looping, bukan id -->
+            <td><?php echo $i + 1; ?></td>
+            <td>
+                <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>" class="link-judul">
+                    <?php echo htmlspecialchars($row['judul']); ?>
+                </a>
+            </td>
+            <td><?php echo nl2br(htmlspecialchars($row['deskripsi_singkat'])); ?></td>
+            <td><?php echo nl2br(htmlspecialchars($row['isi_panduan'])); ?></td>
+            <td class="aksi-col">
+                <button class="icon-btn edit" title="Edit" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $row['id']; ?>'">✏</button>
+                <!-- PANGGIL MODAL, BUKAN confirm() -->
+                <button class="icon-btn delete" title="Hapus" onclick="openDeleteModal(<?php echo $row['id']; ?>)">🗑</button>
+            </td>
+        </tr>
+    <?php endforeach; endif; ?>
+</tbody>
+
                     </table>
 
                 <?php elseif ($action === 'add_form' || ($action === 'edit_form' && $detail)) : ?>
@@ -593,8 +607,9 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                             <div class="card-form">
                                 <div class="form-group">
                                     <label>No</label>
-                                    <input type="text" name="no_pelayanan_form_disabled" disabled value="<?php echo ($action === 'edit_form' && $detail) ? htmlspecialchars($detail['no_pelayanan']) : ''; ?>">
-                                    <small style="font-size:11px;color:#9ca3af;">No akan diambil dari input di bawah ini.</small>
+                                    <!-- hanya tampilan, tidak dari DB lagi -->
+                                    <input type="text" name="no_pelayanan_form_disabled" disabled value="<?php echo ($action === 'edit_form' && $detail) ? htmlspecialchars($detail['id']) : ''; ?>">
+                                    <small style="font-size:11px;color:#9ca3af;">No akan mengikuti ID data atau urutan.</small>
                                 </div>
                             </div>
                         </div>
@@ -605,10 +620,7 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
 
                             <div class="form-grid">
                                 <div class="card-form">
-                                    <div class="form-group">
-                                        <label>No</label>
-                                        <input type="text" name="no_pelayanan" required value="<?php echo $detail['no_pelayanan'] ?? ''; ?>">
-                                    </div>
+                                    <!-- field no_pelayanan DIHAPUS dari form input -->
                                     <div class="form-group">
                                         <label>Judul</label>
                                         <input type="text" name="judul" required value="<?php echo htmlspecialchars($detail['judul'] ?? ''); ?>">
@@ -627,10 +639,10 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                                         <label>Upload Image</label>
                                         <div class="upload-box">
                                             <div>Upload Image</div>
-                                            <input type="file" name="gambar" accept="image/*">
-                                            <?php if ($action === 'edit_form' && !empty($detail['gambar'])) : ?>
+                                            <input type="file" name="foto_pendukung" accept="image/*">
+                                            <?php if ($action === 'edit_form' && !empty($detail['foto_pendukung'])) : ?>
                                                 <div class="upload-preview">
-                                                    <img src="../<?php echo htmlspecialchars($detail['gambar']); ?>" alt="Preview">
+                                                    <img src="../<?php echo htmlspecialchars($detail['foto_pendukung']); ?>" alt="Preview">
                                                 </div>
                                             <?php endif; ?>
                                         </div>
@@ -650,8 +662,8 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                 <?php elseif ($action === 'view' && $detail) : ?>
                     <div class="detail-wrapper">
                         <div class="detail-inner">
-                            <?php if (!empty($detail['gambar'])) : ?>
-                                <img src="../<?php echo htmlspecialchars($detail['gambar']); ?>" class="detail-img" alt="Gambar Pelayanan">
+                            <?php if (!empty($detail['foto_pendukung'])) : ?>
+                                <img src="../<?php echo htmlspecialchars($detail['foto_pendukung']); ?>" class="detail-img" alt="Gambar Pelayanan">
                             <?php endif; ?>
 
                             <div class="detail-title"><?php echo htmlspecialchars($detail['judul']); ?></div>
