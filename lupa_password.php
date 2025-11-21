@@ -18,15 +18,15 @@ if (isset($_POST['kirim_otp'])) {
         $otp = rand(100000, 999999);
         $_SESSION['otp'] = $otp;
         $_SESSION['reset_user'] = $user['username'];
-        $_SESSION['otp_expiry'] = time() + 300; // 5 menit
+        $_SESSION['otp_expiry'] = time() + 300; 
 
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'djefriandana@gmail.com'; // ubah
-            $mail->Password   = 'yhod yrdg ovog qkjs'; // ubah ke App Password Gmail
+            $mail->Username   = 'djefriandana@gmail.com'; 
+            $mail->Password   = 'yhod yrdg ovog qkjs'; 
             $mail->SMTPSecure = 'tls';
             $mail->Port       = 587;
 
