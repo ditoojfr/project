@@ -58,8 +58,8 @@ if(isset($_GET['edit'])){
    3. SIMPAN DATA (TAMBAH / EDIT)
    ====================================================== */
 if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_kegiatan'])){
-
     $judul = mysqli_real_escape_string($conn, $_POST['judul']);
+    $lokasi = mysqli_real_escape_string($conn, $_POST['lokasi']);
     $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
     $tanggal = $_POST['tanggal'];
 
@@ -76,34 +76,37 @@ if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_kegiatan'])){
     if(!empty($_POST['id'])){
         $id = intval($_POST['id']);
 
-        if($foto){
-            mysqli_query($conn, "UPDATE kegiatan SET 
-                judul='$judul',
-                deskripsi='$deskripsi',
-                tanggal='$tanggal',
-                foto='$foto',
-                foto_type='$ftype'
-            WHERE id=$id");
-        } else {
-            mysqli_query($conn, "UPDATE kegiatan SET 
-                judul='$judul',
-                deskripsi='$deskripsi',
-                tanggal='$tanggal'
-            WHERE id=$id");
-        }
+    if($foto){
+        mysqli_query($conn, "UPDATE kegiatan SET 
+            judul='$judul',
+            lokasi='$lokasi',
+            deskripsi='$deskripsi',
+            tanggal='$tanggal',
+            foto='$foto',
+            foto_type='$ftype'
+        WHERE id=$id");
+    } else {
+        mysqli_query($conn, "UPDATE kegiatan SET 
+            judul='$judul',
+            lokasi='$lokasi',
+            deskripsi='$deskripsi',
+            tanggal='$tanggal'
+        WHERE id=$id");
     }
+  }
 
     // MODE TAMBAH
     else {
-        mysqli_query($conn, "INSERT INTO kegiatan 
-            (judul, deskripsi, tanggal, foto, foto_type) 
-            VALUES (
-                '$judul', 
-                '$deskripsi', 
-                '$tanggal',
-                ".($foto ? "'$foto'" : "NULL").",
-                ".($ftype ? "'$ftype'" : "NULL")."
-            )");
+          mysqli_query($conn, "INSERT INTO kegiatan 
+          (judul, lokasi, deskripsi, tanggal, foto, foto_type) 
+          VALUES (
+              '$judul', 
+              '$lokasi', 
+              '$deskripsi', 
+              '$tanggal',
+              ".($foto ? "'$foto'" : "NULL").",
+              ".($ftype ? "'$ftype'" : "NULL")."
+          )");
     }
 
     header("Location: kegiatan.php");
@@ -643,9 +646,6 @@ td {
 </div>
 
 
-
-
-
 <!-- TITLE ROW -->
 <div class="title-row">
   <div class="page-title"><?= htmlspecialchars($page_title) ?></div>
@@ -667,6 +667,7 @@ td {
     <?php endif; ?>
 </div>
 
+
 <!-- ===================================================
      5. FORM TAMBAH / EDIT
      =================================================== -->
@@ -676,45 +677,32 @@ td {
 
     <!-- ================= LEFT FORM ================= -->
     <div class="form-left">
-        
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
+
+    <label>Nama Kegiatan Desa</label>
+    <input type="text" name="judul" required value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
+
+    <label>Lokasi</label>
+    <input type="text" name="lokasi" required value="<?= htmlspecialchars($edit['lokasi'] ?? '') ?>">
+
+    <label>Deskripsi</label>
+    <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
+
+    <label>Tanggal</label>
+    <input type="date" name="tanggal" required value="<?= $edit['tanggal'] ?? '' ?>">
+
+    <!-- Upload foto box tetap di sini -->
+    <button class="btn-simpan" type="submit" name="save_kegiatan">
+        <i class="fa-solid fa-plus"></i>
+        <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
+    </button>
     <a href="kegiatan.php" class="back-btn">&larr; Kembali</a>
-
-        <form method="POST" enctype="multipart/form-data">
-
-            <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
-
-            <label>No</label>
-            <input type="text" placeholder="No otomatis / opsional">
-
-            <label>Nama Kegiatan Desa</label>
-            <input type="text" name="judul" required
-                   value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
-
-            <label>Lokasi</label>
-            <input type="text" placeholder="Lokasi kegiatan">
-
-            <label>Deskripsi</label>
-            <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
-
-            <label>Tanggal</label>
-            <input type="date" name="tanggal" required
-                   value="<?= $edit['tanggal'] ?? '' ?>">
-
-            <button class="btn-simpan" type="submit" name="save_kegiatan">
-                <i class="fa-solid fa-plus"></i>
-                <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
-            </button>
-
-        </form>
+</form>
 
     </div>
 
     <!-- ================= RIGHT UPLOAD IMAGE ================= -->
-    <div class="form-right">
-
-    <label>Upload Image</label>
-
-    <!-- Upload Box -->
     <div class="upload-box">
     <!-- Preview foto (jika ada) -->
     <?php if ($mode == "edit" && $edit['foto']): ?>
@@ -723,16 +711,23 @@ td {
              alt="Preview">
     <?php endif; ?>
 
-    <!-- Overlay: ikon + teks (selalu tampil) -->
+    <!-- Overlay (tetap tampil walau ada gambar preview) -->
     <div class="upload-overlay">
         <i class="fa-solid fa-cloud-arrow-up"></i>
-        <span><?php echo ($mode == "edit" && $edit['foto']) ? 'Klik untuk Ganti Gambar' : 'Pilih Image'; ?></span>
+        <span>
+            <?php echo ($mode == "edit" && $edit['foto']) ? 'Klik untuk Ganti Gambar' : 'Pilih Image'; ?>
+        </span>
     </div>
 
-    <!-- Trigger upload (transparan) -->
-    <label for="uploadFoto" class="upload-trigger"></label>
+    <!-- INPUT FILE (bukan label!) -->
+    <input 
+        type="file" 
+        id="uploadFoto" 
+        name="foto" 
+        class="upload-trigger" 
+        accept="image/*"
+    >
 </div>
-
 
 <?php endif; ?>
 
@@ -741,7 +736,6 @@ td {
      6. LIST DATA
      =================================================== -->
 <?php if($mode == "list"): ?>
-
 <table>
 <tr>
   <th></th>
@@ -752,49 +746,41 @@ td {
   <th>Tanggal</th>
   <th>Aksi</th>
 </tr>
-
 <?php 
 $no = 1;
 while($row = mysqli_fetch_assoc($queryList)): 
 ?>
 <tr>
-
   <td>
     <?php if(!empty($row['foto'])): ?>
       <img class="foto-kegiatan" src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto']) ?>">
     <?php endif; ?>
   </td>
-
   <td><?= $no++; ?></td>
   <td><?= htmlspecialchars($row['judul']) ?></td>
-  <td>-</td>
-  <!-- Pembatas Deskripsi -->
+  <td><?= htmlspecialchars($row['lokasi'] ?? '-') ?></td>
   <td>
-  <?php 
-    $maxLength = 250; // batas maksimal karakter
-    $desc = strip_tags($row['deskripsi']); // hapus tag HTML supaya aman
-    if(strlen($desc) > $maxLength){
-      echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
-    } else {
-      echo nl2br(htmlspecialchars($desc));
-    }
-  ?>
-</td>
-
+    <?php 
+      $maxLength = 250;
+      $desc = strip_tags($row['deskripsi']);
+      if(strlen($desc) > $maxLength){
+        echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
+      } else {
+        echo nl2br(htmlspecialchars($desc));
+      }
+    ?>
+  </td>
   <td><?= date("d F Y", strtotime($row['tanggal'])) ?></td>
-
   <td class="aksi-btn">
     <a href="kegiatan.php?edit=<?= $row['id'] ?>">
-        <i class="fa-solid fa-pen"></i>
+      <i class="fa-solid fa-pen"></i>
     </a>
     <a href="kegiatan.php?del=<?= $row['id'] ?>" onclick="return confirm('Hapus kegiatan ini?')">
-        <i class="fa-solid fa-trash"></i>
+      <i class="fa-solid fa-trash"></i>
     </a>
-</td>
-
+  </td>
 </tr>
 <?php endwhile; ?>
-
 </table>
 
 <?php endif; ?>

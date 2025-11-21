@@ -51,9 +51,6 @@ if ($mode == "tambah") {
     $page_title = "Daftar Prestasi";
 }
 
-
-
-
 // tombol edit
 $edit = null;
 if(isset($_GET['edit'])){
@@ -68,27 +65,21 @@ if(isset($_GET['edit'])){
    3. SIMPAN DATA (TAMBAH / EDIT)
    ====================================================== */
 if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_prestasi'])){
-
     $judul = mysqli_real_escape_string($conn, $_POST['judul']);
+    $bidang = mysqli_real_escape_string($conn, $_POST['bidang']);
+    $penyelenggara = mysqli_real_escape_string($conn, $_POST['penyelenggara']);
     $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
     $tanggal = $_POST['tanggal'];
-
-    // upload foto
-    if(isset($_FILES['foto']) && $_FILES['foto']['size'] > 0){
-        $foto = addslashes(file_get_contents($_FILES['foto']['tmp_name']));
-        $ftype = $_FILES['foto']['type'];
-    } else {
-        $foto = null;
-        $ftype = null;
-    }
+    // ...foto seperti sebelumnya...
 
     // MODE EDIT
     if(!empty($_POST['id'])){
         $id = intval($_POST['id']);
-
         if($foto){
             mysqli_query($conn, "UPDATE prestasi SET 
                 judul='$judul',
+                bidang='$bidang',
+                penyelenggara='$penyelenggara',
                 deskripsi='$deskripsi',
                 tanggal='$tanggal',
                 foto='$foto',
@@ -97,25 +88,25 @@ if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_prestasi'])){
         } else {
             mysqli_query($conn, "UPDATE prestasi SET 
                 judul='$judul',
+                bidang='$bidang',
+                penyelenggara='$penyelenggara',
                 deskripsi='$deskripsi',
                 tanggal='$tanggal'
             WHERE id=$id");
         }
-    }
-
-    // MODE TAMBAH
-    else {
+    } else { // TAMBAH
         mysqli_query($conn, "INSERT INTO prestasi 
-            (judul, deskripsi, tanggal, foto, foto_type) 
+            (judul, bidang, penyelenggara, deskripsi, tanggal, foto, foto_type) 
             VALUES (
                 '$judul', 
+                '$bidang',
+                '$penyelenggara',
                 '$deskripsi', 
                 '$tanggal',
                 ".($foto ? "'$foto'" : "NULL").",
                 ".($ftype ? "'$ftype'" : "NULL")."
             )");
     }
-
     header("Location: prestasi.php");
     exit;
 }
@@ -634,8 +625,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
 </aside>
 
 
-
-
 <div class="main">
 <div class="top-bar">
   <div class="right-group">
@@ -657,9 +646,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </a>
   </div>
 </div>
-
-
-
 
 
 <!-- TITLE ROW -->
@@ -690,42 +676,37 @@ $current_page = basename($_SERVER['PHP_SELF']);
      5. FORM TAMBAH / EDIT
      =================================================== -->
 <?php if($mode != "list"): ?>
-
 <div class="form-container">
 
     <!-- ================= LEFT FORM ================= -->
     <div class="form-left">
-        
         <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
 
-            <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
+    <label>Nama Prestasi</label>
+    <input type="text" name="judul" required value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
 
-            <label>No</label>
-            <input type="text" placeholder="No otomatis / opsional">
+    <label>Bidang</label>
+    <input type="text" name="bidang" required value="<?= htmlspecialchars($edit['bidang'] ?? '') ?>">
 
-            <label>Nama Prestasi</label>
-            <input type="text" name="judul" required
-                   value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
+    <label>Penyelenggara</label>
+    <input type="text" name="penyelenggara" value="<?= htmlspecialchars($edit['penyelenggara'] ?? '') ?>">
 
-            <label>Bidang</label>
-            <input type="text" placeholder="Bidang">
+    <label>Deskripsi</label>
+    <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
 
-            <label>Penyelenggara</label>
-            <input type="text" placeholder="Penyelenggara">
+    <label>Tanggal</label>
+    <input type="date" name="tanggal" required value="<?= $edit['tanggal'] ?? '' ?>">
 
-            <label>Deskripsi</label>
-            <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
+    <!-- Upload image box jangan lupa -->
 
-            <label>Tanggal</label>
-            <input type="date" name="tanggal" required
-                   value="<?= $edit['tanggal'] ?? '' ?>">
+    <button class="btn-simpan" type="submit" name="save_prestasi">
+        <i class="fa-solid fa-plus"></i>
+        <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
+    </button>
+    <a href="prestasi.php" class="back-btn">&larr; Kembali</a>
+</form>
 
-            <button class="btn-simpan" type="submit" name="save_prestasi">
-                <i class="fa-solid fa-plus"></i>
-                <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
-            </button>
-<a href="prestasi.php" class="back-btn">&larr; Kembali</a>
-        </form>
 
     </div>
 
@@ -735,7 +716,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <label>Upload Image</label>
 
     <!-- Upload Box -->
-    <div class="upload-box">
+<div class="upload-box">
     <!-- Preview foto (jika ada) -->
     <?php if ($mode == "edit" && $edit['foto']): ?>
         <img class="preview-img"
@@ -743,85 +724,83 @@ $current_page = basename($_SERVER['PHP_SELF']);
              alt="Preview">
     <?php endif; ?>
 
-    <!-- Overlay: ikon + teks (selalu tampil) -->
+    <!-- Overlay (tetap tampil walau ada gambar preview) -->
     <div class="upload-overlay">
         <i class="fa-solid fa-cloud-arrow-up"></i>
-        <span><?php echo ($mode == "edit" && $edit['foto']) ? 'Klik untuk Ganti Gambar' : 'Pilih Image'; ?></span>
+        <span>
+            <?php echo ($mode == "edit" && $edit['foto']) ? 'Klik untuk Ganti Gambar' : 'Pilih Image'; ?>
+        </span>
     </div>
 
-    <!-- Trigger upload (transparan) -->
-    <label for="uploadFoto" class="upload-trigger"></label>
+    <!-- INPUT FILE (bukan label!) -->
+    <input 
+        type="file" 
+        id="uploadFoto" 
+        name="foto" 
+        class="upload-trigger" 
+        accept="image/*"
+    >
 </div>
 
-
 <?php endif; ?>
-
 
 <!-- ===================================================
      6. LIST DATA
      =================================================== -->
 <?php if($mode == "list"): ?>
-
 <table>
 <tr>
   <th></th>
   <th>No</th>
   <th>Nama Prestasi</th>
-  <th>Lokasi</th>
+  <th>Bidang</th>
+  <th>Penyelenggara</th>
   <th>Deskripsi</th>
-  <th>Tanggal</th>
+  <th>Tanggal Perolehan</th>
   <th>Aksi</th>
 </tr>
-
 <?php 
 $no = 1;
 while($row = mysqli_fetch_assoc($queryList)): 
 ?>
 <tr>
-
   <td>
     <?php if(!empty($row['foto'])): ?>
-      <img class="foto-prestasi" src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto']) ?>">
+      <img class="foto-prestasi"
+           src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto']) ?>">
+    <?php else: ?>
+      <!-- Optional: fallback Icon jika tidak ada gambar -->
+      <img class="foto-prestasi"
+           src="../assets/icons/noimage.png" alt="No Image">
     <?php endif; ?>
   </td>
-
   <td><?= $no++; ?></td>
   <td><?= htmlspecialchars($row['judul']) ?></td>
-  <td>-</td>
-  <!-- Pembatas Deskripsi -->
+  <td><?= htmlspecialchars($row['bidang'] ?? '-') ?></td>
+  <td><?= htmlspecialchars($row['penyelenggara'] ?? '-') ?></td>
   <td>
-  <?php 
-    $maxLength = 250; // batas maksimal karakter
-// Pastikan 'deskripsi' ada dan merupakan string
-if (isset($row['deskripsi']) && is_string($row['deskripsi'])) {
-    $desc = strip_tags($row['deskripsi']); // Hapus tag HTML supaya aman
-} else {
-    $desc = 'cantik banget'; // Tangani jika deskripsi tidak ada atau bukan string
-}
-    if(strlen($desc) > $maxLength){
-      echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
-    } else {
-      echo nl2br(htmlspecialchars($desc));
-    }
-  ?>
-</td>
-
+    <?php 
+      $maxLength = 250;
+      $desc = strip_tags($row['deskripsi']);
+      if(strlen($desc) > $maxLength){
+        echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
+      } else {
+        echo nl2br(htmlspecialchars($desc));
+      }
+    ?>
+  </td>
   <td><?= date("d F Y", strtotime($row['tanggal'])) ?></td>
-
   <td class="aksi-btn">
     <a href="prestasi.php?edit=<?= $row['id'] ?>">
-        <i class="fa-solid fa-pen"></i>
+      <i class="fa-solid fa-pen"></i>
     </a>
     <a href="prestasi.php?del=<?= $row['id'] ?>" onclick="return confirm('Hapus prestasi ini?')">
-        <i class="fa-solid fa-trash"></i>
+      <i class="fa-solid fa-trash"></i>
     </a>
-</td>
-
+  </td>
 </tr>
 <?php endwhile; ?>
-
 </table>
-
 <?php endif; ?>
 
 
