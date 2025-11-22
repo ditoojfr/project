@@ -8,6 +8,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+
 // AMBIL DATA USER
 $user_id = $_SESSION['user_id'];
 $userQuery = mysqli_query($conn, "SELECT nama_lengkap FROM `users` WHERE id = $user_id");
