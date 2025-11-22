@@ -113,9 +113,9 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             position: fixed;
             left: 20px;
             top: 90px;
-            width: 220px;
-            height: calc(110vh - 175px);
-            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
+            width: 260px;
+            height: calc(100vh - 104px);
+            background: #5E63BB;
             padding: 24px 20px;
             color: white;
             border-radius: 20px;
@@ -132,6 +132,7 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             align-items: center;
             gap: 12px;
         }
+
         .sidebar-header div {
             color: #000000ff;
             font-weight: 600;
@@ -193,14 +194,17 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             height: 20px;
         }
 
-        /* ===== MAIN AREA ===== */
-        .main{
-            flex:1;
-            padding:18px 32px;
-            display:flex;
-            flex-direction:column;
-            margin-left:260px; /* karena sidebar fixed */
-        }
+        /* ===== MAIN ===== */
+        .main {
+  margin-top: -3px;
+  margin-left: 260px;
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column; /* agar child ditumpuk vertikal */
+  flex: 1;
+  min-width: 0;           /* biar flexing lebar, bukan terpotong overflow */
+}
+
 
         /* BAR ATAS: SEARCH DI TENGAH + PROFIL KANAN */
         .top-bar{
@@ -261,13 +265,17 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             color:#fff;
             overflow:hidden;
         }
-        .content-card{
-            background:#fff;
-            border-radius:18px;
-            padding:24px 28px;
-            box-shadow:0 8px 20px rgba(15,23,42,.06);
-            flex:1;
-        }
+        .content-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px 28px;
+  box-shadow: 0 8px 20px rgba(15,23,42,.06);
+  width: 100%;            /* lebar maksimum area parent (main) */
+  max-width: none;        /* nonaktifkan batas lebar, boleh dihapus atau set none */
+  margin: 0;              /* hilangkan margin auto supaya tidak di tengah dan kecil */
+  flex: 1;                /* jika parent flex, card akan meluas otomatis */
+  box-sizing: border-box; /* padding tetap dihitung agar desain tetap rapi */
+}
 
         .header-row{
             display:flex;
@@ -400,7 +408,7 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
 <body>
 <div class="app">
     <!-- SIDEBAR -->
-    <div class="sidebar">
+    <div class="sidebar">   
         <div class="sidebar-header">
             <img src="../assets/images/logo-nganjuk.png" alt="Logo Nganjuk">
             <div>Desa Banjardowo</div>
