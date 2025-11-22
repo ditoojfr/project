@@ -153,9 +153,9 @@ body {
 .sidebar {
   position: fixed;
   left: 20px;
-  top: 100px;
+  top: 90px;
   width: 220px;
-  height: calc(100vh - 166px);
+  height: calc(100vh - 152px);
   background: #5E63BB;
   padding: 24px 20px;
   color: white;
@@ -222,6 +222,7 @@ body {
 
 /* ===== MAIN ===== */
 .main {
+  margin-top: -8px;
   margin-left: 260px;
   padding: 30px 40px;
 }

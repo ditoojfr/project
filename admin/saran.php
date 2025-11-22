@@ -7,47 +7,81 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// =================== LOGIKA AKSI ===================
+/*
+   =====================================
+   MODE HALAMAN
+   =====================================
+   action = list  -> daftar saran
+   action = view  -> detail satu saran
+   action = delete-> hapus saran
+*/
 $action  = $_GET['action'] ?? 'list';
 $message = "";
 
-// ---------- HAPUS ----------
+/*
+   =====================================
+   HAPUS SARAN
+   =====================================
+*/
 if ($action === 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
 
-    // kalau nanti ingin hapus file foto juga, bisa ditambah SELECT foto dulu di sini
+    // kalau nanti ingin hapus file fisik foto, bisa tambahkan SELECT foto_sampul di sini
     mysqli_query($conn, "DELETE FROM saran WHERE id = {$id}");
     header("Location: saran.php?msg=Saran+berhasil+dihapus");
     exit;
 }
 
-// =================== AMBIL DATA UNTUK TAMPILAN ===================
+/*
+   =====================================
+   DATA UNTUK LIST & DETAIL
+   =====================================
+*/
 $search    = trim($_GET['search'] ?? '');
 $saranList = [];
+$detail    = null;
 
-if ($search !== '') {
-    $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
-    $sql  = "
-        SELECT * FROM saran
-        WHERE no_saran     LIKE '{$like}'
-           OR judul        LIKE '{$like}'
-           OR isi_saran    LIKE '{$like}'
-        ORDER BY tanggal_dikirim DESC, id DESC
-    ";
-} else {
-    $sql = "SELECT * FROM saran ORDER BY tanggal_dikirim DESC, id DESC";
+/* ----- LIST SARAN ----- */
+if ($action === 'list') {
+    if ($search !== '') {
+        $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
+        $sql  = "
+            SELECT * FROM saran
+            WHERE judul     LIKE '{$like}'
+               OR isi_saran LIKE '{$like}'
+            ORDER BY tanggal_dikirim DESC, id DESC
+        ";
+    } else {
+        $sql = "SELECT * FROM saran ORDER BY tanggal_dikirim DESC, id DESC";
+    }
+
+    $res = mysqli_query($conn, $sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        $saranList[] = $row;
+    }
 }
 
-$res = mysqli_query($conn, $sql);
-while ($row = mysqli_fetch_assoc($res)) {
-    $saranList[] = $row;
+/* ----- DETAIL SARAN ----- */
+if ($action === 'view' && isset($_GET['id'])) {
+    $id  = (int)$_GET['id'];
+    $res = mysqli_query($conn, "SELECT * FROM saran WHERE id = {$id} LIMIT 1");
+    $detail = mysqli_fetch_assoc($res);
+    if (!$detail) {
+        $message = "Data saran tidak ditemukan.";
+        $action  = 'list'; // fallback ke list kalau id tidak ada
+    }
 }
 
+/* ----- PESAN (NOTIF) ----- */
 if (isset($_GET['msg'])) {
     $message = htmlspecialchars($_GET['msg']);
 }
 
-// =================== DATA PROFIL (ATAS KANAN) ===================
+/*
+   =====================================
+   DATA PROFIL (ATAS KANAN)
+   =====================================
+*/
 $namaAdmin    = $_SESSION['nama'] ?? $_SESSION['username'] ?? 'Administrator Utama';
 $roleAdmin    = $_SESSION['role'] ?? 'Admin';
 $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
@@ -64,6 +98,7 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        /* --- Reset kecil & font --- */
         *{box-sizing:border-box;margin:0;padding:0}
         body{
             font-family:'Poppins',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
@@ -78,9 +113,9 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             position: fixed;
             left: 20px;
             top: 90px;
-            width: 220px;
-            height: calc(110vh - 175px);
-            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
+            width: 260px;
+            height: calc(100vh - 104px);
+            background: #5E63BB;
             padding: 24px 20px;
             color: white;
             border-radius: 20px;
@@ -97,6 +132,7 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             align-items: center;
             gap: 12px;
         }
+
         .sidebar-header div {
             color: #000000ff;
             font-weight: 600;
@@ -158,14 +194,17 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             height: 20px;
         }
 
-        /* ===== MAIN AREA ===== */
-        .main{
-            flex:1;
-            padding:18px 32px;
-            display:flex;
-            flex-direction:column;
-            margin-left:260px; /* karena sidebar fixed */
-        }
+        /* ===== MAIN ===== */
+        .main {
+  margin-top: -3px;
+  margin-left: 260px;
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column; /* agar child ditumpuk vertikal */
+  flex: 1;
+  min-width: 0;           /* biar flexing lebar, bukan terpotong overflow */
+}
+
 
         /* BAR ATAS: SEARCH DI TENGAH + PROFIL KANAN */
         .top-bar{
@@ -226,14 +265,17 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             color:#fff;
             overflow:hidden;
         }
-
-        .content-card{
-            background:#fff;
-            border-radius:18px;
-            padding:24px 28px;
-            box-shadow:0 8px 20px rgba(15,23,42,.06);
-            flex:1;
-        }
+        .content-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px 28px;
+  box-shadow: 0 8px 20px rgba(15,23,42,.06);
+  width: 100%;            /* lebar maksimum area parent (main) */
+  max-width: none;        /* nonaktifkan batas lebar, boleh dihapus atau set none */
+  margin: 0;              /* hilangkan margin auto supaya tidak di tengah dan kecil */
+  flex: 1;                /* jika parent flex, card akan meluas otomatis */
+  box-sizing: border-box; /* padding tetap dihitung agar desain tetap rapi */
+}
 
         .header-row{
             display:flex;
@@ -311,12 +353,62 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             background:#e5e7eb;
             display:block;
         }
+
+        /* ===== DETAIL SARAN ===== */
+        .detail-container{
+            background:#fff;
+            border-radius:18px;
+            padding:30px 40px;
+            box-shadow:0 8px 20px rgba(15,23,42,.06);
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+        }
+        .detail-inner{
+            max-width:700px;
+            width:100%;
+        }
+        .detail-back{
+            font-size:24px;
+            cursor:pointer;
+            margin-bottom:10px;
+        }
+        .detail-image{
+            width:100%;
+            max-height:420px;
+            object-fit:cover;
+            border-radius:18px;
+            margin-bottom:18px;
+            background:#e5e7eb;
+        }
+        .detail-date{
+            font-size:11px;
+            color:#6b7280;
+            margin-bottom:4px;
+        }
+        .detail-title{
+            font-size:16px;
+            font-weight:600;
+            margin-bottom:12px;
+        }
+        .detail-text{
+            font-size:13px;
+            line-height:1.6;
+        }
+
+        /* ===== SIMPLE SWEETALERT FIXES (no animations) =====
+           keep minimal styling so SweetAlert works normally and
+           doesn't lock the page when cancelled */
+        .swal2-container {
+            z-index: 100000 !important; /* normal high z-index but not insane */
+        }
+
     </style>
 </head>
 <body>
 <div class="app">
     <!-- SIDEBAR -->
-    <div class="sidebar">
+    <div class="sidebar">   
         <div class="sidebar-header">
             <img src="../assets/images/logo-nganjuk.png" alt="Logo Nganjuk">
             <div>Desa Banjardowo</div>
@@ -354,6 +446,7 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         <!-- BAR ATAS -->
         <div class="top-bar">
             <form method="get" class="search-input-wrapper">
+                <input type="hidden" name="action" value="list">
                 <span class="search-icon">🔍</span>
                 <input type="text" name="search" placeholder="Search"
                        value="<?php echo htmlspecialchars($search); ?>">
@@ -370,97 +463,134 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             </div>
         </div>
 
-        <div class="content-card">
-            <div class="header-row">
-                <div>
-                    <h2 class="page-title">Daftar Saran</h2>
-                    <div class="breadcrumb">Dashboard / Kotak Saran / Daftar Saran</div>
+        <?php if ($action === 'list'): ?>
+            <!-- ================= LIST SARAN ================= -->
+            <div class="content-card">
+                <div class="header-row">
+                    <div>
+                        <h2 class="page-title">Daftar Saran</h2>
+                        <div class="breadcrumb">Dashboard / Kotak Saran / Daftar Saran</div>
+                    </div>
                 </div>
-            </div>
 
-            <?php if ($message) : ?>
-                <div class="alert alert-info">
-                    <?php echo $message; ?>
-                </div>
-            <?php endif; ?>
+                <?php if ($message): ?>
+                    <div class="alert alert-info">
+                        <?php echo $message; ?>
+                    </div>
+                <?php endif; ?>
 
-            <table>
-                <thead>
-                <tr>
-                    <!-- header kosong untuk foto -->
-                    <th style="width:10%;"></th>
-                    <!-- header No tepat di atas angka -->
-                    <th style="width:6%;">No</th>
-                    <th style="width:22%;">Judul</th>
-                    <th style="width:18%;">Tanggal Dikirim</th>
-                    <th>Saran atau Kritik</th>
-                    <th class="aksi-col">Aksi</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php if (!$saranList): ?>
+                <table>
+                    <thead>
                     <tr>
-                        <td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">
-                            Belum ada data saran.
-                        </td>
+                        <th style="width:10%;"></th>
+                        <th style="width:6%;">No</th>
+                        <th style="width:22%;">Judul</th>
+                        <th style="width:18%;">Tanggal Dikirim</th>
+                        <th>Saran atau Kritik</th>
+                        <th class="aksi-col">Aksi</th>
                     </tr>
-                <?php else:
-                    $no = 1; // nomor urut otomatis 1,2,3,...
-                    foreach ($saranList as $row): ?>
+                    </thead>
+                    <tbody>
+                    <?php if (!$saranList): ?>
                         <tr>
-                            <!-- FOTO di kolom pertama -->
-                            <td>
-                                <?php if (!empty($row['foto'])): ?>
-                                    <img src="../<?php echo htmlspecialchars($row['foto']); ?>"
-                                         alt="foto"
-                                         class="foto-bulat">
-                                <?php else: ?>
-                                    <span class="foto-bulat"></span>
-                                <?php endif; ?>
-                            </td>
-
-                            <!-- NO di kolom kedua -->
-                            <td><?php echo $no++; ?></td>
-
-                            <!-- JUDUL -->
-                            <td class="text-judul">
-                                <?php echo htmlspecialchars($row['judul']); ?>
-                            </td>
-
-                            <!-- TANGGAL DIKIRIM -->
-                            <td class="text-tanggal">
-                                <?php
-                                $tgl = $row['tanggal_dikirim'] ?? '';
-                                if ($tgl) {
-                                    echo date('d F Y', strtotime($tgl));
-                                }
-                                ?>
-                            </td>
-
-                            <!-- ISI SARAN / KRITIK -->
-                            <td>
-                                <?php echo nl2br(htmlspecialchars($row['isi_saran'])); ?>
-                            </td>
-
-                            <!-- AKSI (HAPUS) -->
-                            <td class="aksi-col">
-                                <button class="icon-btn delete"
-                                        title="Hapus"
-                                        onclick="confirmDelete('saran.php?action=delete&id=<?php echo $row['id']; ?>')">
-                                    🗑
-                                </button>
+                            <td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">
+                                Belum ada data saran.
                             </td>
                         </tr>
-                    <?php endforeach;
-                endif; ?>
-                </tbody>
-            </table>
-        </div>
+                    <?php else:
+                        $no = 1;
+                        foreach ($saranList as $row): ?>
+                            <tr>
+                                <!-- FOTO -->
+                                <td>
+                                    <?php if (!empty($row['foto_sampul'])): ?>
+                                        <img src="../<?php echo htmlspecialchars($row['foto_sampul']); ?>"
+                                             alt="foto"
+                                             class="foto-bulat">
+                                    <?php else: ?>
+                                        <span class="foto-bulat"></span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <!-- NO -->
+                                <td><?php echo $no++; ?></td>
+
+                                <!-- JUDUL (bisa di klik ke detail) -->
+                                <td class="text-judul">
+                                    <a href="saran.php?action=view&id=<?php echo $row['id']; ?>">
+                                        <?php echo htmlspecialchars($row['judul']); ?>
+                                    </a>
+                                </td>
+
+                                <!-- TANGGAL -->
+                                <td class="text-tanggal">
+                                    <?php
+                                    $tgl = $row['tanggal_dikirim'] ?? '';
+                                    if ($tgl) {
+                                        echo date('d F Y', strtotime($tgl));
+                                    }
+                                    ?>
+                                </td>
+
+                                <!-- ISI SARAN (singkat) -->
+                                <td>
+                                    <?php echo nl2br(htmlspecialchars($row['isi_saran'])); ?>
+                                </td>
+
+                                <!-- AKSI HAPUS -->
+                                <td class="aksi-col">
+                                    <button class="icon-btn delete"
+                                            title="Hapus"
+                                            onclick="confirmDelete('saran.php?action=delete&id=<?php echo $row['id']; ?>')">
+                                        🗑
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach;
+                    endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+        <?php elseif ($action === 'view' && $detail): ?>
+            <!-- ================= DETAIL SARAN ================= -->
+            <div class="detail-container">
+                <div class="detail-inner">
+                    <!-- tombol kembali seperti ikon panah di desain -->
+                    <div class="detail-back" onclick="window.location.href='saran.php'">⟵</div>
+
+                    <?php if (!empty($detail['foto_sampul'])): ?>
+                        <img src="../<?php echo htmlspecialchars($detail['foto_sampul']); ?>"
+                             alt="Foto Saran"
+                             class="detail-image">
+                    <?php else: ?>
+                        <div class="detail-image"></div>
+                    <?php endif; ?>
+
+                    <div class="detail-date">
+                        <?php
+                        $tgl = $detail['tanggal_dikirim'] ?? '';
+                        if ($tgl) {
+                            echo date('d F Y', strtotime($tgl));
+                        }
+                        ?>
+                    </div>
+
+                    <div class="detail-title">
+                        <?php echo htmlspecialchars($detail['judul']); ?>
+                    </div>
+
+                    <div class="detail-text">
+                        <?php echo nl2br(htmlspecialchars($detail['isi_saran'])); ?>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
 <script>
-    // Popup hapus pakai SweetAlert2
+    // Popup hapus pakai SweetAlert2 (versi normal, tanpa animasi api)
     function confirmDelete(url) {
         Swal.fire({
             title: 'Hapus Saran?',
@@ -470,15 +600,21 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             confirmButtonColor: '#e11d48',
             cancelButtonColor: '#6b7280',
             confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal'
+            cancelButtonText: 'Batal',
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            backdrop: true
         }).then((result) => {
+            // Jika dikonfirmasi -> arahkan ke URL hapus
             if (result.isConfirmed) {
                 window.location.href = url;
             }
+            // Jika batal atau klik luar/esc -> SweetAlert otomatis menutup
+            // (tidak perlu panggil Swal.close(); karena SweetAlert menutup sendiri)
         });
     }
 
-    // toast kalau ada pesan
+    // Toast sukses (menggunakan SweetAlert standar)
     <?php if (!empty($message)): ?>
     Swal.fire({
         toast: true,
