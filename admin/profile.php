@@ -10,10 +10,39 @@ if (!isset($_SESSION['user_id'])) {
 $uid = intval($_SESSION['user_id']);
 $msg = "";
 
-$res = mysqli_query($conn, "SELECT * FROM users WHERE id=$uid");
+// Ambil data user
+$res  = mysqli_query($conn, "SELECT * FROM users WHERE id = $uid");
 $user = mysqli_fetch_assoc($res);
-?>
 
+// Antisipasi jika data user tidak ada
+if (!$user) {
+    die("Data pengguna tidak ditemukan.");
+}
+
+// ====== HANDLE DATA TEKS ======
+$nama_lengkap  = !empty($user['nama_lengkap']) ? $user['nama_lengkap'] : 'Administrator';
+$username      = !empty($user['username']) ? $user['username'] : '-';
+$email         = !empty($user['email']) ? $user['email'] : '-';
+$jenis_kelamin = !empty($user['jenis_kelamin']) ? $user['jenis_kelamin'] : '-';
+$no_telp       = !empty($user['no_telp']) ? $user['no_telp'] : '-';
+$alamat        = !empty($user['alamat']) ? $user['alamat'] : '-';
+
+// ====== HANDLE COVER (LONGBLOB) ======
+if (!empty($user['cover'])) {
+    // asumsikan jpeg, kalau kamu pakai png tinggal ganti image/png
+    $coverStyle = "background-image: url('data:image/jpeg;base64," . base64_encode($user['cover']) . "');";
+} else {
+    // fallback ke file biasa
+    $coverStyle = "background-image: url('../uploads/cover-default.jpg');";
+}
+
+// ====== HANDLE FOTO PROFIL (LONGBLOB) ======
+if (!empty($user['foto'])) {
+    $fotoSrc = "data:image/jpeg;base64," . base64_encode($user['foto']);
+} else {
+    $fotoSrc = "../uploads/default.png";   // fallback gambar default
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -25,7 +54,7 @@ html, body {
     height: 100vh;
     margin: 0;
     padding: 0;
-    overflow: hidden;              /* Hilangkan semua scroll */
+    overflow: hidden;
     font-family: 'Inter', sans-serif;
     background: #f7f8fa;
 }
@@ -59,7 +88,7 @@ body {
     gap: 10px;
     z-index:20;
 }
-.sidebar-header img { width: 36px; height: 36px;}
+.sidebar-header img { width: 36px; height: 36px; }
 
 .menu {
     list-style: none;
@@ -75,10 +104,11 @@ body {
     align-items: center;
     font-size: 15px;
 }
-.menu a.active { background: #38BDF8;}
-.menu a:hover { background: #3047d3;}
+.menu a.active { background: #38BDF8; }
+.menu a:hover { background: #3047d3; }
+
 .main {
-    margin-left: 230px;         /* Sidebar + gap */
+    margin-left: 230px;
     padding: 0 20px;
     min-height: 100vh;
     height: 100vh;
@@ -88,19 +118,20 @@ body {
     box-sizing: border-box;
     justify-content: center;
 }
+
 .profile-header {
     width: 1427px;
     height: 250px;
     left: 25px;
     top: -23px;
-    position: relative;   /* penting ditambahkan! */
+    position: relative;
     background-size: cover;
+    background-position: center;
     border-radius: 10px 10px 0 0;
     margin: 12px 0 0 0;
     box-shadow: 0 2px 8px rgba(60,60,60,0.10);
     display: block;
 }
-
 
 .profile-box {
     display: flex;
@@ -144,8 +175,8 @@ body {
     font-weight: bold;
     display: block;
     box-shadow: 0 3px 15px rgba(230,160,24,0.06);
-    margin-left: 2000px;   
-    margin-top: -80px;   
+    margin-left: 2000px;
+    margin-top: -80px;
 }
 .btn-edit-profile:hover { background: #ffb743; }
 
@@ -171,66 +202,12 @@ body {
   font-size: 17px;
   gap: 16px;
 }
-.info-item img {
-  display: inline-block;
-}
-.info-item span {
-  font-size: 17px;
-  color: #333;
-}
-
-.info-item p {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
-}
-
-
-.alert {
-    background: #f8ffe3;
-    color: #7f9a4d;
-    border: 1px solid #e5f5b2;
-    padding: 6px 12px;
-    border-radius: 8px;
-    display: inline-block;
-    margin: 10px 0 12px;
-    font-size:14px;
-}
-form {
-    margin: 0 auto;
-    background: #fff;
-    padding: 18px 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 18px rgba(80,80,80,.07);
-    max-width: 340px;
-    width: 100%;
-}
-form label { font-weight: 500; display: block; margin-bottom: 6px; margin-top: 12px; }
-form input, form textarea, form select {
-    width: 100%;
-    border-radius: 7px;
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    border: 1px solid #ddd;
-    font-size: 15px;
-}
-form textarea { min-height: 38px; }
-form button[type="submit"] {
-    background: #3e479e;
-    color: #fff;
-    border-radius: 7px;
-    font-size: 15px;
-    font-weight: 600;
-    padding: 10px 20px;
-    margin: 17px auto 0 auto;
-    border: none;
-    display: block;
-    cursor: pointer;
-}
+.info-item img { display: inline-block; }
+.info-item span { font-size: 17px; color: #333; }
 
 .logout {
   margin-top: 30px;
-  padding: 0 0 0 6px;   /* sesuaikan padding kiri/gap biar rapi */
+  padding: 0 0 0 6px;
 }
 .logout a, .logout a:visited {
   display: flex;
@@ -247,7 +224,6 @@ form button[type="submit"] {
   background: #3047d3;
   color: #ffe28f !important;
 }
-
 .logout img {
   width: 20px;
   height: 20px;
@@ -256,8 +232,6 @@ form button[type="submit"] {
   display: inline-block;
 }
 
-
-form button[type="submit"]:hover { background: #38BDF8; }
 @media (max-width:900px){
     .info-grid { grid-template-columns: repeat(2, 1fr);}
     .main { padding: 8px 6px;}
@@ -311,36 +285,49 @@ form button[type="submit"]:hover { background: #38BDF8; }
     </li>
   </ul>
 
-<div class="logout">
-  <a href="../logout.php">
-    <img src="../assets/icons/logout1.png" alt="Keluar">
-    Keluar
-  </a>
-</div>
+  <div class="logout">
+    <a href="../logout.php">
+      <img src="../assets/icons/logout1.png" alt="Keluar">
+      Keluar
+    </a>
+  </div>
 </aside>
 
-
-
-
 <div class="main">
-    <!-- Header Cover User -->
-    <div class="profile-header" style="background-image: url('../uploads/<?php echo $user['cover'] ?: 'cover-default.jpg'; ?>');"></div>
+    <!-- Header Cover User (LONGBLOB / default file) -->
+    <div class="profile-header" style="<?php echo $coverStyle; ?>"></div>
 
     <div class="profile-box">
-    <img class="profile-photo" src="../uploads/<?php echo $user['foto'] ?: 'default.png'; ?>">
-    <h2><?php echo $user['nama_lengkap']; ?></h2>
-    <button class="btn-edit-profile" onclick="window.location.href='edit_profile.php'">Edit Profil</button>
-</div>
+        <!-- Foto Profil (LONGBLOB / default file) -->
+        <img class="profile-photo" src="<?php echo $fotoSrc; ?>" alt="Foto Profil">
+        <h2><?php echo htmlspecialchars($nama_lengkap); ?></h2>
+        <button class="btn-edit-profile" onclick="window.location.href='edit_profile.php'">Edit Profil</button>
+    </div>
 
-
-    <?php if($msg) echo "<p class='alert'>$msg</p>"; ?>
+    <?php if($msg) echo "<p class='alert'>".htmlspecialchars($msg)."</p>"; ?>
 
     <div class="info-grid">
-  <div class="info-item item-1"><img src="../assets/icons/icon_user.png" width="28" /><span><?php echo $user['username']; ?></span></div>
-  <div class="info-item item-2"><img src="../assets/icons/gmail.png" width="28" /><span><?php echo $user['email']; ?></span></div>
-  <div class="info-item item-3"><img src="../assets/icons/jenis_kelamin.png" width="28" /><span><?php echo $user['jenis_kelamin']; ?></span></div>
-  <div class="info-item item-4"><img src="../assets/icons/telpon.png" width="28" /><span><?php echo $user['no_telp']; ?></span></div>
-  <div class="info-item item-5"><img src="../assets/icons/google-maps.png" width="28" /><span><?php echo $user['alamat']; ?></span></div>
+        <div class="info-item item-1">
+            <img src="../assets/icons/icon_user.png" width="28" />
+            <span><?php echo htmlspecialchars($username); ?></span>
+        </div>
+        <div class="info-item item-2">
+            <img src="../assets/icons/gmail.png" width="28" />
+            <span><?php echo htmlspecialchars($email); ?></span>
+        </div>
+        <div class="info-item item-3">
+            <img src="../assets/icons/jenis_kelamin.png" width="28" />
+            <span><?php echo htmlspecialchars($jenis_kelamin); ?></span>
+        </div>
+        <div class="info-item item-4">
+            <img src="../assets/icons/telpon.png" width="28" />
+            <span><?php echo htmlspecialchars($no_telp); ?></span>
+        </div>
+        <div class="info-item item-5">
+            <img src="../assets/icons/google-maps.png" width="28" />
+            <span><?php echo htmlspecialchars($alamat); ?></span>
+        </div>
+    </div>
 </div>
 
 </body>
