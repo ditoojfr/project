@@ -22,7 +22,6 @@ function getStrukturDesa($conn) {
     return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
 }
 
-// Ambil data
 $kegiatanList = getAllKegiatan($conn);
 $prestasiList = getAllPrestasi($conn);
 $strukturDesa = getStrukturDesa($conn);
