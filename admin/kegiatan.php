@@ -777,53 +777,57 @@ td {
      =================================================== -->
 <?php if($mode != "list"): ?>
 
+<form method="POST" enctype="multipart/form-data">
 <div class="form-container">
 
     <!-- ================= LEFT FORM ================= -->
     <div class="form-left">
-  <form method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
+        <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
 
-    <label>Nama Kegiatan Desa</label>
-    <input type="text" name="judul" required value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
+        <label>Nama Kegiatan Desa</label>
+        <input type="text" name="judul" required
+               value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
 
-    <label>Lokasi</label>
-    <input type="text" name="lokasi" required value="<?= htmlspecialchars($edit['lokasi'] ?? '') ?>">
+        <label>Lokasi</label>
+        <input type="text" name="lokasi" required
+               value="<?= htmlspecialchars($edit['lokasi'] ?? '') ?>">
 
-    <label>Deskripsi</label>
-    <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
+        <label>Deskripsi</label>
+        <textarea name="deskripsi" rows="5">
+            <?= htmlspecialchars($edit['deskripsi'] ?? '') ?>
+        </textarea>
 
-    <label>Tanggal</label>
-    <input type="date" name="tanggal" required value="<?= $edit['tanggal'] ?? '' ?>">
-
-    <!-- Upload foto box tetap di sini -->
-    <button class="btn-simpan" type="submit" name="save_kegiatan">
-        <i class="fa-solid fa-plus"></i>
-        <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
-    </button>
-    <a href="kegiatan.php" class="back-btn">&larr; Kembali</a>
-</form>
-
+        <label>Tanggal</label>
+        <input type="date" name="tanggal" required
+               value="<?= $edit['tanggal'] ?? '' ?>">
     </div>
 
     <!-- ================= RIGHT UPLOAD IMAGE ================= -->
-    <div class="upload-box">
-    <!-- Preview foto (jika ada) -->
-    <?php if ($mode == "edit" && $edit['foto']): ?>
-        <img class="preview-img"
-             src="data:<?= $edit['foto_type'] ?>;base64,<?= base64_encode($edit['foto']) ?>"
-             alt="Preview">
-    <?php endif; ?>
+<div class="upload-box" id="uploadBox">
+    <!-- Preview foto -->
+    <img 
+        id="previewImg"
+        class="preview-img"
+        src="<?php 
+            if ($mode == 'edit' && !empty($edit['foto'])) {
+                echo 'data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto']);
+            }
+        ?>"
+        style="<?php echo ($mode == 'edit' && !empty($edit['foto'])) ? 'display:block;' : 'display:none;'; ?>"
+        alt="Preview"
+    />
 
-    <!-- Overlay (tetap tampil walau ada gambar preview) -->
+    <!-- Overlay: ikon + teks -->
     <div class="upload-overlay">
         <i class="fa-solid fa-cloud-arrow-up"></i>
         <span>
-            <?php echo ($mode == "edit" && $edit['foto']) ? 'Klik untuk Ganti Gambar' : 'Pilih Image'; ?>
+            <?= ($mode == "edit" && !empty($edit['foto'])) 
+                ? 'Klik untuk Ganti Gambar'
+                : 'Pilih Image'; ?>
         </span>
     </div>
 
-    <!-- INPUT FILE (bukan label!) -->
+    <!-- Input file -->
     <input 
         type="file" 
         id="uploadFoto" 
@@ -833,7 +837,19 @@ td {
     >
 </div>
 
+
+
+</div> <!-- end form-container -->
+
+<button class="btn-simpan" type="submit" name="save_kegiatan">
+    <i class="fa-solid fa-plus"></i>
+    <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
+</button>
+<a href="kegiatan.php" class="back-btn">&larr; Kembali</a>
+</form>
+
 <?php endif; ?>
+
 
 
 <!-- ===================================================
@@ -918,5 +934,28 @@ cancelLogout.onclick = function(){
     }, 180); // menunggu animasi pop-out
 };
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput  = document.getElementById('uploadFoto');
+    const previewImg = document.getElementById('previewImg');
+
+    if (!fileInput || !previewImg) return;
+
+    fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImg.src = e.target.result;    // ganti gambar preview
+            previewImg.style.display = 'block';  // pastikan kelihatan
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>
+
+
 </body>
 </html>

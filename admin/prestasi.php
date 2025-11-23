@@ -65,36 +65,46 @@ if(isset($_GET['edit'])){
    3. SIMPAN DATA (TAMBAH / EDIT)
    ====================================================== */
 if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_prestasi'])){
-    $judul = mysqli_real_escape_string($conn, $_POST['judul']);
-    $bidang = mysqli_real_escape_string($conn, $_POST['bidang']);
+    $judul         = mysqli_real_escape_string($conn, $_POST['judul']);
+    $bidang        = mysqli_real_escape_string($conn, $_POST['bidang']);
     $penyelenggara = mysqli_real_escape_string($conn, $_POST['penyelenggara']);
-    $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
-    $tanggal = $_POST['tanggal'];
-    // ...foto seperti sebelumnya...
+    $deskripsi     = mysqli_real_escape_string($conn, $_POST['deskripsi']);
+    $tanggal       = $_POST['tanggal'];
+
+    // =============== UPLOAD FOTO ===============
+    $foto  = null;
+    $ftype = null;
+
+    if(isset($_FILES['foto']) && $_FILES['foto']['size'] > 0){
+        $foto  = addslashes(file_get_contents($_FILES['foto']['tmp_name']));
+        $ftype = $_FILES['foto']['type'];
+    }
 
     // MODE EDIT
     if(!empty($_POST['id'])){
         $id = intval($_POST['id']);
-        if($foto){
+
+        if($foto){ // kalau upload foto baru
             mysqli_query($conn, "UPDATE prestasi SET 
-                judul='$judul',
-                bidang='$bidang',
-                penyelenggara='$penyelenggara',
-                deskripsi='$deskripsi',
-                tanggal='$tanggal',
-                foto='$foto',
-                foto_type='$ftype'
+                judul         ='$judul',
+                bidang        ='$bidang',
+                penyelenggara ='$penyelenggara',
+                deskripsi     ='$deskripsi',
+                tanggal       ='$tanggal',
+                foto          ='$foto',
+                foto_type     ='$ftype'
             WHERE id=$id");
-        } else {
+        } else { // tanpa ganti foto
             mysqli_query($conn, "UPDATE prestasi SET 
-                judul='$judul',
-                bidang='$bidang',
-                penyelenggara='$penyelenggara',
-                deskripsi='$deskripsi',
-                tanggal='$tanggal'
+                judul         ='$judul',
+                bidang        ='$bidang',
+                penyelenggara ='$penyelenggara',
+                deskripsi     ='$deskripsi',
+                tanggal       ='$tanggal'
             WHERE id=$id");
         }
-    } else { // TAMBAH
+    } else {
+        // MODE TAMBAH
         mysqli_query($conn, "INSERT INTO prestasi 
             (judul, bidang, penyelenggara, deskripsi, tanggal, foto, foto_type) 
             VALUES (
@@ -107,9 +117,11 @@ if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_prestasi'])){
                 ".($ftype ? "'$ftype'" : "NULL")."
             )");
     }
+
     header("Location: prestasi.php");
     exit;
 }
+
 
 
 /* ======================================================
@@ -492,6 +504,7 @@ td {
     position: relative;
     overflow: hidden;
     background: #fff;
+    
 }
 
 .upload-box:hover {
@@ -730,6 +743,54 @@ $current_page = basename($_SERVER['PHP_SELF']);
 </div>
 
 
+<script>
+const logoutBtn = document.getElementById("logoutBtn");
+const logoutModal = document.getElementById("logoutModal");
+const cancelLogout = document.getElementById("cancelLogout");
+const modalContent = document.querySelector(".modal-content");
+
+logoutBtn.onclick = function(e){
+    e.preventDefault();
+    logoutModal.classList.add("show");
+    setTimeout(() => {
+        modalContent.classList.add("show");
+    }, 10);
+};
+
+cancelLogout.onclick = function(){
+    modalContent.classList.remove("show");
+    setTimeout(() => {
+        logoutModal.classList.remove("show");
+    }, 180);
+};
+</script>
+
+<!-- ========== SCRIPT PREVIEW FOTO ========== -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput  = document.getElementById('uploadFoto');
+    const previewImg = document.getElementById('previewImg');
+
+    if (!fileInput || !previewImg) return;
+
+    fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImg.src = e.target.result;   // ganti gambar jadi gambar baru
+            previewImg.style.display = 'block'; // pastikan kelihatan
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>
+
+
+
+
+
 <div class="main">
 <div class="top-bar">
   <div class="right-group">
@@ -781,29 +842,77 @@ $current_page = basename($_SERVER['PHP_SELF']);
      5. FORM TAMBAH / EDIT
      =================================================== -->
 <?php if($mode != "list"): ?>
-<div class="form-container">
+<form method="POST" enctype="multipart/form-data">
+    <div class="form-container">
 
-    <!-- ================= LEFT FORM ================= -->
-    <div class="form-left">
-        <form method="POST" enctype="multipart/form-data">
-    <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
+        <!-- ================= LEFT FORM ================= -->
+        <div class="form-left">
+            <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
 
-    <label>Nama Prestasi</label>
-    <input type="text" name="judul" required value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
+            <label>Nama Prestasi</label>
+            <input type="text" name="judul" required
+                   value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
 
-    <label>Bidang</label>
-    <input type="text" name="bidang" required value="<?= htmlspecialchars($edit['bidang'] ?? '') ?>">
+            <label>Bidang</label>
+            <input type="text" name="bidang" required
+                   value="<?= htmlspecialchars($edit['bidang'] ?? '') ?>">
 
-    <label>Penyelenggara</label>
-    <input type="text" name="penyelenggara" value="<?= htmlspecialchars($edit['penyelenggara'] ?? '') ?>">
+            <label>Penyelenggara</label>
+            <input type="text" name="penyelenggara"
+                   value="<?= htmlspecialchars($edit['penyelenggara'] ?? '') ?>">
 
-    <label>Deskripsi</label>
-    <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
+            <label>Deskripsi</label>
+            <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
 
-    <label>Tanggal</label>
-    <input type="date" name="tanggal" required value="<?= $edit['tanggal'] ?? '' ?>">
+            <label>Tanggal</label>
+            <input type="date" name="tanggal" required
+                   value="<?= $edit['tanggal'] ?? '' ?>">
+        </div>
 
-    <!-- Upload image box jangan lupa -->
+        <!-- ================= RIGHT UPLOAD IMAGE ================= -->
+        <div class="form-right">
+            <label>Upload Image</label>
+
+            <div class="upload-box" id="uploadBox">
+                <!-- Preview foto -->
+                <img 
+                    id="previewImg"
+                    class="preview-img"
+                    src="<?php 
+                        if ($mode == 'edit' && !empty($edit['foto'])) {
+                            echo 'data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto']);
+                        }
+                    ?>"
+                    style="<?=
+                        ($mode == 'edit' && !empty($edit['foto']))
+                        ? 'display:block;'
+                        : 'display:none;'
+                    ?>"
+                    alt="Preview"
+                />
+
+                <!-- Overlay: ikon + teks -->
+                <div class="upload-overlay">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>
+                        <?= ($mode == "edit" && !empty($edit['foto'])) 
+                            ? 'Klik untuk Ganti Gambar'
+                            : 'Pilih Image'; ?>
+                    </span>
+                </div>
+
+                <!-- Input file -->
+                <input 
+                    type="file" 
+                    id="uploadFoto" 
+                    name="foto" 
+                    class="upload-trigger" 
+                    accept="image/*"
+                >
+            </div>
+        </div>
+
+    </div> <!-- end .form-container -->
 
     <button class="btn-simpan" type="submit" name="save_prestasi">
         <i class="fa-solid fa-plus"></i>
@@ -811,43 +920,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </button>
     <a href="prestasi.php" class="back-btn">&larr; Kembali</a>
 </form>
-
-
-    </div>
-
-    <!-- ================= RIGHT UPLOAD IMAGE ================= -->
-    <div class="form-right">
-
-    <label>Upload Image</label>
-
-    <!-- Upload Box -->
-<div class="upload-box">
-    <!-- Preview foto (jika ada) -->
-    <?php if ($mode == "edit" && $edit['foto']): ?>
-        <img class="preview-img"
-             src="data:<?= $edit['foto_type'] ?>;base64,<?= base64_encode($edit['foto']) ?>"
-             alt="Preview">
-    <?php endif; ?>
-
-    <!-- Overlay (tetap tampil walau ada gambar preview) -->
-    <div class="upload-overlay">
-        <i class="fa-solid fa-cloud-arrow-up"></i>
-        <span>
-            <?php echo ($mode == "edit" && $edit['foto']) ? 'Klik untuk Ganti Gambar' : 'Pilih Image'; ?>
-        </span>
-    </div>
-
-    <!-- INPUT FILE (bukan label!) -->
-    <input 
-        type="file" 
-        id="uploadFoto" 
-        name="foto" 
-        class="upload-trigger" 
-        accept="image/*"
-    >
-</div>
-
 <?php endif; ?>
+
+
 
 <!-- ===================================================
      6. LIST DATA
@@ -939,4 +1014,7 @@ cancelLogout.onclick = function(){
 };
 </script>
 </body>
+
+
+
 </html>
