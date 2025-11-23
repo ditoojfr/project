@@ -33,6 +33,7 @@ body {
     min-height: 100vh;
     width: 100vw;
 }
+
 /* ===== SIDEBAR ===== */
 .sidebar {
   position: fixed;
@@ -45,6 +46,8 @@ body {
   color: white;
   border-radius: 20px;
 }
+
+/* Logo dan desa banjardowo */
 .sidebar-header {
     position: fixed;
     top: 20px; left: 20px;
@@ -57,6 +60,7 @@ body {
     z-index:20;
 }
 .sidebar-header img { width: 36px; height: 36px;}
+
 .menu {
     list-style: none;
     padding: 0; margin: 0;
@@ -85,25 +89,30 @@ body {
     justify-content: center;
 }
 .profile-header {
-    width: 98%;
-    height: 110px;
-    background: url('../assets/images/logo-nganjuk.png') center center no-repeat;
+    width: 1427px;
+    height: 250px;
+    left: 25px;
+    top: -23px;
+    position: relative;   /* penting ditambahkan! */
     background-size: cover;
     border-radius: 10px 10px 0 0;
     margin: 12px 0 0 0;
     box-shadow: 0 2px 8px rgba(60,60,60,0.10);
     display: block;
 }
+
+
 .profile-box {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: -45px;
+    margin-top: -120px;
     margin-bottom: 10px;
+    margin-left: -900px;
 }
 .profile-photo {
-    width: 100px;
-    height: 100px;
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
     border: 4px solid #fff;
     margin-bottom: 3px;
@@ -135,23 +144,48 @@ body {
     font-weight: bold;
     display: block;
     box-shadow: 0 3px 15px rgba(230,160,24,0.06);
+    margin-left: 2000px;   
+    margin-top: -80px;   
 }
 .btn-edit-profile:hover { background: #ffb743; }
+
 .info-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    justify-items: center;
-    gap: 8px 14px;
-    margin: 10px 0 6px 0;
-    width: 100%;
-    max-width: 740px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 28px 100px;
+  width: 700px;
+  margin: 48px auto 0 auto;
+  position: relative;
 }
+
+.item-1 { grid-row: 1; grid-column: 1; margin-left: -50px; }
+.item-2 { grid-row: 1; grid-column: 2; margin-left: 100px; }
+.item-3 { grid-row: 2; grid-column: 1; margin-left: -50px; margin-top: 40px; }
+.item-4 { grid-row: 2; grid-column: 2; margin-left: 100px; margin-top: 40px; }
+.item-5 { grid-row: 3; grid-column: 1 / span 2; margin-left: 220px; margin-top: 40px; }
+
 .info-item {
-    text-align: center;
-    font-size: 15px;
+  display: flex;
+  align-items: center;
+  font-size: 17px;
+  gap: 16px;
 }
-.info-item img { display:block; margin:0 auto 10px auto;}
-.info-item p { margin: 0; font-size: 15px; color: #222; font-weight: 500; }
+.info-item img {
+  display: inline-block;
+}
+.info-item span {
+  font-size: 17px;
+  color: #333;
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+
 .alert {
     background: #f8ffe3;
     color: #7f9a4d;
@@ -289,23 +323,25 @@ form button[type="submit"]:hover { background: #38BDF8; }
 
 
 <div class="main">
-    <div class="profile-header"></div>
+    <!-- Header Cover User -->
+    <div class="profile-header" style="background-image: url('../uploads/<?php echo $user['cover'] ?: 'cover-default.jpg'; ?>');"></div>
+
     <div class="profile-box">
-        <img class="profile-photo" src="../uploads/<?php echo $user['foto'] ?: 'default.png'; ?>">
-        <h2><?php echo $user['nama_lengkap']; ?></h2>
-        <p>@<?php echo $user['username']; ?></p>
-    </div>
+    <img class="profile-photo" src="../uploads/<?php echo $user['foto'] ?: 'default.png'; ?>">
+    <h2><?php echo $user['nama_lengkap']; ?></h2>
+    <button class="btn-edit-profile" onclick="window.location.href='edit_profile.php'">Edit Profil</button>
+</div>
+
+
     <?php if($msg) echo "<p class='alert'>$msg</p>"; ?>
 
-    <button class="btn-edit-profile" onclick="window.location.href='edit_profile.php'">Edit Profil</button>
-
     <div class="info-grid">
-        <div class="info-item"><img src="../assets/icons/icon_user.png" width="28" /><p><?php echo $user['username']; ?></p></div>
-        <div class="info-item"><img src="../assets/icons/gmail.png" width="28" /><p><?php echo $user['email']; ?></p></div>
-        <div class="info-item"><img src="../assets/icons/jenis_kelamin.png" width="28" /><p><?php echo $user['jenis_kelamin']; ?></p></div>
-        <div class="info-item"><img src="../assets/icons/telpon.png" width="28" /><p><?php echo $user['no_telp']; ?></p></div>
-        <div class="info-item"><img src="../assets/icons/google-maps.png" width="28" /><p><?php echo $user['alamat']; ?></p></div>
-    </div>
+  <div class="info-item item-1"><img src="../assets/icons/icon_user.png" width="28" /><span><?php echo $user['username']; ?></span></div>
+  <div class="info-item item-2"><img src="../assets/icons/gmail.png" width="28" /><span><?php echo $user['email']; ?></span></div>
+  <div class="info-item item-3"><img src="../assets/icons/jenis_kelamin.png" width="28" /><span><?php echo $user['jenis_kelamin']; ?></span></div>
+  <div class="info-item item-4"><img src="../assets/icons/telpon.png" width="28" /><span><?php echo $user['no_telp']; ?></span></div>
+  <div class="info-item item-5"><img src="../assets/icons/google-maps.png" width="28" /><span><?php echo $user['alamat']; ?></span></div>
 </div>
+
 </body>
 </html>
