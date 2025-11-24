@@ -86,11 +86,8 @@ if (!$user) {
 
 // === Siapkan background cover (LONGBLOB -> base64) ===
 if (!empty($user['cover'])) {
-    // asumsikan gambar umum, pakai image/jpeg (kalau mau lebih rapi bisa simpan mime type di kolom terpisah)
     $coverStyle = "background-image: url('data:image/jpeg;base64," . base64_encode($user['cover']) . "');";
-
 } else {
-    // fallback pakai file default
     $coverStyle = "background-image: url('../uploads/cover-default.jpg')";
 }
 
@@ -98,143 +95,280 @@ if (!empty($user['cover'])) {
 if (!empty($user['foto'])) {
     $fotoSrc = "data:image/jpeg;base64," . base64_encode($user['foto']);
 } else {
-    $fotoSrc = "../uploads/default.png"; // fallback ke file default
+    $fotoSrc = "../uploads/default.png";
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <title>Edit Profil</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
-<!-- CSS EDIT PROFIL MODERN/FLEXIBLE -->
 <style>
-body{margin:0;padding:0;background:#f7f8fa;font-family:'Inter',sans-serif;}
+body{
+    margin:0;
+    padding:0;
+    background:#ffffff;
+    font-family:'Inter',sans-serif;
+}
+
+/* WRAPPER HALAMAN */
 .container-profile-edit {
-    max-width: 1100px;
-    margin: 38px auto;
-    background: #fff;
-    border-radius: 10px;
+    max-width: 100%;              /* FULL WIDTH */
+    margin: 0 0 40px 0;           /* tidak center lagi */
     padding-bottom: 38px;
 }
 
-/* Logo dan desa banjardowo */
+/* Logo dan desa banjardowo (pojok kiri atas) */
 .sidebar-header {
-    position: fixed;
-    top: 20px; left: 20px;
-    width: 170px;
-    background: transparent;
-    padding: 0;
+    position: relative;
+    padding: 20px 30px 15px 30px;  /* atas, kanan, bawah, kiri */
     display: flex;
     align-items: center;
     gap: 10px;
-    z-index:20;
+    justify-content: flex-start;   /* tetap kiri */
+    margin-bottom: 0;              /* cover langsung di bawahnya */
 }
-.sidebar-header img { width: 36px; height: 36px;}
+.sidebar-header img {
+    width: 42px;
+    height: 42px;
+}
+.sidebar-header .title {
+    font-size: 20px;
+    font-weight: 600;
+}
 
+/* COVER DI BAWAH HEADER */
 .cover-edit {
     width: 100%;
-    height: 190px;
+    height: 260px;
     background-size: cover;
-    background-position: center; /* ← Tambahan */
-    border-radius: 10px 10px 0 0;
+    background-position: center;
+    margin: 0;
+    border-radius: 0;
     position: relative;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-}
-.cover-btn-edit {
-    position: absolute; bottom: 18px; right: 26px;
-    background: rgba(0,0,0,0.16); color: #fff; border: none;
-    display: flex; align-items: center; gap: 8px;
-    border-radius: 8px; font-size: 15px; padding: 7px 15px; cursor: pointer;
 }
 
+.cover-btn-edit {
+    position: absolute;
+    bottom: 18px;
+    right: 26px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 20px;
+    font-size: 13px;
+    padding: 7px 16px;
+    cursor: pointer;
+}
+.cover-btn-edit i{font-size:13px;}
+
+/* HEADER: AVATAR + TEKS */
 .profile-edit-head-row {
     display: flex;
     align-items: center;
-    gap: 22px;
-    margin-left: 38px;
-    margin-top: -60px; /* avatar naik ke header */
+    gap: 26px;
+    margin-left: 60px;
+    margin-top: -28px;
+}
+
+/* Bungkus avatar untuk ikon pensil */
+.avatar-box{
+    position:relative;
+    width:140px;
+    height:140px;
+    cursor:pointer;
 }
 .avatar-edit-img {
-    width: 126px; height: 126px;
+    width: 140px; height: 140px;
     border-radius: 50%;
     border: 4px solid #fff;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.11);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.15);
     object-fit: cover;
     background: #fff;
 }
-.edit-main-info h2 {
-    margin: 0 0 4px 0;
-    font-size: 25px;
-    font-weight: 700;
-    text-align: left;
-}
-.edit-main-info small {
-    color: #888;
-    font-size: 16px;
-}
-.edit-nama {
-    margin-top: 9px;
-    font-size: 18px;
-    font-weight: 500;
-    color: #222;
+.avatar-edit-icon{
+    position:absolute;
+    right:8px;
+    bottom:12px;
+    width:30px;height:30px;
+    border-radius:50%;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    color:#111827;
 }
 
-.profile-edit-form-section { margin-top: 24px; padding: 0 40px; }
-.form-section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #755d2c;
-    margin-bottom: 12px;
+.edit-main-info h2 {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    font-weight: 700;
 }
+.edit-main-info small {
+    color: #9ca3af;
+    font-size: 13px;
+}
+.edit-nama {
+    margin-top: 8px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #111827;
+}
+
+/* SECTION FORM */
+.profile-edit-form-section { 
+    margin-top: 26px; 
+    padding: 0 60px;
+}
+.form-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+/* GRID FORM 2 KOLOM */
 .profile-edit-form-flex {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 18px 30px;
-    max-width: 900px;
+    gap: 18px 60px;
 }
-.profile-edit-form-flex label { font-weight: 500; font-size: 15px; color: #444; display: block; margin-bottom: 5px; margin-top: 12px;}
+.profile-edit-form-flex label { 
+    font-weight: 500; 
+    font-size: 13px; 
+    color: #374151; 
+    display: block; 
+    margin-bottom: 4px;
+}
 .profile-edit-form-flex input,
 .profile-edit-form-flex textarea,
 .profile-edit-form-flex select {
-    width: 100%; border-radius: 8px;
-    border: 1.2px solid #bbb;
-    background: #f7fafc;
-    font-size: 15px;
-    padding: 10px 13px;
-    margin-top: 1.5px;
+    width: 100%; 
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 14px;
+    padding: 8px 11px;
+    margin-top: 1px;
 }
-.profile-edit-form-flex textarea { min-height: 40px; }
-.form-btn-row{margin-top:35px; display: flex; gap:24px;}
-.btn-edit-cancel{background: #fff; color: #fa9800; padding: 10px 31px; border:1.6px solid #fa9800; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer;}
-.btn-edit-cancel:hover{background: #ffe5c8;}
-.btn-edit-simpan{background: #fa9800; color: #fff; padding: 10px 34px; border:none; border-radius: 8px;font-size:16px; font-weight:600; cursor:pointer;}
+.profile-edit-form-flex textarea { min-height: 60px; }
+
+.profile-edit-form-flex input:focus,
+.profile-edit-form-flex textarea:focus,
+.profile-edit-form-flex select:focus{
+    outline:none;
+    border-color:#fb923c;
+    box-shadow:0 0 0 1px rgba(251,146,60,0.2);
+}
+
+/* baris full 2 kolom */
+.form-full{
+    grid-column:1/3;
+}
+
+/* teks bantuan kecil */
+.help-text{
+    font-size:12px;
+    color:#9ca3af;
+    margin-top:4px;
+}
+
+/* BUTTONS */
+.form-btn-row{
+    margin-top:34px; 
+    display: flex; 
+    gap:26px;
+    grid-column:1/3;
+    justify-content:flex-start;
+}
+.btn-edit-cancel{
+    background: #fff; 
+    color: #fa9800; 
+    padding: 10px 32px; 
+    border:1.6px solid #fa9800; 
+    border-radius: 8px; 
+    font-size: 15px; 
+    font-weight: 500; 
+    cursor: pointer;
+    text-decoration:none;
+    display:inline-block;
+}
+.btn-edit-cancel:hover{background: #fff7ed;}
+.btn-edit-simpan{
+    background: #fa9800; 
+    color: #fff; 
+    padding: 10px 36px; 
+    border:none; 
+    border-radius: 8px;
+    font-size:15px; 
+    font-weight:600; 
+    cursor:pointer;
+}
 .btn-edit-simpan:hover{background: #ffa820;}
+
+/* ALERT */
+.alert{
+    padding:10px 60px;
+    color:#92400e;
+    font-size:13px;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .container-profile-edit{margin:0 0 30px 0;}
+    .profile-edit-head-row{margin-left:24px;}
+    .profile-edit-form-section{padding:0 24px;}
+}
+@media(max-width:700px){
+    .profile-edit-form-flex{
+        grid-template-columns:1fr;
+    }
+    .form-full{grid-column:1/2;}
+    .profile-edit-head-row{
+        flex-direction:column;
+        align-items:flex-start;
+        margin-top:-40px;
+    }
+}
 </style>
 </head>
 <body>
-<!-- SIDEBAR HEADER -->
-<div class="sidebar-header">
-  <img src="../assets/images/logo-nganjuk.png">
-  <div class="title">Desa Banjardowo</div>
-</div>
 
 <div class="container-profile-edit">
-    <!-- Bagian Cover Sampul -->
+
+    <!-- BARIS 1: LOGO -->
+    <div class="sidebar-header">
+        <img src="../assets/images/logo-nganjuk.png" alt="Logo">
+        <span class="title">Desa Banjardowo</span>
+    </div>
+
+    <!-- BARIS 2: FOTO SAMPUL -->
     <div class="cover-edit" style="<?php echo $coverStyle; ?>">
         <form method="post" enctype="multipart/form-data" style="position:absolute;bottom:13px;right:20px;">
-            <input type="file" name="cover" id="cover" accept=".png,.jpg,.jpeg" style="display:none;" onchange="this.form.submit()"/>
-            <button type="button" class="cover-btn-edit" onclick="document.getElementById('cover').click();">
+            <input type="file" name="cover" id="cover" accept=".png,.jpg,.jpeg"
+                   style="display:none;" onchange="this.form.submit()"/>
+            <button type="button" class="cover-btn-edit"
+                    onclick="document.getElementById('cover').click();">
                 <i class="fa fa-camera"></i> Edit Cover
             </button>
         </form>
     </div>
 
-    <!-- Avatar + Judul + Info User -->
+    <!-- AVATAR + TEKS -->
     <div class="profile-edit-head-row">
-        <img src="<?php echo $fotoSrc; ?>" class="avatar-edit-img" alt="Foto Profil">
+        <div class="avatar-box" onclick="document.getElementById('foto').click();">
+            <img src="<?php echo $fotoSrc; ?>" class="avatar-edit-img" id="avatarPreview" alt="Foto Profil">
+            <div class="avatar-edit-icon">
+                <i class="fa-solid fa-pen"></i>
+            </div>
+        </div>
         <div class="edit-main-info">
             <h2>Edit Profil</h2>
             <small>Profil / Edit Profil</small>
@@ -242,28 +376,32 @@ body{margin:0;padding:0;background:#f7f8fa;font-family:'Inter',sans-serif;}
         </div>
     </div>
 
-    <?php if($msg) echo "<p class='alert' style='padding:10px 40px;color:#b45309;'>$msg</p>"; ?>
+    <?php if($msg) echo "<p class='alert'>$msg</p>"; ?>
 
+    <!-- FORM -->
     <div class="profile-edit-form-section">
         <div class="form-section-title">Informasi Pribadi</div>
 
-        <!-- FORM UTAMA (PASTIKAN enctype MULTIPART UNTUK FOTO) -->
         <form method="post" enctype="multipart/form-data" class="profile-edit-form-flex">
             <div>
                 <label>Nama Lengkap</label>
-                <input type="text" name="nama_lengkap" required value="<?php echo htmlspecialchars($user['nama_lengkap']); ?>">
+                <input type="text" name="nama_lengkap" required
+                       value="<?php echo htmlspecialchars($user['nama_lengkap']); ?>">
             </div>
             <div>
                 <label>Username</label>
-                <input type="text" name="username" required value="<?php echo htmlspecialchars($user['username']); ?>">
+                <input type="text" name="username" required
+                       value="<?php echo htmlspecialchars($user['username']); ?>">
             </div>
             <div>
                 <label>Email</label>
-                <input type="email" name="email" required value="<?php echo htmlspecialchars($user['email']); ?>">
+                <input type="email" name="email" required
+                       value="<?php echo htmlspecialchars($user['email']); ?>">
             </div>
             <div>
                 <label>No Telpon</label>
-                <input type="text" name="no_telp" value="<?php echo htmlspecialchars($user['no_telp']); ?>">
+                <input type="text" name="no_telp"
+                       value="<?php echo htmlspecialchars($user['no_telp']); ?>">
             </div>
             <div>
                 <label>Jenis Kelamin</label>
@@ -277,19 +415,35 @@ body{margin:0;padding:0;background:#f7f8fa;font-family:'Inter',sans-serif;}
                 <textarea name="alamat"><?php echo htmlspecialchars($user['alamat']); ?></textarea>
             </div>
 
-            <!-- FIELD BARU: FOTO PROFIL -->
-            <div>
-                <label>Foto Profil</label>
-                <input type="file" name="foto" accept=".png,.jpg,.jpeg">
-                <small style="font-size:12px;color:#888;">Biarkan kosong jika tidak ingin mengganti foto.</small>
+            <!-- FOTO PROFIL (hidden input, trigger dari avatar) -->
+            <div class="form-full">
+                <input type="file" name="foto" id="foto" accept=".png,.jpg,.jpeg" style="display:none;">
             </div>
 
-            <div class="form-btn-row" style="grid-column:1/3">
+            <div class="form-btn-row">
                 <a href="profile.php" class="btn-edit-cancel">Batal</a>
                 <button type="submit" name="update_profile" class="btn-edit-simpan">Simpan</button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+// preview avatar ketika pilih file
+const fotoInput = document.getElementById('foto');
+if (fotoInput) {
+    fotoInput.addEventListener('change', function(e){
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev){
+            const img = document.getElementById('avatarPreview');
+            if (img) img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+
 </body>
 </html>

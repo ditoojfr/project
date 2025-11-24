@@ -129,7 +129,7 @@ body {
 
 .profile-header {
     width: 1427px;
-    height: 250px;
+    height: 295px;
     left: 25px;
     top: -23px;
     position: relative;
