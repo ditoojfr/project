@@ -184,30 +184,30 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         a{text-decoration:none;color:inherit}
         .app{display:flex;min-height:100vh}
 
-        /* SIDEBAR (jangan diubah) */
-        .sidebar {
-          position: fixed;
-          left: 20px;
-          top: 90px;
-          width: 220px;
-          height: calc(110vh - 175px);
-          background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
-          padding: 24px 20px;
-          color: white;
-          border-radius: 20px;
+       .sidebar {
+            position: fixed;
+            left: 20px;
+            top: 90px;
+            width: 260px;
+            height: calc(100vh - 104px);  /* ✔ ukuran standar sidebar lain */
+            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
+            padding: 24px 20px;
+            color: white;
+            border-radius: 20px;
         }
 
-        .sidebar-header {
-          position: fixed;
-          top: 20px;
-          left: 20px;
-          width: 220px;
-          background: transparent;
-          padding: 10px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
+
+       .sidebar-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;  /* ✔ mepet kiri seperti sebelum sidebar dilebarkan */
+            background: transparent;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+
         .sidebar-header div {
             color: #000000ff;
             font-weight: 600;
@@ -248,7 +248,16 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             height: 20px;
         }
 
-        .main{flex:1;padding:18px 32px;display:flex;flex-direction:column}
+       .main{
+            margin-top: -3px;
+            margin-left: 260px;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column; /* agar child ditumpuk vertikal */
+            flex: 1;
+            min-width: 0;           /* biar flexing lebar, bukan terpotong overflow */
+        }
+
 
         /* BAR ATAS: SEARCH DI TENGAH + PROFIL DI KANAN */
         .top-bar{
@@ -335,15 +344,48 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             font-weight:500;
         }
 
-        .content-card{background:#fff;border-radius:18px;padding:24px 28px;box-shadow:0 8px 20px rgba(15,23,42,.06);flex:1}
+        .content-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px 28px;
+            box-shadow: 0 8px 20px rgba(15,23,42,.06);
+            width: 100%;            /* lebar maksimum area parent (main) */
+            max-width: none;        /* nonaktifkan batas lebar, boleh dihapus atau set none */
+            margin: 0;              /* hilangkan margin auto supaya tidak di tengah dan kecil */
+            flex: 1;                /* jika parent flex, card akan meluas otomatis */
+            box-sizing: border-box; /* padding tetap dihitung agar desain tetap rapi */
+        }
+        
         .breadcrumb{font-size:11px;color:#9ca3af;margin-top:2px;margin-bottom:4px}
         h2.page-title{font-size:20px;margin-bottom:4px}
+        
 
-        table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
-        th,td{padding:8px 6px;text-align:left;vertical-align:top}
-        thead{border-bottom:1px solid #e5e7eb}
-        th{color:#6b7280;font-weight:500}
-        tbody tr:hover{background:#f9fafb}
+        h2.page-title{
+            font-size:20px;
+            margin-bottom:4px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:20px;
+            font-size:13px;
+        }
+        th,td{
+            padding:8px 6px;
+            text-align:left;
+            vertical-align:top;
+        }
+        thead{
+            border-bottom:1px solid #e5e7eb;
+        }
+        th{
+            color:#6b7280;
+            font-weight:500;
+        }
+        tbody tr:hover{
+            background:#f9fafb;
+        }
         .aksi-col{text-align:center;width:80px}
         .icon-btn{border:none;background:transparent;cursor:pointer;font-size:18px;margin:0 2px}
         .icon-btn.edit{color:#f97316}
@@ -366,24 +408,91 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             text-decoration:underline;
         }
 
-        .form-wrapper{margin-top:20px;max-width:900px}
-        .form-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px}
-        .card-form{border-radius:18px;border:1px solid #e5e7eb;padding:18px}
-        .form-group{margin-bottom:14px}
-        .form-group label{display:block;font-size:13px;margin-bottom:4px;font-weight:500}
-        .form-group input[type=text], .form-group textarea{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #d1d5db;font-size:13px;outline:none;resize:vertical}
-        .form-group textarea{min-height:90px}
-        .form-group input:focus, .form-group textarea:focus{border-color:#5E63BB;box-shadow:0 0 0 1px rgba(79,70,229,.1)}
-        .upload-box{border-radius:18px;border:1px dashed #d1d5db;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;color:#6b7280}
-        .upload-box input{margin-top:8px}
-        .upload-preview{margin-top:10px}
-        .upload-preview img{max-width:100%;border-radius:12px}
-        .form-actions{margin-top:16px;display:flex;gap:10px}
-        .btn-secondary{border-radius:10px;padding:9px 18px;background:#e5e7eb;border:none;font-size:13px;cursor:pointer}
-        .alert{margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12px}
-        .alert-info{background:#e0f2fe;color:#5E63BB}
-        .alert-error{background:#fee2e2;color:#991b1b}
-        pre{white-space:pre-wrap;font-family:inherit;font-size:13px}
+        .form-wrapper{
+            margin-top:20px;
+            max-width:900px
+        }
+        .form-grid{display:grid;
+            grid-template-columns:2fr 1fr;
+            gap:24px
+        }
+        .card-form{
+            border-radius:18px;
+            border:1px solid #e5e7eb;padding:18px
+        }
+        .form-group{
+            margin-bottom:14px
+        }
+        .form-group label{
+            display:block;
+            font-size:13px;
+            margin-bottom:4px;
+            font-weight:500}
+        .form-group input[type=text], .form-group textarea{
+            width:100%;
+            padding:8px 10px;border-radius:10px;
+            border:1px solid #d1d5db;
+            font-size:13px;
+            outline:none;
+            resize:vertical
+        }
+        .form-group textarea{
+            min-height:90px
+        }
+        .form-group input:focus, .form-group textarea:focus{
+            border-color:#5E63BB;
+            box-shadow:0 0 0 1px rgba(79,70,229,.1)
+        }
+        .upload-box{
+            border-radius:18px;
+            border:1px dashed #d1d5db;
+            height:100%;display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            font-size:13px;
+            color:#6b7280
+        }
+        .upload-box input{
+            margin-top:8px
+        }
+        .upload-preview{
+            margin-top:10px
+        }
+        .upload-preview img{
+            max-width:100%;
+            border-radius:12px
+        }
+        .form-actions{
+            margin-top:16px;
+            display:flex;gap:10px
+        }
+        .btn-secondary{
+            border-radius:10px;
+            padding:9px 18px;
+            background:#e5e7eb;
+            border:none;
+            font-size:13px;
+            cursor:pointer
+        }
+        .alert{
+            margin-top:10px;
+            padding:8px 12px;
+            border-radius:8px;
+            font-size:12px
+        }
+        .alert-info{
+            background:#e0f2fe;
+            color:#5E63BB
+        }
+        .alert-error{background:#fee2e2;
+            color:#991b1b
+        }
+        pre{
+            white-space:pre-wrap;
+            font-family:inherit;
+            font-size:13px
+        }
 
         /* DETAIL PELAYANAN (gambar ke-4) */
         .detail-wrapper{
@@ -473,7 +582,24 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             from{opacity:0;transform:translateY(8px) scale(.98);}
             to{opacity:1;transform:translateY(0) scale(1);}
         }
-    </style>
+    
+/* === FIX KONTEN KECIL / TABEL MEPET SETELAH SIDEBAR DILEBARKAN === */
+.main-wrapper {
+    margin-left: 350px !important;
+    width: calc(100% - 380px) !important;
+}
+.container {
+    max-width: 100% !important;
+}
+.table-container {
+    width: 100% !important;
+}
+.profile-card, 
+.card {
+    width: 100% !important;
+}
+
+</style>
 </head>
 <body>
     <div class="app">
@@ -507,14 +633,21 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                 </form>
 
                 <div class="profile-wrapper">
-                    <div class="profile-text">
-                        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
-                        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
-                    </div>
-                    <div class="profile-avatar">
-                        <?php echo $inisialAdmin; ?>
-                    </div>
-                </div>
+    <div class="profile-text">
+        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
+        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
+    </div>
+
+    <!-- avatar yang nyambung ke profile.php -->
+    <a href="profile.php" class="profile-avatar">
+        <?php if (!empty($fotoProfilSrc)) : ?>
+            <img src="<?php echo $fotoProfilSrc; ?>" alt="Foto Profil">
+        <?php else : ?>
+            <?php echo $inisialAdmin; ?>
+        <?php endif; ?>
+    </a>
+</div>
+
             </div>
 
             <div class="content-card">
@@ -589,7 +722,18 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                 </a>
             </td>
             <td><?php echo nl2br(htmlspecialchars($row['deskripsi_singkat'])); ?></td>
-            <td><?php echo nl2br(htmlspecialchars($row['isi_panduan'])); ?></td>
+           <td>
+    <?php 
+        $maxLength = 250; // batas karakter
+        $desc = strip_tags($row['isi_panduan']); // buang tag HTML kalau ada
+
+        if (strlen($desc) > $maxLength) {
+            echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
+        } else {
+            echo nl2br(htmlspecialchars($desc));
+        }
+    ?>
+</td>
             <td class="aksi-col">
                 <button class="icon-btn edit" title="Edit" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $row['id']; ?>'">✏</button>
                 <!-- PANGGIL MODAL, BUKAN confirm() -->
@@ -704,33 +848,27 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         </div>
     </div>
 
-    <script>
-        let deleteId = null;
+   <script>
+    let deleteId = null;
 
-        function openDeleteModal(id){
-            deleteId = id;
-            const modal = document.getElementById('deleteModal');
-            modal.style.display = 'flex';
+    function openDeleteModal(id){
+        deleteId = id;
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+    }
+
+    function closeDeleteModal(){
+        deleteId = null;
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'none';
+    }
+
+    function confirmDelete(){
+        if(deleteId){
+            window.location.href = 'pelayanan.php?action=delete&id=' + deleteId;
         }
+    }
+</script>
 
-        function closeDeleteModal(){
-            deleteId = null;
-            const modal = document.getElementById('deleteModal');
-            modal.style.display = 'none';
-        }
-
-        function confirmDelete(){
-            if(deleteId){
-                window.location.href = 'pelayanan.php?action=delete&id=' + deleteId;
-            }
-        }
-
-        // Tutup modal kalau klik area gelap di luar card
-        document.getElementById('deleteModal').addEventListener('click', function(e){
-            if(e.target === this){
-                closeDeleteModal();
-            }
-        });
-    </script>
 </body>
 </html>

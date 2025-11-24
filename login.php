@@ -42,8 +42,8 @@ if (isset($_POST['login'])) {
             padding: 18px 32px;
             display: flex;
             align-items: center;
-            background: rgba(255,255,255,0.6);
-            gap: 12px; /* Jarak aman antara logo & teks */
+            background: transparent
+            gap: 15px; /* Jarak aman antara logo & teks */
         }
 
         .logo-kabupaten {
@@ -56,7 +56,7 @@ if (isset($_POST['login'])) {
             flex-direction: column;
             justify-content: center;
             margin: 0;
-            padding: 0;
+            padding-left: 10px;
             flex-grow: 0;      /* WAJIB: jangan terdorong ke kanan */
             flex-basis: auto;  /* WAJIB */
         }
@@ -235,8 +235,8 @@ if (isset($_POST['login'])) {
         }
         .icon-input {
             position: absolute;
-            left: 16px;
-            top: 48px;         /* jika icon kurang pas, geser top naik/turun */
+            left: 13px;
+            top: 34px;         /* jika icon kurang pas, geser top naik/turun */
             z-index: 2;
             pointer-events: none;
         }
