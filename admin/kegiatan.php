@@ -879,7 +879,6 @@ if (isset($_GET['msg'])) {
             const file = this.files[0];
             if (!file) return;
 
-<<<<<<< HEAD
             const reader = new FileReader();
             reader.onload = e => {
                 previewImg.src = e.target.result;
@@ -887,121 +886,6 @@ if (isset($_GET['msg'])) {
             };
             reader.readAsDataURL(file);
         });
-=======
-
-</div> <!-- end form-container -->
-
-<button class="btn-simpan" type="submit" name="save_kegiatan">
-    <i class="fa-solid fa-plus"></i>
-    <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
-</button>
-<a href="kegiatan.php" class="back-btn">&larr; Kembali</a>
-</form>
-
-<?php endif; ?>
-
-
-
-<!-- ===================================================
-     6. LIST DATA
-     =================================================== -->
-<?php if($mode == "list"): ?>
-<table>
-<tr>
-  <th></th>
-  <th>No</th>
-  <th>Nama Kegiatan Desa</th>
-  <th>Lokasi</th>
-  <th>Deskripsi</th>
-  <th>Tanggal</th>
-  <th>Aksi</th>
-</tr>
-<?php 
-$no = 1;
-while($row = mysqli_fetch_assoc($queryList)): 
-?>
-<tr>
-  <td>
-    <?php if(!empty($row['foto'])): ?>
-      <img class="foto-kegiatan" src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto']) ?>">
-    <?php endif; ?>
-  </td>
-  <td><?= $no++; ?></td>
-  <td><?= htmlspecialchars($row['judul']) ?></td>
-  <td><?= htmlspecialchars($row['lokasi'] ?? '-') ?></td>
-  <td>
-    <?php 
-      $maxLength = 250;
-      $desc = strip_tags($row['deskripsi']);
-      if(strlen($desc) > $maxLength){
-        echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
-      } else {
-        echo nl2br(htmlspecialchars($desc));
-      }
-    ?>
-  </td>
-  <td><?= date("d F Y", strtotime($row['tanggal'])) ?></td>
-  <td class="aksi-btn">
-    <a href="kegiatan.php?edit=<?= $row['id'] ?>">
-      <i class="fa-solid fa-pen"></i>
-    </a>
-    <a href="kegiatan.php?del=<?= $row['id'] ?>" onclick="return confirm('Hapus kegiatan ini?')">
-      <i class="fa-solid fa-trash"></i>
-    </a>
-  </td>
-</tr>
-<?php endwhile; ?>
-</table>
-<?php endif; ?>
-
-
-</div> <!-- END MAIN -->
-<script>
-const logoutBtn = document.getElementById("logoutBtn");
-const logoutModal = document.getElementById("logoutModal");
-const cancelLogout = document.getElementById("cancelLogout");
-const modalContent = document.querySelector(".modal-content");
-
-// TAMPILKAN ANIMASI MODAL
-logoutBtn.onclick = function(e){
-    e.preventDefault();
-
-    logoutModal.classList.add("show");
-
-    // delay kecil agar animasi scale aktif
-    setTimeout(() => {
-        modalContent.classList.add("show");
-    }, 10);
-};
-
-// TUTUP MODAL DENGAN ANIMASI
-cancelLogout.onclick = function(){
-    modalContent.classList.remove("show");
-
-    setTimeout(() => {
-        logoutModal.classList.remove("show");
-    }, 180); // menunggu animasi pop-out
-};
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const fileInput  = document.getElementById('uploadFoto');
-    const previewImg = document.getElementById('previewImg');
-
-    if (!fileInput || !previewImg) return;
-
-    fileInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            previewImg.src = e.target.result;    // ganti gambar preview
-            previewImg.style.display = 'block';  // pastikan kelihatan
-        };
-        reader.readAsDataURL(file);
->>>>>>> 306ba36b19411911a13f02993156d382c5b04b13
     });
 </script>
 
