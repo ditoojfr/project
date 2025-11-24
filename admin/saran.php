@@ -6,6 +6,30 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: ../login.php');
     exit;
 }
+// =================== DATA PROFIL PENGGUNA ===================
+$uid = (int)$_SESSION['user_id'];
+
+$resUser = mysqli_query($conn, "
+    SELECT nama_lengkap, username, role, foto 
+    FROM users 
+    WHERE id = $uid
+");
+$user = mysqli_fetch_assoc($resUser);
+
+$namaAdmin = !empty($user['nama_lengkap'])
+    ? $user['nama_lengkap']
+    : ($_SESSION['username'] ?? 'Administrator');
+
+$roleAdmin = !empty($user['role']) ? $user['role'] : 'admin';
+
+$inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
+
+$fotoProfilSrc = null;
+if (!empty($user['foto'])) {
+    $fotoProfilSrc = "data:image/jpeg;base64," . base64_encode($user['foto']);
+}
+
+
 
 /*
    =====================================
@@ -77,14 +101,7 @@ if (isset($_GET['msg'])) {
     $message = htmlspecialchars($_GET['msg']);
 }
 
-/*
-   =====================================
-   DATA PROFIL (ATAS KANAN)
-   =====================================
-*/
-$namaAdmin    = $_SESSION['nama'] ?? $_SESSION['username'] ?? 'Administrator Utama';
-$roleAdmin    = $_SESSION['role'] ?? 'Admin';
-$inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -244,30 +261,48 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         }
 
         .profile-wrapper{
-            display:flex;
-            align-items:center;
-            gap:10px;
-            margin-left:20px;
-        }
-        .profile-text{
-            text-align:right;
-            font-size:12px;
-        }
-        .profile-text .name{font-weight:600}
-        .profile-text .role{font-size:11px;color:#9ca3af}
-        .profile-avatar{
-            width:38px;
-            height:38px;
-            border-radius:999px;
-            background:#f97316;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-weight:600;
-            font-size:16px;
-            color:#fff;
-            overflow:hidden;
-        }
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-left:20px;
+}
+
+.profile-text{
+    text-align:right;
+    font-size:12px;
+}
+.profile-text .name{
+    font-weight:600;
+}
+.profile-text .role{
+    font-size:11px;
+    color:#9ca3af;
+}
+
+.profile-avatar{
+    width:38px;
+    height:38px;
+    border-radius:999px;
+    background:#f97316;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    font-size:16px;
+    color:#fff;
+    overflow:hidden;
+    text-decoration:none;
+    cursor:pointer;
+}
+
+.profile-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:999px;
+    display:block;
+}
+
         .content-card {
             background: #fff;
             border-radius: 18px;
@@ -455,25 +490,21 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                        value="<?php echo htmlspecialchars($search); ?>">
             </form>
 
-           <div class="profile-wrapper">
+        <div class="profile-wrapper">
     <div class="profile-text">
-        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
-        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
+        <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
+        <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
     </div>
 
-    <!-- avatar yang nyambung ke profile.php -->
-   <a href="profile.php" class="profile-avatar">
-    <?php if (!empty($user['foto'])): ?>
-        <img 
-            src="data:image/jpeg;base64,<?= base64_encode($user['foto']); ?>" 
-            alt="Foto Profil"
-        >
-    <?php else: ?>
-        <?= $inisialAdmin; ?>
-    <?php endif; ?>
-</a>
-
+    <a href="profile.php" class="profile-avatar">
+        <?php if (!empty($fotoProfilSrc)): ?>
+            <img src="<?= $fotoProfilSrc; ?>" alt="Foto Profil">
+        <?php else: ?>
+            <?= htmlspecialchars($inisialAdmin); ?>
+        <?php endif; ?>
+    </a>
 </div>
+
 
         </div>
 

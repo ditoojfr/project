@@ -7,6 +7,33 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: ../login.php');
     exit;
 }
+// =================== DATA PROFIL PENGGUNA ===================
+$uid = (int)$_SESSION['user_id'];
+
+$resUser = mysqli_query($conn, "
+    SELECT nama_lengkap, username, role, foto 
+    FROM users 
+    WHERE id = $uid
+");
+$user = mysqli_fetch_assoc($resUser);
+
+// Nama admin -> HANYA dari nama_lengkap (kalau kosong pakai 'Administrator')
+$namaAdmin = !empty($user['nama_lengkap'])
+    ? $user['nama_lengkap']
+    : 'Administrator';
+
+// Role (admin/editor)
+$roleAdmin = !empty($user['role']) ? $user['role'] : 'admin';
+
+// Inisial (fallback jika tidak ada foto)
+$inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
+
+// Foto profil (longblob)
+$fotoProfilSrc = null;
+if (!empty($user['foto'])) {
+    $fotoProfilSrc = "data:image/jpeg;base64," . base64_encode($user['foto']);
+}
+
 
 
 // =================== KONFIGURASI UPLOAD ===================
@@ -166,10 +193,7 @@ if (isset($_GET['msg'])) {
 }
 
 
-// =================== DATA PROFIL (ATAS KANAN) ===================
-$namaAdmin    = $_SESSION['nama'] ?? $_SESSION['username'] ?? 'Administrator Utama';
-$roleAdmin    = $_SESSION['role'] ?? 'Admin';
-$inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
