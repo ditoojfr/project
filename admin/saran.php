@@ -108,18 +108,21 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         a{text-decoration:none;color:inherit}
         .app{display:flex;min-height:100vh}
 
-        /* ===== SIDEBAR ===== */
-        .sidebar {
-            position: fixed;
-            left: 20px;
-            top: 90px;
-            width: 260px;
-            height: calc(100vh - 104px);
-            background: #5E63BB;
-            padding: 24px 20px;
-            color: white;
-            border-radius: 20px;
-        }
+       .sidebar {
+    position: fixed;
+    left: 20px;
+    top: 90px;
+    width: 260px;
+    height: calc(100vh - 104px);
+
+    /* 🎨 GRADIENT BARU */
+    background: linear-gradient(200deg, #1c3f9f, #3B82F6);
+
+    padding: 24px 20px;
+    color: white;
+    border-radius: 20px;
+}
+
 
         .sidebar-header {
             position: fixed;

@@ -184,30 +184,30 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         a{text-decoration:none;color:inherit}
         .app{display:flex;min-height:100vh}
 
-        /* SIDEBAR (jangan diubah) */
-        .sidebar {
-          position: fixed;
-          left: 20px;
-          top: 90px;
-          width: 220px;
-          height: calc(110vh - 175px);
-          background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
-          padding: 24px 20px;
-          color: white;
-          border-radius: 20px;
-        }
+       .sidebar {
+    position: fixed;
+    left: 20px;
+    top: 90px;
+    width: 260px;
+    height: calc(100vh - 104px);  /* ✔ ukuran standar sidebar lain */
+    background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
+    padding: 24px 20px;
+    color: white;
+    border-radius: 20px;
+}
 
-        .sidebar-header {
-          position: fixed;
-          top: 20px;
-          left: 20px;
-          width: 220px;
-          background: transparent;
-          padding: 10px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
+
+       .sidebar-header {
+    position: fixed;
+    top: 20px;
+    left: 20px;  /* ✔ mepet kiri seperti sebelum sidebar dilebarkan */
+    background: transparent;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
         .sidebar-header div {
             color: #000000ff;
             font-weight: 600;
@@ -248,7 +248,13 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             height: 20px;
         }
 
-        .main{flex:1;padding:18px 32px;display:flex;flex-direction:column}
+       .main{
+    flex:1;
+    padding:18px 32px;
+    display:flex;
+    flex-direction:column;
+}
+
 
         /* BAR ATAS: SEARCH DI TENGAH + PROFIL DI KANAN */
         .top-bar{
@@ -338,6 +344,7 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         .content-card{background:#fff;border-radius:18px;padding:24px 28px;box-shadow:0 8px 20px rgba(15,23,42,.06);flex:1}
         .breadcrumb{font-size:11px;color:#9ca3af;margin-top:2px;margin-bottom:4px}
         h2.page-title{font-size:20px;margin-bottom:4px}
+        
 
         table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
         th,td{padding:8px 6px;text-align:left;vertical-align:top}
@@ -473,7 +480,24 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             from{opacity:0;transform:translateY(8px) scale(.98);}
             to{opacity:1;transform:translateY(0) scale(1);}
         }
-    </style>
+    
+/* === FIX KONTEN KECIL / TABEL MEPET SETELAH SIDEBAR DILEBARKAN === */
+.main-wrapper {
+    margin-left: 350px !important;
+    width: calc(100% - 380px) !important;
+}
+.container {
+    max-width: 100% !important;
+}
+.table-container {
+    width: 100% !important;
+}
+.profile-card, 
+.card {
+    width: 100% !important;
+}
+
+</style>
 </head>
 <body>
     <div class="app">
@@ -589,7 +613,18 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                 </a>
             </td>
             <td><?php echo nl2br(htmlspecialchars($row['deskripsi_singkat'])); ?></td>
-            <td><?php echo nl2br(htmlspecialchars($row['isi_panduan'])); ?></td>
+           <td>
+    <?php 
+        $maxLength = 250; // batas karakter
+        $desc = strip_tags($row['isi_panduan']); // buang tag HTML kalau ada
+
+        if (strlen($desc) > $maxLength) {
+            echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
+        } else {
+            echo nl2br(htmlspecialchars($desc));
+        }
+    ?>
+</td>
             <td class="aksi-col">
                 <button class="icon-btn edit" title="Edit" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $row['id']; ?>'">✏</button>
                 <!-- PANGGIL MODAL, BUKAN confirm() -->
@@ -704,33 +739,27 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         </div>
     </div>
 
-    <script>
-        let deleteId = null;
+   <script>
+    let deleteId = null;
 
-        function openDeleteModal(id){
-            deleteId = id;
-            const modal = document.getElementById('deleteModal');
-            modal.style.display = 'flex';
+    function openDeleteModal(id){
+        deleteId = id;
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+    }
+
+    function closeDeleteModal(){
+        deleteId = null;
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'none';
+    }
+
+    function confirmDelete(){
+        if(deleteId){
+            window.location.href = 'pelayanan.php?action=delete&id=' + deleteId;
         }
+    }
+</script>
 
-        function closeDeleteModal(){
-            deleteId = null;
-            const modal = document.getElementById('deleteModal');
-            modal.style.display = 'none';
-        }
-
-        function confirmDelete(){
-            if(deleteId){
-                window.location.href = 'pelayanan.php?action=delete&id=' + deleteId;
-            }
-        }
-
-        // Tutup modal kalau klik area gelap di luar card
-        document.getElementById('deleteModal').addEventListener('click', function(e){
-            if(e.target === this){
-                closeDeleteModal();
-            }
-        });
-    </script>
 </body>
 </html>
