@@ -8,10 +8,32 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// AMBIL DATA USER UNTUK PROFILE DI TOP-BAR
-$namaAdmin    = $_SESSION['nama'] ?? $_SESSION['username'] ?? 'Administrator Utama';
-$roleAdmin    = $_SESSION['role'] ?? 'Admin';
+// AMBIL DATA USER UNTUK PROFILE DI TOP-BAR (SAMA SEPERTI HALAMAN LAIN)
+$user_id = (int)$_SESSION['user_id'];
+
+$resUser = mysqli_query($conn, "
+    SELECT nama_lengkap, username, role, foto
+    FROM users
+    WHERE id = $user_id
+");
+$userData = mysqli_fetch_assoc($resUser);
+
+// Nama + role
+$namaAdmin = !empty($userData['nama_lengkap'])
+    ? $userData['nama_lengkap']
+    : ($_SESSION['username'] ?? 'Administrator');
+
+$roleAdmin = !empty($userData['role']) ? $userData['role'] : 'admin';
+
+// Inisial jika tidak ada foto
 $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
+
+// Foto profil (longblob → base64)
+$fotoProfilSrc = null;
+if (!empty($userData['foto'])) {
+    $fotoProfilSrc = "data:image/jpeg;base64," . base64_encode($userData['foto']);
+}
+
 
 /* ======================================================
    1. HAPUS DATA
@@ -744,15 +766,21 @@ if (isset($_GET['msg'])) {
                        value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
             </form>
 
-            <div class="profile-wrapper">
-                <div class="profile-text">
-                    <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
-                    <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
-                </div>
-                <div class="profile-avatar">
-                    <?= $inisialAdmin; ?>
-                </div>
-            </div>
+           <div class="profile-wrapper">
+    <div class="profile-text">
+        <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
+        <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
+    </div>
+
+    <a href="profile.php" class="profile-avatar">
+        <?php if (!empty($fotoProfilSrc)) : ?>
+            <img src="<?= $fotoProfilSrc; ?>" alt="Foto Profil">
+        <?php else : ?>
+            <?= htmlspecialchars($inisialAdmin); ?>
+        <?php endif; ?>
+    </a>
+</div>
+
         </div>
 
         <!-- ==== NOTIF SUCCESS (TOAST) ==== -->
