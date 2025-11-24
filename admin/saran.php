@@ -199,14 +199,14 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
 
         /* ===== MAIN ===== */
         .main {
-  margin-top: -3px;
-  margin-left: 260px;
-  padding: 30px 40px;
-  display: flex;
-  flex-direction: column; /* agar child ditumpuk vertikal */
-  flex: 1;
-  min-width: 0;           /* biar flexing lebar, bukan terpotong overflow */
-}
+            margin-top: -3px;
+            margin-left: 260px;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column; 
+            flex: 1;
+            min-width: 0;           
+        }
 
 
         /* BAR ATAS: SEARCH DI TENGAH + PROFIL KANAN */
@@ -269,16 +269,16 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             overflow:hidden;
         }
         .content-card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 24px 28px;
-  box-shadow: 0 8px 20px rgba(15,23,42,.06);
-  width: 100%;            /* lebar maksimum area parent (main) */
-  max-width: none;        /* nonaktifkan batas lebar, boleh dihapus atau set none */
-  margin: 0;              /* hilangkan margin auto supaya tidak di tengah dan kecil */
-  flex: 1;                /* jika parent flex, card akan meluas otomatis */
-  box-sizing: border-box; /* padding tetap dihitung agar desain tetap rapi */
-}
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px 28px;
+            box-shadow: 0 8px 20px rgba(15,23,42,.06);
+            width: 100%;            /* lebar maksimum area parent (main) */
+            max-width: none;        /* nonaktifkan batas lebar, boleh dihapus atau set none */
+            margin: 0;              /* hilangkan margin auto supaya tidak di tengah dan kecil */
+            flex: 1;                /* jika parent flex, card akan meluas otomatis */
+            box-sizing: border-box; /* padding tetap dihitung agar desain tetap rapi */
+        }
 
         .header-row{
             display:flex;

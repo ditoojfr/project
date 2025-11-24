@@ -185,28 +185,28 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         .app{display:flex;min-height:100vh}
 
        .sidebar {
-    position: fixed;
-    left: 20px;
-    top: 90px;
-    width: 260px;
-    height: calc(100vh - 104px);  /* ✔ ukuran standar sidebar lain */
-    background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
-    padding: 24px 20px;
-    color: white;
-    border-radius: 20px;
-}
+            position: fixed;
+            left: 20px;
+            top: 90px;
+            width: 260px;
+            height: calc(100vh - 104px);  /* ✔ ukuran standar sidebar lain */
+            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
+            padding: 24px 20px;
+            color: white;
+            border-radius: 20px;
+        }
 
 
        .sidebar-header {
-    position: fixed;
-    top: 20px;
-    left: 20px;  /* ✔ mepet kiri seperti sebelum sidebar dilebarkan */
-    background: transparent;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+            position: fixed;
+            top: 20px;
+            left: 20px;  /* ✔ mepet kiri seperti sebelum sidebar dilebarkan */
+            background: transparent;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
         .sidebar-header div {
             color: #000000ff;
@@ -249,11 +249,14 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
         }
 
        .main{
-    flex:1;
-    padding:18px 32px;
-    display:flex;
-    flex-direction:column;
-}
+            margin-top: -3px;
+            margin-left: 260px;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column; /* agar child ditumpuk vertikal */
+            flex: 1;
+            min-width: 0;           /* biar flexing lebar, bukan terpotong overflow */
+        }
 
 
         /* BAR ATAS: SEARCH DI TENGAH + PROFIL DI KANAN */
@@ -341,16 +344,48 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             font-weight:500;
         }
 
-        .content-card{background:#fff;border-radius:18px;padding:24px 28px;box-shadow:0 8px 20px rgba(15,23,42,.06);flex:1}
+        .content-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px 28px;
+            box-shadow: 0 8px 20px rgba(15,23,42,.06);
+            width: 100%;            /* lebar maksimum area parent (main) */
+            max-width: none;        /* nonaktifkan batas lebar, boleh dihapus atau set none */
+            margin: 0;              /* hilangkan margin auto supaya tidak di tengah dan kecil */
+            flex: 1;                /* jika parent flex, card akan meluas otomatis */
+            box-sizing: border-box; /* padding tetap dihitung agar desain tetap rapi */
+        }
+        
         .breadcrumb{font-size:11px;color:#9ca3af;margin-top:2px;margin-bottom:4px}
         h2.page-title{font-size:20px;margin-bottom:4px}
         
 
-        table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px}
-        th,td{padding:8px 6px;text-align:left;vertical-align:top}
-        thead{border-bottom:1px solid #e5e7eb}
-        th{color:#6b7280;font-weight:500}
-        tbody tr:hover{background:#f9fafb}
+        h2.page-title{
+            font-size:20px;
+            margin-bottom:4px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:20px;
+            font-size:13px;
+        }
+        th,td{
+            padding:8px 6px;
+            text-align:left;
+            vertical-align:top;
+        }
+        thead{
+            border-bottom:1px solid #e5e7eb;
+        }
+        th{
+            color:#6b7280;
+            font-weight:500;
+        }
+        tbody tr:hover{
+            background:#f9fafb;
+        }
         .aksi-col{text-align:center;width:80px}
         .icon-btn{border:none;background:transparent;cursor:pointer;font-size:18px;margin:0 2px}
         .icon-btn.edit{color:#f97316}
