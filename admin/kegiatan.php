@@ -3,959 +3,891 @@ session_start();
 include "../config/db.php";
 
 // CEK LOGIN
-if(!isset($_SESSION['user_id'])){ 
-    header('Location: ../login.php'); 
-    exit; 
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../login.php');
+    exit;
 }
 
 // AMBIL DATA USER UNTUK PROFILE DI TOP-BAR
-$user_id = $_SESSION['user_id'];
-$userQuery = mysqli_query($conn, "SELECT nama_lengkap FROM users WHERE id = $user_id");
-$userData = mysqli_fetch_assoc($userQuery);
-
+$namaAdmin    = $_SESSION['nama'] ?? $_SESSION['username'] ?? 'Administrator Utama';
+$roleAdmin    = $_SESSION['role'] ?? 'Admin';
+$inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
 
 /* ======================================================
    1. HAPUS DATA
    ====================================================== */
-if(isset($_GET['del'])){
+if (isset($_GET['del'])) {
     $id = intval($_GET['del']);
     mysqli_query($conn, "DELETE FROM kegiatan WHERE id={$id}");
-    header("Location: kegiatan.php"); 
+    header("Location: kegiatan.php?msg=Kegiatan berhasil dihapus");
     exit;
 }
 
-
 /* ======================================================
-   2. MODE TAMPILAN (LIST / TAMBAH / EDIT)
+   2. MODE TAMPILAN (list / view / tambah / edit)
    ====================================================== */
-$mode = "list"; 
-
-// tombol tambah
-if(isset($_GET['tambah'])) {
-    $mode = "tambah";
-}
+$action = $_GET['action'] ?? 'list';
+$message = "";
 
 // === JUDUL DINAMIS ===
-if ($mode == "tambah") {
+if ($action === 'tambah') {
     $page_title = "Tambah Kegiatan Desa";
-} elseif ($mode == "edit") {
+} elseif ($action === 'edit') {
     $page_title = "Edit Kegiatan Desa";
+} elseif ($action === 'view') {
+    $page_title = "Detail Kegiatan Desa";
 } else {
     $page_title = "Daftar Kegiatan Desa";
 }
 
-// tombol edit
+// === EDIT MODE ===
 $edit = null;
-if(isset($_GET['edit'])){
-    $mode = "edit";
-    $id = intval($_GET['edit']);
+if ($action === 'edit' && isset($_GET['id'])) {
+    $id = intval($_GET['id']);
     $res = mysqli_query($conn, "SELECT * FROM kegiatan WHERE id=$id");
     $edit = mysqli_fetch_assoc($res);
+    if (!$edit) {
+        header("Location: kegiatan.php");
+        exit;
+    }
 }
 
+// === VIEW MODE ===
+$detail = null;
+if ($action === 'view' && isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+    $res = mysqli_query($conn, "SELECT * FROM kegiatan WHERE id = {$id} LIMIT 1");
+    $detail = mysqli_fetch_assoc($res);
+    if (!$detail) {
+        $message = "Data kegiatan tidak ditemukan.";
+        $action = 'list';
+    }
+}
 
 /* ======================================================
    3. SIMPAN DATA (TAMBAH / EDIT)
    ====================================================== */
-if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['save_kegiatan'])){
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_kegiatan'])) {
     $judul = mysqli_real_escape_string($conn, $_POST['judul']);
     $lokasi = mysqli_real_escape_string($conn, $_POST['lokasi']);
     $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
     $tanggal = $_POST['tanggal'];
 
-    // upload foto
-    if(isset($_FILES['foto']) && $_FILES['foto']['size'] > 0){
+    // upload foto (base64)
+    $foto = null;
+    $foto_type = null;
+    if (isset($_FILES['foto']) && $_FILES['foto']['size'] > 0) {
         $foto = addslashes(file_get_contents($_FILES['foto']['tmp_name']));
-        $ftype = $_FILES['foto']['type'];
-    } else {
-        $foto = null;
-        $ftype = null;
+        $foto_type = $_FILES['foto']['type'];
     }
 
-    // MODE EDIT
-    if(!empty($_POST['id'])){
+    if (!empty($_POST['id'])) {
+        // EDIT
         $id = intval($_POST['id']);
-
-    if($foto){
-        mysqli_query($conn, "UPDATE kegiatan SET 
-            judul='$judul',
-            lokasi='$lokasi',
-            deskripsi='$deskripsi',
-            tanggal='$tanggal',
-            foto='$foto',
-            foto_type='$ftype'
-        WHERE id=$id");
+        if ($foto !== null) {
+            mysqli_query($conn, "UPDATE kegiatan SET 
+                judul='$judul',
+                lokasi='$lokasi',
+                deskripsi='$deskripsi',
+                tanggal='$tanggal',
+                foto='$foto',
+                foto_type='$foto_type'
+            WHERE id=$id");
+        } else {
+            mysqli_query($conn, "UPDATE kegiatan SET 
+                judul='$judul',
+                lokasi='$lokasi',
+                deskripsi='$deskripsi',
+                tanggal='$tanggal'
+            WHERE id=$id");
+        }
     } else {
-        mysqli_query($conn, "UPDATE kegiatan SET 
-            judul='$judul',
-            lokasi='$lokasi',
-            deskripsi='$deskripsi',
-            tanggal='$tanggal'
-        WHERE id=$id");
-    }
-  }
-
-    // MODE TAMBAH
-    else {
-          mysqli_query($conn, "INSERT INTO kegiatan 
-          (judul, lokasi, deskripsi, tanggal, foto, foto_type) 
-          VALUES (
-              '$judul', 
-              '$lokasi', 
-              '$deskripsi', 
-              '$tanggal',
-              ".($foto ? "'$foto'" : "NULL").",
-              ".($ftype ? "'$ftype'" : "NULL")."
-          )");
+        // TAMBAH
+        mysqli_query($conn, "INSERT INTO kegiatan 
+            (judul, lokasi, deskripsi, tanggal, foto, foto_type) 
+            VALUES (
+                '$judul', 
+                '$lokasi', 
+                '$deskripsi', 
+                '$tanggal',
+                " . ($foto ? "'$foto'" : "NULL") . ",
+                " . ($foto_type ? "'$foto_type'" : "NULL") . "
+            )");
     }
 
-    header("Location: kegiatan.php");
+    header("Location: kegiatan.php?msg=Data kegiatan berhasil disimpan");
     exit;
 }
 
-
 /* ======================================================
-   4. AMBIL DATA LIST KEGIATAN
+   4. AMBIL DATA LIST KEGIATAN (untuk mode list)
    ====================================================== */
-$queryList = mysqli_query($conn, "SELECT * FROM kegiatan ORDER BY id DESC");
+$kegiatanList = [];
+if ($action === 'list') {
+    $search = trim($_GET['search'] ?? '');
+    if ($search !== '') {
+        $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
+        $sql = "
+            SELECT * FROM kegiatan
+            WHERE judul LIKE '{$like}'
+               OR lokasi LIKE '{$like}'
+               OR deskripsi LIKE '{$like}'
+            ORDER BY tanggal DESC, id DESC
+        ";
+    } else {
+        $sql = "SELECT * FROM kegiatan ORDER BY tanggal DESC, id DESC";
+    }
+    $res = mysqli_query($conn, $sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        $kegiatanList[] = $row;
+    }
+}
 
+/* --- PESAN NOTIF --- */
+if (isset($_GET['msg'])) {
+    $message = htmlspecialchars($_GET['msg']);
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Daftar Kegiatan Desa</title>
-
-<!-- ICON -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-
-<style>
-/* ======================================================
-   ================ START OF INLINE CSS =================
-   ====================================================== */
-
-/* DAFTAR KEGIATAN */
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background: #f7f8fa;
-}
-
-.title-row {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* ===== SIDEBAR ===== */
-.sidebar {
-  position: fixed;
-  left: 20px;
-  top: 90px;
-  width: 220px;
-  height: calc(100vh - 152px);
-  background: #5E63BB;
-  padding: 24px 20px;
-  color: white;
-  border-radius: 20px;
-}
-
-.sidebar-header {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  width: 220px;
-  background: transparent;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.sidebar-header img {
-  width: 42px;
-  height: 42px;
-}
-
-/* MENU */
-.menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.menu a {
-  display: flex;
-  gap: 12px;
-  color: white;
-  padding: 12px 16px;
-  text-decoration: none;
-  border-radius: 10px;
-}
-
-.menu a.active {
-  background: #38BDF8;
-}
-
-.menu a:hover {
-  background: #3047d3;
-}
-
-/* LOGOUT */
-.logout {
-  position: absolute;
-  bottom: 24px;
-  left: 20px;
-  right: 20px;
-}
-
-.logout a {
-  display: flex;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: white;
-}
-
-/* ===== MAIN ===== */
-.main {
-  margin-top: -8px;
-  margin-left: 260px;
-  padding: 30px 40px;
-}
-
-/* ===== TOP BAR (DIPERBAIKI) ===== */
-.top-bar {
-    display: flex;
-    justify-content: flex-end;  /* semua elemen di kanan */
-    align-items: center;
-    gap: 16px;
-    padding: 10px 40px; /* sesuaikan padding agar tidak terlalu nempel */
-    background: #fff;
-    height: 56px; /* tinggi bar */
-    box-sizing: border-box;
-}
-
-/* Container untuk grup kanan */
-.right-group {
-    display: flex;
-    align-items: center;
-    gap: 15px; /* jarak antar search, nama, foto */
-}
-
-/* Search input */
-.search-input-wrapper {
-    background: #f3f4f8;
-    border-radius: 999px;
-    padding: 10px 22px;
-    display: flex;
-    align-items: center;
-    width: 250px;
-    box-shadow: none;
-    border: 1px solid #ccc;
-}
-
-.search-input-wrapper input {
-    border: none;
-    outline: none;
-    background: transparent;
-    flex: 1;
-    font-size: 13px;
-    color: #717bbc;
-}
-
-.search-input-wrapper i {
-    color: #717bbc;
-}
-
-/* Nama user */
-.user-text {
-    display: flex;
-    align-items: center;
-    white-space: nowrap; /* supaya nama tidak pecah */
-}
-
-.user-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: #000;
-}
-
-/* Foto profil */
-.user-photo {
-  width: 42px;
-  height: 42px;
-  border-radius: 100%;
-  overflow: hidden;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* BUTTON TAMBAH */
-.btn-tambah {
-  background: #5E63BB;
-  padding: 10px 18px;
-  color: white;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* FORM TAMBAH / EDIT */
-.form-box {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  width: 500px;
-}
-
-.form-box input, 
-.form-box textarea {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-}
-
-.form-box button {
-  margin-top: 15px;
-  padding: 10px 16px;
-  background: #5E63BB;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-/* TABLE */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  background: #f0f0f8;
-  padding: 14px;
-}
-
-td {
-  padding: 14px;
-}
-
-.foto-kegiatan {
-  width: 70px;
-  height: 70px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.breadcrumb a {
-    color: #5E63BB;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.breadcrumb a:hover {
-    text-decoration: underline;
-}
-
-.page-title {
-    font-size: 28px;   /* lebih besar */
-    font-weight: 700;  /* bold */
-    color: #000;        /* opsional */
-}
-
-/* ====== Aksi Tombol (Edit & Hapus) ====== */
-.aksi-btn {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 10px;
-    padding: 0 !important;
-}
-
-.aksi-btn a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 12px;
-    border-radius: 8px;
-    color: #5E63BB;
-    text-decoration: none;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
-
-.aksi-btn a:hover {
-    background: #f0f0f8;
-}
-
-.aksi-btn .fa-trash {
-    color: red !important;
-}
-
-/* ====== FORM TAMBAH / EDIT (DESAIN BARU) ====== */
-.form-container {
-    display: flex;
-    gap: 30px;
-    margin-top: 20px;
-    align-items: flex-start;
-}
-
-/* Box kiri (form input) */
-.form-left {
-    width: 55%;
-    background: white;
-    padding: 28px;
-    border-radius: 14px;
-    border: 1px solid #e2e2e2;
-}
-
-.form-left h3 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.breadcrumb {
-    margin-bottom: 18px;
-    font-size: 14px;
-    color: #777;
-}
-
-/* Input style */
-.form-left input,
-.form-left textarea {
-    width: 100%;
-    padding: 13px 14px;
-    margin-top: 14px;
-    border-radius: 10px;
-    border: 1px solid #c8c8c8;
-    font-size: 14px;
-}
-
-/* Tombol kembali */
-.back-btn {
-    margin-top: 10px;
-    display: inline-block;
-    color: #444;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-/* Tombol simpan */
-.btn-simpan {
-    margin-top: 18px;
-    background: #48C774;
-    padding: 12px 22px;
-    border-radius: 10px;
-    border: none;
-    color: white;
-    font-size: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-/* ====== Upload Image (kanan) ====== */
-.form-right {
-    width: 40%;
-    padding-top: 10px;
-    position: relative;
-}
-
-/* ====== UPLOAD BOX & OVERLAY ====== */
-
-.upload-box {
-    width: 100%;
-    height: 230px;
-    border: 2px dashed #bfbfbf;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #777;
-    font-size: 15px;
-    position: relative;
-    overflow: hidden;
-    background: #fff;
-}
-
-.upload-box:hover {
-    background: #f5f6ff;
-}
-
-/* Preview image */
-.preview-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 16px;
-    z-index: 1;
-}
-
-/* Overlay: ikon + teks */
-.upload-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    text-align: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.upload-overlay i {
-    font-size: 36px;
-    color: #5E63BB;
-    margin-bottom: 10px;
-}
-
-.upload-overlay span {
-    font-size: 16px;
-    color: #000000ff;
-    font-weight: 500;
-}
-
-/* Trigger upload (transparan) */
-.upload-trigger {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    opacity: 0;
-    z-index: 3;
-}
-
-/* Preview image */
-.preview-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 16px;
-    z-index: 1;
-}
-
-/* ====== LOGOUT ====== */
-
-.modal {
-  position: fixed;
-  z-index: 999999;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(8px);        /* efek blur */
-  background: rgba(0, 0, 0, 0.35);    /* glass dim */
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .25s ease;
-}
-
-.modal.show {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.modal-content {
-  width: 340px;
-  padding: 26px 28px;
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(10px);
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  text-align: center;
-  transform: scale(.85);
-  opacity: 0;
-  transition: all .28s cubic-bezier(.18,.89,.32,1.28);
-  border: 1px solid rgba(255,255,255,0.4);
-}
-
-/* Animasi pop */
-.modal-content.show {
-  transform: scale(1);
-  opacity: 1;
-}
-
-/* Icon logout aesthetic */
-.logout-icon {
-  font-size: 52px;
-  color: #e63946;
-  margin-bottom: 10px;
-  animation: rotateIn .45s ease;
-}
-
-@keyframes rotateIn {
-  0% { opacity: 0; transform: rotate(-30deg) scale(.4); }
-  100% { opacity: 1; transform: rotate(0) scale(1); }
-}
-
-.modal-actions {
-  margin-top: 22px;
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-/* CANCEL BUTTON */
-.btn-cancel {
-  flex: 1;
-  padding: 10px 0;
-  border-radius: 10px;
-  border: none;
-  background: #dcdcdc;
-  cursor: pointer;
-  font-weight: 600;
-  transition: .2s;
-}
-.btn-cancel:hover {
-  background: #bfbfbf;
-}
-
-/* LOGOUT BUTTON */
-.btn-logout {
-  flex: 1;
-  padding: 10px 0;
-  border-radius: 10px;
-  border: none;
-  background: #e63946;
-  color: white;
-  text-decoration: none;
-  font-weight: 600;
-  transition: .2s;
-}
-.btn-logout:hover {
-  background: #c92c39;
-}
-
-
-/* ======================================================
-   ================= END OF INLINE CSS ==================
-   ====================================================== */
-</style>
+    <meta charset="UTF-8">
+    <title><?= htmlspecialchars($page_title) ?> - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f4f5fb;
+            color: #333;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        .app { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            position: fixed;
+            left: 20px;
+            top: 90px;
+            width: 260px;
+            height: calc(100vh - 104px);
+            background: linear-gradient(200deg, #1c3f9f, #3B82F6);
+            padding: 24px 20px;
+            color: white;
+            border-radius: 20px;
+        }
+
+        .sidebar-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 220px;
+            background: transparent;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header div {
+            color: #000000ff;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .sidebar-header img {
+            height: 48px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .menu {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            opacity: .9;
+            color: #e5e7ff;
+        }
+        .menu-item:hover {
+            background: rgba(255,255,255,.15);
+            cursor: pointer;
+        }
+        .menu-item.active {
+            background: #38BDF8;
+            opacity: 1;
+            font-weight: 600;
+            color: #fff;
+        }
+        .menu-item img { width: 22px; }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+        }
+        .sidebar-footer .logout {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 18px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .sidebar-footer .logout img { width: 20px; height: 20px; }
+
+        .main {
+            margin-top: -3px;
+            margin-left: 260px;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .search-input-wrapper {
+            background: #ffffff;
+            border-radius: 999px;
+            padding: 10px 22px;
+            display: flex;
+            align-items: center;
+            width: 55%;
+            max-width: 580px;
+            box-shadow: 0 6px 16px rgba(15,23,42,.08);
+            margin-left: auto;
+            margin-right: 20px;
+        }
+
+        .search-icon {
+            font-size: 18px;
+            opacity: 0.55;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input-wrapper input {
+            border: none;
+            outline: none;
+            background: transparent;
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .profile-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 20px;
+        }
+
+        .profile-text {
+            text-align: right;
+            font-size: 12px;
+        }
+
+        .profile-text .name { font-weight: 600; }
+        .profile-text .role { font-size: 11px; color: #9ca3af; }
+
+        .profile-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            background: #f97316;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .content-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px 28px;
+            box-shadow: 0 8px 20px rgba(15,23,42,.06);
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .header-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .breadcrumb {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px;
+            margin-bottom: 4px;
+        }
+
+        h2.page-title {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        thead { border-bottom: 1px solid #e5e7eb; }
+        th { color: #6b7280; font-weight: 500; }
+
+        tbody tr:hover { background: #f9fafb; }
+
+        .aksi-col {
+            width: 70px;
+            text-align: center;
+        }
+
+        .icon-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 0 2px;
+        }
+
+        .icon-btn.delete { color: #ef4444; }
+
+        .alert {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .alert-info {
+            background: #e0f2fe;
+            color: #1d4ed8;
+        }
+
+        .text-judul { font-weight: 500; }
+        .text-tanggal { font-size: 12px; color: #6b7280; }
+
+        .foto-bulat {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            object-fit: cover;
+            background: #e5e7eb;
+            display: block;
+        }
+
+        /* ===== DETAIL KEGIATAN (mirip saran) ===== */
+        .detail-container {
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px 40px;
+            box-shadow: 0 8px 20px rgba(15,23,42,.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .detail-inner {
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .detail-back {
+            font-size: 24px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .detail-image {
+            width: 100%;
+            max-height: 420px;
+            object-fit: cover;
+            border-radius: 18px;
+            margin-bottom: 18px;
+            background: #e5e7eb;
+        }
+
+        .detail-date {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .detail-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .detail-text {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* FORM TAMBAH/EDIT */
+        .form-container {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            align-items: flex-start;
+        }
+
+        .form-left {
+            width: 55%;
+            background: white;
+            padding: 28px;
+            border-radius: 14px;
+            border: 1px solid #e2e2e2;
+        }
+
+        .form-left h3 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .form-left input,
+        .form-left textarea {
+            width: 100%;
+            padding: 13px 14px;
+            margin-top: 14px;
+            border-radius: 10px;
+            border: 1px solid #c8c8c8;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            margin-top: 10px;
+            display: inline-block;
+            color: #444;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-simpan {
+            margin-top: 18px;
+            background: #48C774;
+            padding: 12px 22px;
+            border-radius: 10px;
+            border: none;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* UPLOAD */
+        .form-right {
+            width: 40%;
+            padding-top: 10px;
+            position: relative;
+        }
+
+        .upload-box {
+            width: 100%;
+            height: 230px;
+            border: 2px dashed #bfbfbf;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #777;
+            font-size: 15px;
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .upload-box:hover { background: #f5f6ff; }
+
+        .preview-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            z-index: 1;
+        }
+
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .upload-overlay i {
+            font-size: 36px;
+            color: #5E63BB;
+            margin-bottom: 10px;
+        }
+
+        .upload-overlay span {
+            font-size: 16px;
+            color: #000000ff;
+            font-weight: 500;
+        }
+
+        .upload-trigger {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            opacity: 0;
+            z-index: 3;
+        }
+
+        /* BUTTON TAMBAH */
+        .btn-tambah {
+            background: #5E63BB;
+            padding: 10px 18px;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- SIDEBAR HEADER -->
-<div class="sidebar-header">
-  <img src="../assets/images/logo-nganjuk.png">
-  <div class="title">Desa Banjardowo</div>
-</div>
+<div class="app">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/images/logo-nganjuk.png" alt="Logo Nganjuk">
+            <div>Desa Banjardowo</div>
+        </div>
 
+        <div class="menu">
+            <a href="dashboard.php" class="menu-item">
+                <img src="../assets/icons/dashboard1.png" alt="">Dashboard
+            </a>
+            <a href="kegiatan.php" class="menu-item active">
+                <img src="../assets/icons/kegiatandesa.png" alt="">Kegiatan Desa
+            </a>
+            <a href="prestasi.php" class="menu-item">
+                <img src="../assets/icons/prestasi.png" alt="">Prestasi
+            </a>
+            <a href="saran.php" class="menu-item">
+                <img src="../assets/icons/kotaksaran1.png" alt="">Kotak Saran
+            </a>
+            <a href="pelayanan.php" class="menu-item">
+                <img src="../assets/icons/pelayanan1.png" alt="">Pelayanan
+            </a>
+        </div>
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <ul class="menu">
-    <li> 
-      <a href="dashboard.php">
-        <img src="../assets/icons/dashboard1.png" alt="Dashboard" style="width:20px; height:20px; margin-right:8px;">
-        Dashboard
-      </a>
-    </li>
-    <li> 
-      <a href="kegiatan.php" class="active">
-        <img src="../assets/icons/kegiatandesa.png" alt="Kegiatan" style="width:20px; height:20px; margin-right:8px;">
-        Kegiatan Desa
-      </a>
-    </li>
-    <li>
-      <a href="prestasi.php">
-        <img src="../assets/icons/prestasi.png" alt="Prestasi" style="width:20px; height:20px; margin-right:8px;">
-        Prestasi
-      </a>
-    </li>
-    <li>
-      <a href="saran.php">
-        <img src="../assets/icons/kotaksaran1.png" alt="Kotak Saran" style="width:20px; height:20px; margin-right:8px;">
-        Kotak Saran
-      </a>
-    </li>
-    <li>
-      <a href="pelayanan.php">
-        <img src="../assets/icons/pelayanan1.png" alt="Pelayanan" style="width:20px; height:20px; margin-right:8px;">
-        Pelayanan
-      </a>
-    </li>
-  </ul>
-
-  <div class="logout">
-<a href="#" id="logoutBtn">
-      <i class="fa-solid fa-arrow-right-from-bracket"></i>Keluar
-    </a>
-  </div>
-</aside>
-
-<div id="logoutModal" class="modal">
-  <div class="modal-content">
-    <i class="fa-solid fa-circle-xmark logout-icon"></i>
-    <h3 style="margin: 0; font-size: 20px; font-weight: 700;">Keluar Akun?</h3>
-    <p style="margin-top: 6px; color: #444;">Anda yakin ingin keluar dari akun?</p>
-
-    <div class="modal-actions">
-      <button id="cancelLogout" class="btn-cancel">Batal</button>
-      <a href="../logout.php" class="btn-logout">Keluar</a>
-    </div>
-  </div>
-</div>
-
-
-
-<div class="main">
-<div class="top-bar">
-  <div class="right-group">
-    <div class="search-input-wrapper">
-        <input type="text" placeholder="Search...">
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <div class="sidebar-footer">
+            <a href="../logout.php" class="logout">
+                <img src="../assets/icons/logout1.png" alt="">
+                <span>Keluar</span>
+            </a>
+        </div>
     </div>
 
-    <div class="user-text">
-        <div class="user-name"><?= htmlspecialchars($userData['nama_lengkap']); ?></div>
+    <!-- MAIN -->
+    <div class="main">
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <form method="get" class="search-input-wrapper">
+                <input type="hidden" name="action" value="list">
+                <span class="search-icon">🔍</span>
+                <input type="text" name="search"
+                       placeholder="Cari kegiatan..."
+                       value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+            </form>
+
+            <div class="profile-wrapper">
+                <div class="profile-text">
+                    <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
+                    <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
+                </div>
+                <div class="profile-avatar">
+                    <?= $inisialAdmin; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==== NOTIF SUCCESS (TOAST) ==== -->
+        <?php if ($message): ?>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: '<?= $message ?>',
+                        showConfirmButton: false,
+                        timer: 2500,
+                        timerProgressBar: true
+                    });
+                });
+            </script>
+        <?php endif; ?>
+
+
+        <!-- ========== LIST KEGIATAN ========== -->
+        <?php if ($action === 'list'): ?>
+            <div class="content-card">
+                <div class="header-row">
+                    <div>
+                        <h2 class="page-title"><?= htmlspecialchars($page_title) ?></h2>
+                        <div class="breadcrumb">Dashboard / Kegiatan Desa / Daftar Kegiatan</div>
+                    </div>
+                    <a href="?action=tambah">
+                        <button class="btn-tambah"><i class="fas fa-plus"></i> Tambah</button>
+                    </a>
+                </div>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:10%"></th>
+                        <th style="width:6%">No</th>
+                        <th style="width:22%">Nama Kegiatan</th>
+                        <th style="width:18%">Tanggal</th>
+                        <th>Deskripsi (Singkat)</th>
+                        <th class="aksi-col">Aksi</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php if (empty($kegiatanList)): ?>
+                        <tr>
+                            <td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">
+                                Belum ada data kegiatan.
+                            </td>
+                        </tr>
+                    <?php else:
+                        $no = 1;
+                        foreach ($kegiatanList as $row): ?>
+                            <tr>
+                                <td>
+                                    <?php if (!empty($row['foto'])): ?>
+                                        <img src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto']) ?>"
+                                             alt="Foto" class="foto-bulat">
+                                    <?php else: ?>
+                                        <span class="foto-bulat"></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= $no++; ?></td>
+                                <td class="text-judul">
+                                    <a href="?action=view&id=<?= $row['id'] ?>">
+                                        <?= htmlspecialchars($row['judul']) ?>
+                                    </a>
+                                </td>
+                                <td class="text-tanggal">
+                                    <?= date('d F Y', strtotime($row['tanggal'])) ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $desc = strip_tags($row['deskripsi']);
+                                    echo nl2br(htmlspecialchars(substr($desc, 0, 150) . (strlen($desc) > 150 ? '...' : '')));
+                                    ?>
+                                </td>
+                                <td class="aksi-col">
+                                    <a href="?action=edit&id=<?= $row['id'] ?>" title="Edit">
+                                        <button class="icon-btn">✏️</button>
+                                    </a>
+                                    <button class="icon-btn delete" title="Hapus"
+                                            onclick="confirmDelete('?del=<?= $row['id'] ?>')">
+                                        🗑
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach;
+                    endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+        <!-- ========== DETAIL KEGIATAN ========== -->
+        <?php elseif ($action === 'view' && $detail): ?>
+            <div class="detail-container">
+                <div class="detail-inner">
+                    <div class="detail-back" onclick="window.location.href='kegiatan.php'">⟵</div>
+
+                    <?php if (!empty($detail['foto'])): ?>
+                        <img src="data:<?= $detail['foto_type'] ?>;base64,<?= base64_encode($detail['foto']) ?>"
+                             alt="Foto Kegiatan" class="detail-image">
+                    <?php else: ?>
+                        <div class="detail-image"></div>
+                    <?php endif; ?>
+
+                    <div class="detail-date"><?= date('d F Y', strtotime($detail['tanggal'])) ?></div>
+                    <div class="detail-title"><?= htmlspecialchars($detail['judul']) ?></div>
+                    <div class="detail-text">
+                        <p><strong>Lokasi:</strong> <?= htmlspecialchars($detail['lokasi']) ?></p>
+                        <p><strong>Deskripsi:</strong><br><?= nl2br(htmlspecialchars($detail['deskripsi'])) ?></p>
+                    </div>
+                </div>
+            </div>
+
+        <!-- ========== TAMBAH / EDIT FORM ========== -->
+        <?php elseif ($action === 'tambah' || $action === 'edit'): ?>
+            <div class="content-card">
+                <div class="header-row">
+                    <div>
+                        <h2 class="page-title"><?= htmlspecialchars($page_title) ?></h2>
+                        <div class="breadcrumb">
+                            Dashboard / Kegiatan Desa / 
+                            <?= $action === 'tambah' ? 'Tambah' : 'Edit' ?> Kegiatan
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
+
+                    <div class="form-container">
+                        <!-- KIRI: FORM -->
+                        <div class="form-left">
+                            <label>Nama Kegiatan</label>
+                            <input type="text" name="judul" required
+                                   value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
+
+                            <label>Lokasi</label>
+                            <input type="text" name="lokasi" required
+                                   value="<?= htmlspecialchars($edit['lokasi'] ?? '') ?>">
+
+                            <label>Deskripsi</label>
+                            <textarea name="deskripsi" rows="5" required><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
+
+                            <label>Tanggal</label>
+                            <input type="date" name="tanggal" required
+                                   value="<?= $edit['tanggal'] ?? '' ?>">
+                        </div>
+
+                        <!-- KANAN: UPLOAD -->
+                        <div class="form-right">
+                            <div class="upload-box" id="uploadBox">
+                                <img id="previewImg" class="preview-img"
+                                     src="<?= ($action === 'edit' && !empty($edit['foto']))
+                                         ? 'data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto'])
+                                         : '' ?>"
+                                     style="<?= ($action === 'edit' && !empty($edit['foto'])) ? 'display:block;' : 'display:none;' ?>"
+                                     alt="Preview">
+
+                                <div class="upload-overlay">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <span>
+                                        <?= ($action === 'edit' && !empty($edit['foto']))
+                                            ? 'Klik untuk Ganti Gambar'
+                                            : 'Pilih Image'; ?>
+                                    </span>
+                                </div>
+
+                                <input type="file" id="uploadFoto" name="foto" class="upload-trigger" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" name="save_kegiatan" class="btn-simpan">
+                        <i class="fas fa-save"></i>
+                        <?= $action === 'edit' ? 'Update Data' : 'Simpan Data' ?>
+                    </button>
+                    <a href="kegiatan.php" class="back-btn">&larr; Kembali ke Daftar</a>
+                </form>
+            </div>
+        <?php endif; ?>
+
+
     </div>
-
-    <a href="profile.php" class="user-photo">
-      <svg viewBox="0 0 24 24" fill="#ffffff" width="42" height="42">
-          <circle cx="12" cy="12" r="12" fill="#b4b4b4"></circle>
-          <circle cx="12" cy="10" r="4" fill="#ffffff"></circle>
-          <path d="M4 20c1.5-4 6.5-4 8-4s6.5 0 8 4" fill="#ffffff"></path>
-      </svg>
-    </a>
-  </div>
 </div>
 
-
-<!-- TITLE ROW -->
-<div class="title-row">
-  <div class="page-title"><?= htmlspecialchars($page_title) ?></div>
-
-  <?php if($mode == "list"): ?>
-    <a href="kegiatan.php?tambah=1">
-      <button class="btn-tambah"><i class="fa-solid fa-plus"></i> Tambah</button>
-    </a>
-  <?php endif; ?>
-</div>
-
-<div class="breadcrumb">
-    <a href="dashboard.php">Dashboard</a> / 
-    <a href="kegiatan.php">Kegiatan Desa</a>
-    <?php if ($mode == "tambah"): ?>
-        / Tambah Kegiatan Desa
-    <?php elseif ($mode == "edit"): ?>
-        / Edit Kegiatan Desa
-    <?php endif; ?>
-</div>
-
-
-<!-- ===================================================
-     5. FORM TAMBAH / EDIT
-     =================================================== -->
-<?php if($mode != "list"): ?>
-
-<form method="POST" enctype="multipart/form-data">
-<div class="form-container">
-
-    <!-- ================= LEFT FORM ================= -->
-    <div class="form-left">
-        <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
-
-        <label>Nama Kegiatan Desa</label>
-        <input type="text" name="judul" required
-               value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
-
-        <label>Lokasi</label>
-        <input type="text" name="lokasi" required
-               value="<?= htmlspecialchars($edit['lokasi'] ?? '') ?>">
-
-        <label>Deskripsi</label>
-        <textarea name="deskripsi" rows="5">
-            <?= htmlspecialchars($edit['deskripsi'] ?? '') ?>
-        </textarea>
-
-        <label>Tanggal</label>
-        <input type="date" name="tanggal" required
-               value="<?= $edit['tanggal'] ?? '' ?>">
-    </div>
-
-    <!-- ================= RIGHT UPLOAD IMAGE ================= -->
-<div class="upload-box" id="uploadBox">
-    <!-- Preview foto -->
-    <img 
-        id="previewImg"
-        class="preview-img"
-        src="<?php 
-            if ($mode == 'edit' && !empty($edit['foto'])) {
-                echo 'data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto']);
+<script>
+    function confirmDelete(url) {
+        Swal.fire({
+            title: 'Hapus Kegiatan?',
+            text: 'Data yang sudah dihapus tidak bisa dikembalikan.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
             }
-        ?>"
-        style="<?php echo ($mode == 'edit' && !empty($edit['foto'])) ? 'display:block;' : 'display:none;'; ?>"
-        alt="Preview"
-    />
+        });
+    }
 
-    <!-- Overlay: ikon + teks -->
-    <div class="upload-overlay">
-        <i class="fa-solid fa-cloud-arrow-up"></i>
-        <span>
-            <?= ($mode == "edit" && !empty($edit['foto'])) 
-                ? 'Klik untuk Ganti Gambar'
-                : 'Pilih Image'; ?>
-        </span>
-    </div>
+    // Preview gambar
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileInput = document.getElementById('uploadFoto');
+        const previewImg = document.getElementById('previewImg');
 
-    <!-- Input file -->
-    <input 
-        type="file" 
-        id="uploadFoto" 
-        name="foto" 
-        class="upload-trigger" 
-        accept="image/*"
-    >
-</div>
+        if (!fileInput || !previewImg) return;
 
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
 
-
-</div> <!-- end form-container -->
-
-<button class="btn-simpan" type="submit" name="save_kegiatan">
-    <i class="fa-solid fa-plus"></i>
-    <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
-</button>
-<a href="kegiatan.php" class="back-btn">&larr; Kembali</a>
-</form>
-
-<?php endif; ?>
-
-
-
-<!-- ===================================================
-     6. LIST DATA
-     =================================================== -->
-<?php if($mode == "list"): ?>
-<table>
-<tr>
-  <th></th>
-  <th>No</th>
-  <th>Nama Kegiatan Desa</th>
-  <th>Lokasi</th>
-  <th>Deskripsi</th>
-  <th>Tanggal</th>
-  <th>Aksi</th>
-</tr>
-<?php 
-$no = 1;
-while($row = mysqli_fetch_assoc($queryList)): 
-?>
-<tr>
-  <td>
-    <?php if(!empty($row['foto'])): ?>
-      <img class="foto-kegiatan" src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto']) ?>">
-    <?php endif; ?>
-  </td>
-  <td><?= $no++; ?></td>
-  <td><?= htmlspecialchars($row['judul']) ?></td>
-  <td><?= htmlspecialchars($row['lokasi'] ?? '-') ?></td>
-  <td>
-    <?php 
-      $maxLength = 250;
-      $desc = strip_tags($row['deskripsi']);
-      if(strlen($desc) > $maxLength){
-        echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
-      } else {
-        echo nl2br(htmlspecialchars($desc));
-      }
-    ?>
-  </td>
-  <td><?= date("d F Y", strtotime($row['tanggal'])) ?></td>
-  <td class="aksi-btn">
-    <a href="kegiatan.php?edit=<?= $row['id'] ?>">
-      <i class="fa-solid fa-pen"></i>
-    </a>
-    <a href="kegiatan.php?del=<?= $row['id'] ?>" onclick="return confirm('Hapus kegiatan ini?')">
-      <i class="fa-solid fa-trash"></i>
-    </a>
-  </td>
-</tr>
-<?php endwhile; ?>
-</table>
-
-<?php endif; ?>
-
-
-</div> <!-- END MAIN -->
-<script>
-const logoutBtn = document.getElementById("logoutBtn");
-const logoutModal = document.getElementById("logoutModal");
-const cancelLogout = document.getElementById("cancelLogout");
-const modalContent = document.querySelector(".modal-content");
-
-// TAMPILKAN ANIMASI MODAL
-logoutBtn.onclick = function(e){
-    e.preventDefault();
-
-    logoutModal.classList.add("show");
-
-    // delay kecil agar animasi scale aktif
-    setTimeout(() => {
-        modalContent.classList.add("show");
-    }, 10);
-};
-
-// TUTUP MODAL DENGAN ANIMASI
-cancelLogout.onclick = function(){
-    modalContent.classList.remove("show");
-
-    setTimeout(() => {
-        logoutModal.classList.remove("show");
-    }, 180); // menunggu animasi pop-out
-};
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const fileInput  = document.getElementById('uploadFoto');
-    const previewImg = document.getElementById('previewImg');
-
-    if (!fileInput || !previewImg) return;
-
-    fileInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            previewImg.src = e.target.result;    // ganti gambar preview
-            previewImg.style.display = 'block';  // pastikan kelihatan
-        };
-        reader.readAsDataURL(file);
+            const reader = new FileReader();
+            reader.onload = e => {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
     });
-});
 </script>
-
 
 </body>
 </html>
