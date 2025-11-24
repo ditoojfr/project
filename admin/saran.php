@@ -50,7 +50,6 @@ $message = "";
 if ($action === 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
 
-    // kalau nanti ingin hapus file fisik foto, bisa tambahkan SELECT foto_sampul di sini
     mysqli_query($conn, "DELETE FROM saran WHERE id = {$id}");
     header("Location: saran.php?msg=Saran+berhasil+dihapus");
     exit;
@@ -111,9 +110,6 @@ if (isset($_GET['msg'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
 
-    <!-- SweetAlert2 untuk popup hapus -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
         /* --- Reset kecil & font --- */
         *{box-sizing:border-box;margin:0;padding:0}
@@ -125,21 +121,17 @@ if (isset($_GET['msg'])) {
         a{text-decoration:none;color:inherit}
         .app{display:flex;min-height:100vh}
 
-       .sidebar {
-    position: fixed;
-    left: 20px;
-    top: 90px;
-    width: 260px;
-    height: calc(100vh - 104px);
-
-    /* 🎨 GRADIENT BARU */
-    background: linear-gradient(200deg, #1c3f9f, #3B82F6);
-
-    padding: 24px 20px;
-    color: white;
-    border-radius: 20px;
-}
-
+        .sidebar {
+            position: fixed;
+            left: 20px;
+            top: 90px;
+            width: 260px;
+            height: calc(100vh - 104px);
+            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
+            padding: 24px 20px;
+            color: white;
+            border-radius: 20px;
+        }
 
         .sidebar-header {
             position: fixed;
@@ -261,58 +253,58 @@ if (isset($_GET['msg'])) {
         }
 
         .profile-wrapper{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-left:20px;
-}
+            display:flex;
+            align-items:center;
+            gap:10px;
+            margin-left:20px;
+        }
 
-.profile-text{
-    text-align:right;
-    font-size:12px;
-}
-.profile-text .name{
-    font-weight:600;
-}
-.profile-text .role{
-    font-size:11px;
-    color:#9ca3af;
-}
+        .profile-text{
+            text-align:right;
+            font-size:12px;
+        }
+        .profile-text .name{
+            font-weight:600;
+        }
+        .profile-text .role{
+            font-size:11px;
+            color:#9ca3af;
+        }
 
-.profile-avatar{
-    width:38px;
-    height:38px;
-    border-radius:999px;
-    background:#f97316;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:600;
-    font-size:16px;
-    color:#fff;
-    overflow:hidden;
-    text-decoration:none;
-    cursor:pointer;
-}
+        .profile-avatar{
+            width:38px;
+            height:38px;
+            border-radius:999px;
+            background:#f97316;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:600;
+            font-size:16px;
+            color:#fff;
+            overflow:hidden;
+            text-decoration:none;
+            cursor:pointer;
+        }
 
-.profile-avatar img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    border-radius:999px;
-    display:block;
-}
+        .profile-avatar img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            border-radius:999px;
+            display:block;
+        }
 
         .content-card {
             background: #fff;
             border-radius: 18px;
             padding: 24px 28px;
             box-shadow: 0 8px 20px rgba(15,23,42,.06);
-            width: 100%;            /* lebar maksimum area parent (main) */
-            max-width: none;        /* nonaktifkan batas lebar, boleh dihapus atau set none */
-            margin: 0;              /* hilangkan margin auto supaya tidak di tengah dan kecil */
-            flex: 1;                /* jika parent flex, card akan meluas otomatis */
-            box-sizing: border-box; /* padding tetap dihitung agar desain tetap rapi */
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            flex: 1;
+            box-sizing: border-box;
         }
 
         .header-row{
@@ -374,9 +366,10 @@ if (isset($_GET['msg'])) {
             border-radius:8px;
             font-size:12px;
         }
+        /* sama seperti di pelayanan.php */
         .alert-info{
-            background:#e0f2fe;
-            color:#1d4ed8;
+            background:#bbf7d0;
+            color:#166534;
         }
 
         .text-judul{font-weight:500}
@@ -434,13 +427,88 @@ if (isset($_GET['msg'])) {
             line-height:1.6;
         }
 
-        /* ===== SIMPLE SWEETALERT FIXES (no animations) =====
-           keep minimal styling so SweetAlert works normally and
-           doesn't lock the page when cancelled */
-        .swal2-container {
-            z-index: 100000 !important; /* normal high z-index but not insane */
+        /* ===== MODAL HAPUS – SAMA SEPERTI PELAYANAN ===== */
+        .modal-backdrop{
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,0.35);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:999;
         }
 
+        .modal-card{
+            background:#ffffff;
+            border-radius:22px;
+            padding:32px 40px;
+            width:420px;
+            max-width:90%;
+            box-shadow:0 20px 40px rgba(15,23,42,0.25);
+            text-align:center;
+            animation:modalIn .18s ease-out;
+        }
+
+        .modal-icon{
+            width:72px;
+            height:72px;
+            border-radius:999px;
+            border:3px solid #fdba74;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:0 auto 18px auto;
+            color:#f97316;
+            font-size:36px;
+            font-weight:600;
+        }
+
+        .modal-title{
+            font-size:22px;
+            font-weight:600;
+            margin-bottom:8px;
+            color:#374151;
+        }
+
+        .modal-text{
+            font-size:14px;
+            color:#4b5563;
+            margin-bottom:22px;
+            line-height:1.5;
+        }
+
+        .modal-actions{
+            display:flex;
+            justify-content:center;
+            gap:12px;
+        }
+
+        .btn-danger{
+            background:#e11d48;
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:10px 22px;
+            font-size:14px;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        .btn-outline{
+            background:#4b5563;
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:10px 22px;
+            font-size:14px;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        @keyframes modalIn{
+            from{opacity:0;transform:translateY(10px) scale(.97);}
+            to{opacity:1;transform:translateY(0) scale(1);}
+        }
     </style>
 </head>
 <body>
@@ -490,22 +558,20 @@ if (isset($_GET['msg'])) {
                        value="<?php echo htmlspecialchars($search); ?>">
             </form>
 
-        <div class="profile-wrapper">
-    <div class="profile-text">
-        <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
-        <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
-    </div>
+            <div class="profile-wrapper">
+                <div class="profile-text">
+                    <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
+                    <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
+                </div>
 
-    <a href="profile.php" class="profile-avatar">
-        <?php if (!empty($fotoProfilSrc)): ?>
-            <img src="<?= $fotoProfilSrc; ?>" alt="Foto Profil">
-        <?php else: ?>
-            <?= htmlspecialchars($inisialAdmin); ?>
-        <?php endif; ?>
-    </a>
-</div>
-
-
+                <a href="profile.php" class="profile-avatar">
+                    <?php if (!empty($fotoProfilSrc)): ?>
+                        <img src="<?= $fotoProfilSrc; ?>" alt="Foto Profil">
+                    <?php else: ?>
+                        <?= htmlspecialchars($inisialAdmin); ?>
+                    <?php endif; ?>
+                </a>
+            </div>
         </div>
 
         <?php if ($action === 'list'): ?>
@@ -586,7 +652,7 @@ if (isset($_GET['msg'])) {
                                 <td class="aksi-col">
                                     <button class="icon-btn delete"
                                             title="Hapus"
-                                            onclick="confirmDelete('saran.php?action=delete&id=<?php echo $row['id']; ?>')">
+                                            onclick="openDeleteModal(<?php echo $row['id']; ?>)">
                                         🗑
                                     </button>
                                 </td>
@@ -601,7 +667,7 @@ if (isset($_GET['msg'])) {
             <!-- ================= DETAIL SARAN ================= -->
             <div class="detail-container">
                 <div class="detail-inner">
-                    <!-- tombol kembali seperti ikon panah di desain -->
+                    <!-- tombol kembali -->
                     <div class="detail-back" onclick="window.location.href='saran.php'">⟵</div>
 
                     <?php if (!empty($detail['foto_sampul'])): ?>
@@ -634,43 +700,40 @@ if (isset($_GET['msg'])) {
     </div>
 </div>
 
+<!-- MODAL KONFIRMASI HAPUS (SAMA DENGAN PELAYANAN) -->
+<div id="deleteModal" class="modal-backdrop">
+    <div class="modal-card">
+        <div class="modal-icon">!</div>
+        <div class="modal-title">Hapus Saran?</div>
+        <div class="modal-text">
+            Data yang sudah dihapus tidak bisa dikembalikan.
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-danger" onclick="confirmDelete()">Ya, hapus</button>
+            <button type="button" class="btn-outline" onclick="closeDeleteModal()">Batal</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Popup hapus pakai SweetAlert2 (versi normal, tanpa animasi api)
-    function confirmDelete(url) {
-        Swal.fire({
-            title: 'Hapus Saran?',
-            text: 'Data yang sudah dihapus tidak bisa dikembalikan.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#e11d48',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal',
-            allowOutsideClick: true,
-            allowEscapeKey: true,
-            backdrop: true
-        }).then((result) => {
-            // Jika dikonfirmasi -> arahkan ke URL hapus
-            if (result.isConfirmed) {
-                window.location.href = url;
-            }
-            // Jika batal atau klik luar/esc -> SweetAlert otomatis menutup
-            // (tidak perlu panggil Swal.close(); karena SweetAlert menutup sendiri)
-        });
+    let deleteId = null;
+
+    function openDeleteModal(id){
+        deleteId = id;
+        const modal = document.getElementById('deleteModal');
+        if (modal) modal.style.display = 'flex';
     }
 
-    // Toast sukses (menggunakan SweetAlert standar)
-    <?php if (!empty($message)): ?>
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: '<?php echo $message; ?>',
-        showConfirmButton: false,
-        timer: 2500,
-        timerProgressBar: true
-    });
-    <?php endif; ?>
+    function closeDeleteModal(){
+        deleteId = null;
+        const modal = document.getElementById('deleteModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function confirmDelete(){
+        if (!deleteId) return;
+        window.location.href = 'saran.php?action=delete&id=' + deleteId;
+    }
 </script>
 </body>
 </html>

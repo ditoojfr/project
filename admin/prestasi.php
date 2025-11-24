@@ -39,7 +39,8 @@ if (!empty($userData['foto'])) {
 if (isset($_GET['del'])) {
     $id = intval($_GET['del']);
     mysqli_query($conn, "DELETE FROM prestasi WHERE id={$id}");
-    header("Location: prestasi.php");
+    // redirect dengan pesan sukses hapus
+    header("Location: prestasi.php?msg=Prestasi+berhasil+dihapus");
     exit;
 }
 
@@ -111,6 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_prestasi'])) {
             WHERE id = $id");
         }
 
+        // redirect dengan pesan sukses update
+        header("Location: prestasi.php?msg=Prestasi+berhasil+diupdate");
+        exit;
+
     } else {
         // TAMBAH
         mysqli_query($conn, "INSERT INTO prestasi 
@@ -124,10 +129,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_prestasi'])) {
                 " . ($foto ? "'$foto'" : "NULL") . ",
                 " . ($ftype ? "'$ftype'" : "NULL") . "
             )");
-    }
 
-    header("Location: prestasi.php");
-    exit;
+        // redirect dengan pesan sukses tambah
+        header("Location: prestasi.php?msg=Prestasi+baru+berhasil+ditambahkan");
+        exit;
+    }
 }
 
 
@@ -150,96 +156,131 @@ if ($search !== '') {
 
 $queryList = mysqli_query($conn, $sqlList);
 
+// ================== 5. PESAN NOTIFIKASI ==================
+$message = '';
+if (isset($_GET['msg'])) {
+    $message = htmlspecialchars($_GET['msg']);
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Prestasi</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <title>Prestasi - Admin</title>
 
-<style>
-/* === GLOBAL === */
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:'Poppins',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f4f5fb;
-  color:#333;
-}
-a{text-decoration:none;color:inherit}
+    <!-- SAMA DENGAN PELAYANAN.PHP -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
 
-/* ===== SIDEBAR ===== */
-.sidebar {
-  position: fixed;
-  left: 20px;
-  top: 90px;
-  width: 260px;
-  height: calc(100vh - 104px);
-  background: linear-gradient(200deg, #1c3f9f, #3B82F6);
-  padding: 24px 20px;
-  color: white;
-  border-radius: 20px;
-}
-.sidebar-header {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  width: 220px;
-  background: transparent;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.sidebar-header img{
-  height:48px;
-  width:auto;
-  display:block;
-  object-fit:contain;
-}
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{
+            font-family:'Poppins',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+            background:#f4f5fb;
+            color:#333;
+        }
+        a{text-decoration:none;color:inherit}
+        .app{display:flex;min-height:100vh}
 
-.sidebar-header .title{
-  color:#000;
-  font-weight:600;
-  font-size:15px;
-}
+        /* ====== SIDEBAR – COPY DARI PELAYANAN.PHP ====== */
+        .sidebar {
+            position: fixed;
+            left: 20px;
+            top: 90px;
+            width: 260px;
+            height: calc(100vh - 104px);
+            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
+            padding: 24px 20px;
+            color: white;
+            border-radius: 20px;
+        }
 
-.menu { list-style:none;padding:0;margin-top:16px; }
-.menu a{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  color:white;
-  padding:10px 12px;
-  border-radius:999px;
-  font-size:13px;
-  opacity:.9;
-}
-.menu a.active{background:#38BDF8;opacity:1;font-weight:600;}
-.menu a:hover{background:rgba(255,255,255,.15);}
-.logout{
-  position:absolute;bottom:24px;left:20px;right:20px;
-}
-.logout a{
-  display:flex;
-  gap:12px;
-  padding:12px 18px;
-  border-radius:8px;
-  color:white;
-}
+        .sidebar-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: transparent;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-/* ===== MAIN WRAPPER ===== */
-.main{
-  margin-top:-3px;
-  margin-left:260px;
-  padding:30px 40px;
-  display:flex;
-  flex-direction:column;
-  flex:1;
-  min-width:0;
-}
+        .sidebar-header div {
+            color: #000000ff;
+            font-weight: 600;
+            font-size: 15px;
+        }
 
- /* BAR ATAS: SEARCH DI TENGAH + PROFIL KANAN */
+        .sidebar-header img {
+            height: 48px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .menu{
+            margin-top:16px;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+        }
+        .menu-item{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding:10px 12px;
+            border-radius:999px;
+            font-size:13px;
+            opacity:.9;
+            color:#e5e7ff;
+        }
+        .menu-item:hover{
+            background:rgba(255,255,255,.15);
+            cursor:pointer;
+        }
+        .menu-item.active{
+            background:#38BDF8;
+            opacity:1;
+            font-weight:600;
+            color:#fff;
+        }
+        .menu-item img{width:22px}
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+        }
+        .sidebar-footer .logout {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 18px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .sidebar-footer .logout img {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ====== MAIN – COPY DARI PELAYANAN.PHP ====== */
+        .main{
+            margin-top: -3px;
+            margin-left: 260px;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+
         .top-bar{
             display:flex;
             align-items:center;
@@ -272,578 +313,581 @@ a{text-decoration:none;color:inherit}
             flex:1;
             font-size:13px;
         }
-.profile-wrapper{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-left:20px;
-}
-.profile-text{
-  text-align:right;
-  font-size:12px;
-}
-.profile-text .name{font-weight:600}
-.profile-text .role{font-size:11px;color:#9ca3af}
-.profile-avatar{
-  width:38px;height:38px;border-radius:999px;
-  background:#f97316;color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:600;font-size:16px;
-  overflow:hidden;
-}
-.profile-avatar img{
-  width:100%;height:100%;object-fit:cover;border-radius:999px;
+
+        .profile-wrapper{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            margin-left:20px;
+        }
+        .profile-text{
+            text-align:right;
+            font-size:12px;
+        }
+        .profile-text .name{font-weight:600}
+        .profile-text .role{font-size:11px;color:#9ca3af}
+        .profile-avatar{
+            width:38px;
+            height:38px;
+            border-radius:999px;
+            background:#f97316;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:600;
+            font-size:16px;
+            color:#fff;
+            overflow:hidden;
+        }
+        .profile-avatar img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            border-radius:999px;
+        }
+
+        .content-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px 28px;
+            box-shadow: 0 8px 20px rgba(15,23,42,.06);
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            box-sizing: border-box;
+            flex: 1;
+        }
+
+        .header-row{
+            display:flex;
+            align-items:flex-end;
+            justify-content:space-between;
+            margin-bottom:6px;
+        }
+
+        .breadcrumb{font-size:11px;color:#9ca3af;margin-top:2px;margin-bottom:4px}
+        h2.page-title{font-size:20px;margin-bottom:4px}
+
+        .btn-primary{
+            background: linear-gradient(200deg, #1c3f9f, #3B82F6);
+            color:#fff;
+            border-radius:10px;
+            padding:10px 20px;
+            font-size:13px;
+            border:none;
+            cursor:pointer;
+            font-weight:500;
+        }
+        .btn-primary:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
 }
 
-/* ===== CONTENT CARD (sejajar dengan saran.php) ===== */
-.content-card{
-  background:#fff;
-  border-radius:18px;
-  padding:24px 28px;
-  box-shadow:0 8px 20px rgba(15,23,42,.06);
-  width:100%;
-  max-width:none;
-  margin:0;
-  box-sizing:border-box;
-  flex:1;
-}
-.header-row{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  margin-bottom:6px;
-}
-.page-title{font-size:20px;margin-bottom:4px;}
-.breadcrumb{font-size:11px;color:#9ca3af;margin-top:2px;margin-bottom:4px}
+               .alert{
+            margin-top:10px;
+            margin-bottom:10px;
+            padding:8px 12px;
+            border-radius:8px;
+            font-size:12px;
+        }
+        /* sama seperti pelayanan & saran */
+        .alert-success{
+            background:#bbf7d0;      /* hijau muda */
+            color:#166534;           /* hijau tua */
+            border:1px solid #86efac;
+        }
 
-/* ===== TOMBOL TAMBAH ===== */
-.btn-tambah{
-  background:#5E63BB;
-  padding:10px 18px;
-  color:#fff;
-  border-radius:10px;
-  border:none;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
 
-/* ===== TABLE ===== */
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
-  font-size:13px;
-}
-th,td{
-  padding:8px 6px;
-  text-align:left;
-  vertical-align:top;
-}
-thead{ border-bottom:1px solid #e5e7eb; }
-th{ color:#6b7280;font-weight:500; }
-tbody tr:hover{ background:#f9fafb; }
+        /* ====== TABLE & FORM KHUSUS PRESTASI ====== */
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:20px;
+            font-size:13px;
+        }
+        th,td{
+            padding:8px 6px;
+            text-align:left;
+            vertical-align:top;
+        }
+        thead{
+            border-bottom:1px solid #e5e7eb;
+        }
+        th{
+            color:#6b7280;
+            font-weight:500;
+        }
+        tbody tr:hover{
+            background:#f9fafb;
+        }
 
-.foto-prestasi{
-  width:60px;
-  height:60px;
-  border-radius:16px;
-  object-fit:cover;
-  background:#e5e7eb;
-}
+        .foto-prestasi{
+            width:60px;
+            height:60px;
+            border-radius:16px;
+            object-fit:cover;
+            background:#e5e7eb;
+        }
 
-/* Aksi */
-.aksi-btn{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  width:100%;
-  gap:10px;
-  padding:0 !important;
-}
-.aksi-btn a{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:6px 12px;
-  border-radius:8px;
-  color:#5E63BB;
-  text-decoration:none;
-  font-size:14px;
-}
-.aksi-btn a:hover{ background:#f0f0f8; }
-.aksi-btn .fa-trash{ color:red !important; }
+        .aksi-btn{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            width:100%;
+            gap:10px;
+            padding:0 !important;
+        }
+        .aksi-btn a{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:6px 12px;
+            border-radius:8px;
+            color:#5E63BB;
+            text-decoration:none;
+            font-size:14px;
+        }
+        .aksi-btn a:hover{ background:#f0f0f8; }
+        .aksi-btn .fa-trash{ color:red !important; }
 
-/* ===== FORM TAMBAH / EDIT ===== */
-.form-container{
-  display:flex;
-  gap:30px;
-  margin-top:20px;
-  align-items:flex-start;
-}
-.form-left{
-  width:55%;
-  background:#fff;
-  padding:28px;
-  border-radius:14px;
-  border:1px solid #e2e2e2;
-}
-.form-left input,
-.form-left textarea{
-  width:100%;
-  padding:13px 14px;
-  margin-top:14px;
-  border-radius:10px;
-  border:1px solid #c8c8c8;
-  font-size:14px;
-}
-.form-right{
-  width:40%;
-  padding-top:10px;
-  position:relative;
-}
-.upload-box{
-  width:100%;height:230px;
-  border:2px dashed #bfbfbf;
-  border-radius:16px;
-  display:flex;align-items:center;justify-content:center;
-  position:relative;
-  overflow:hidden;
-  background:#fff;
-  cursor:pointer;
-}
-.preview-img{
-  position:absolute;top:0;left:0;
-  width:100%;height:100%;
-  object-fit:cover;border-radius:16px;z-index:1;
-}
-.upload-overlay{
-  position:absolute;top:0;left:0;
-  width:100%;height:100%;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  z-index:2;
-}
-.upload-overlay i{font-size:36px;color:#5E63BB;margin-bottom:10px;}
-.upload-overlay span{font-size:16px;color:#000;font-weight:500;}
-.upload-trigger{
-  position:absolute;top:0;left:0;
-  width:100%;height:100%;
-  opacity:0;cursor:pointer;z-index:3;
-}
-.btn-simpan{
-  margin-top:18px;
-  background:#48C774;
-  padding:12px 22px;
-  border-radius:10px;
-  border:none;
-  color:#fff;
-  font-size:15px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.back-btn{
-  margin-left:10px;
-  font-size:14px;
-}
+        .form-container{
+            display:flex;
+            gap:30px;
+            margin-top:20px;
+            align-items:flex-start;
+        }
+        .form-left{
+            width:55%;
+            background:#fff;
+            padding:28px;
+            border-radius:14px;
+            border:1px solid #e2e2e2;
+        }
+        .form-left input,
+        .form-left textarea{
+            width:100%;
+            padding:13px 14px;
+            margin-top:14px;
+            border-radius:10px;
+            border:1px solid #c8c8c8;
+            font-size:14px;
+        }
+        .form-right{
+            width:40%;
+            padding-top:10px;
+            position:relative;
+        }
+        .upload-box{
+            width:100%;height:230px;
+            border:2px dashed #bfbfbf;
+            border-radius:16px;
+            display:flex;align-items:center;justify-content:center;
+            position:relative;
+            overflow:hidden;
+            background:#fff;
+            cursor:pointer;
+        }
+        .preview-img{
+            position:absolute;top:0;left:0;
+            width:100%;height:100%;
+            object-fit:cover;border-radius:16px;z-index:1;
+        }
+        .upload-overlay{
+            position:absolute;top:0;left:0;
+            width:100%;height:100%;
+            display:flex;flex-direction:column;
+            align-items:center;justify-content:center;
+            z-index:2;
+        }
+        .upload-overlay i{font-size:36px;color:#5E63BB;margin-bottom:10px;}
+        .upload-overlay span{font-size:16px;color:#000;font-weight:500;}
+        .upload-trigger{
+            position:absolute;top:0;left:0;
+            width:100%;height:100%;
+            opacity:0;cursor:pointer;z-index:3;
+        }
+        .btn-simpan{
+            margin-top:18px;
+            background:#48C774;
+            padding:12px 22px;
+            border-radius:10px;
+            border:none;
+            color:#fff;
+            font-size:15px;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .back-btn{
+            margin-left:10px;
+            font-size:14px;
+        }
 
-/* ===== MODAL LOGOUT ===== */
-.modal{
-  position:fixed;inset:0;display:flex;
-  justify-content:center;align-items:center;
-  background:rgba(0,0,0,.35);
-  opacity:0;pointer-events:none;
-  transition:.25s;
-}
-.modal.show{opacity:1;pointer-events:all;}
-.modal-content{
-  width:340px;padding:26px 28px;
-  background:#fff;border-radius:18px;
-  text-align:center;
-}
-.modal-actions{
-  margin-top:22px;display:flex;gap:14px;
-}
-.btn-cancel,.btn-logout{
-  flex:1;padding:10px 0;border-radius:10px;
-  border:none;font-weight:600;cursor:pointer;
-}
-.btn-cancel{background:#dcdcdc;}
-.btn-logout{background:#e63946;color:#fff;}
+               /* MODAL HAPUS PRESTASI – SAMA SEPERTI PELAYANAN */
+        .modal-backdrop{
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,0.35);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:9999;
+        }
 
-/* ===== MODAL HAPUS PRESTASI ===== */
-.delete-modal-backdrop{
-  position:fixed;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(15,23,42,0.45);
-  z-index:9999;
-}
-.delete-modal-card{
-  width:340px;
-  padding:22px 24px;
-  background:#ffffff;
-  border-radius:18px;
-  box-shadow:0 18px 40px rgba(15,23,42,0.35);
-  border:1px solid rgba(148,163,184,0.5);
-  animation:popIn .18s ease-out;
-}
-.delete-modal-title{
-  font-size:16px;
-  font-weight:600;
-  margin-bottom:4px;
-}
-.delete-modal-text{
-  font-size:13px;
-  color:#4b5563;
-  margin-bottom:16px;
-}
-.delete-modal-actions{
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-}
-.btn-delete-cancel{
-  background:#ffffff;
-  border-radius:999px;
-  padding:8px 16px;
-  border:1px solid #e5e7eb;
-  font-size:13px;
-  cursor:pointer;
-}
-.btn-delete-confirm{
-  background:#ef4444;
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  padding:8px 16px;
-  font-size:13px;
-  cursor:pointer;
-  font-weight:500;
-}
-@keyframes popIn{
-  from{opacity:0;transform:translateY(6px) scale(.97);}
-  to{opacity:1;transform:translateY(0) scale(1);}
-}
-</style>
+        .modal-card{
+            background:#ffffff;
+            border-radius:22px;
+            padding:32px 40px;
+            width:420px;
+            max-width:90%;
+            box-shadow:0 20px 40px rgba(15,23,42,0.25);
+            text-align:center;
+            animation:modalIn .18s ease-out;
+        }
+
+        .modal-icon{
+            width:72px;
+            height:72px;
+            border-radius:999px;
+            border:3px solid #fdba74;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:0 auto 18px auto;
+            color:#f97316;
+            font-size:36px;
+            font-weight:600;
+        }
+
+        .modal-title{
+            font-size:22px;
+            font-weight:600;
+            margin-bottom:8px;
+            color:#374151;
+        }
+
+        .modal-text{
+            font-size:14px;
+            color:#4b5563;
+            margin-bottom:22px;
+            line-height:1.5;
+        }
+
+        .modal-actions{
+            display:flex;
+            justify-content:center;
+            gap:12px;
+        }
+
+        .btn-danger{
+            background:#e11d48;
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:10px 22px;
+            font-size:14px;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        .btn-outline{
+            background:#4b5563;
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:10px 22px;
+            font-size:14px;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        @keyframes modalIn{
+            from{opacity:0;transform:translateY(10px) scale(.97);}
+            to{opacity:1;transform:translateY(0) scale(1);}
+        }
+
+    </style>
 </head>
 <body>
-
-<!-- SIDEBAR HEADER -->
-<div class="sidebar-header">
-  <img src="../assets/images/logo-nganjuk.png" alt="Logo">
-  <div class="title">Desa Banjardowo</div>
-</div>
-
-<!-- SIDEBAR -->
-<?php $current_page = basename($_SERVER['PHP_SELF']); ?>
-<aside class="sidebar">
-  <ul class="menu">
-    <li>
-      <a href="dashboard.php" class="<?= $current_page == 'dashboard.php' ? 'active' : '' ?>">
-        <img src="../assets/icons/dashboard1.png" alt="" style="width:20px;height:20px;margin-right:8px;">Dashboard
-      </a>
-    </li>
-    <li>
-      <a href="kegiatan.php" class="<?= $current_page == 'kegiatan.php' ? 'active' : '' ?>">
-        <img src="../assets/icons/kegiatandesa.png" alt="" style="width:20px;height:20px;margin-right:8px;">Kegiatan Desa
-      </a>
-    </li>
-    <li>
-      <a href="prestasi.php" class="<?= $current_page == 'prestasi.php' ? 'active' : '' ?>">
-        <img src="../assets/icons/prestasi.png" alt="" style="width:20px;height:20px;margin-right:8px;">Prestasi
-      </a>
-    </li>
-    <li>
-      <a href="saran.php" class="<?= $current_page == 'saran.php' ? 'active' : '' ?>">
-        <img src="../assets/icons/kotaksaran1.png" alt="" style="width:20px;height:20px;margin-right:8px;">Kotak Saran
-      </a>
-    </li>
-    <li>
-      <a href="pelayanan.php" class="<?= $current_page == 'pelayanan.php' ? 'active' : '' ?>">
-        <img src="../assets/icons/pelayanan1.png" alt="" style="width:20px;height:20px;margin-right:8px;">Pelayanan
-      </a>
-    </li>
-  </ul>
-
-  <div class="logout">
-    <a href="#" id="logoutBtn">
-      <i class="fa-solid fa-arrow-right-from-bracket"></i>Keluar
-    </a>
-  </div>
-</aside>
-
-<!-- MODAL LOGOUT -->
-<div id="logoutModal" class="modal">
-  <div class="modal-content">
-    <h3>Keluar Akun?</h3>
-    <p>Anda yakin ingin keluar dari akun?</p>
-    <div class="modal-actions">
-      <button id="cancelLogout" class="btn-cancel">Batal</button>
-      <a href="../logout.php" class="btn-logout">Keluar</a>
-    </div>
-  </div>
-</div>
-
-<div class="main">
-    <!-- TOP BAR -->
-    <div class="top-bar">
-        <form method="get" class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" name="search" placeholder="Search" value="<?= htmlspecialchars($search); ?>">
-        </form>
-
-        <div class="profile-wrapper">
-            <div class="profile-text">
-                <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
-                <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
+    <div class="app">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/images/logo-nganjuk.png" alt="Logo Nganjuk">
+                <div>Desa Banjardowo</div>
             </div>
-            <a href="profile.php" class="profile-avatar">
-                <?php if ($fotoProfilSrc): ?>
-                    <img src="<?= $fotoProfilSrc; ?>" alt="Foto Profil">
-                <?php else: ?>
-                    <?= htmlspecialchars($inisialAdmin); ?>
-                <?php endif; ?>
-            </a>
-        </div>
-    </div>
 
-    <!-- KONTEN UTAMA -->
-    <div class="content-card">
-        <div class="header-row">
-            <div>
-                <h2 class="page-title"><?= htmlspecialchars($page_title); ?></h2>
-                <div class="breadcrumb">
-                    Prestasi /
-                    <?php if ($mode == "list"): ?>
-                        Daftar Prestasi
-                    <?php elseif ($mode == "tambah"): ?>
-                        Tambah Prestasi
-                    <?php else: ?>
-                        Edit Prestasi
-                    <?php endif; ?>
+            <div class="menu">
+                <a href="dashboard.php" class="menu-item">
+                    <img src="../assets/icons/dashboard1.png" alt="">Dashboard
+                </a>
+                <a href="kegiatan.php" class="menu-item">
+                    <img src="../assets/icons/kegiatandesa.png" alt="">Kegiatan Desa
+                </a>
+                <a href="prestasi.php" class="menu-item active">
+                    <img src="../assets/icons/prestasi.png" alt="">Prestasi
+                </a>
+                <a href="saran.php" class="menu-item">
+                    <img src="../assets/icons/kotaksaran1.png" alt="">Kotak Saran
+                </a>
+                <a href="pelayanan.php" class="menu-item">
+                    <img src="../assets/icons/pelayanan1.png" alt="">Pelayanan
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="../logout.php" class="logout">
+                    <img src="../assets/icons/logout1.png" alt="">
+                    <span>Keluar</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="main">
+            <!-- TOP BAR -->
+            <div class="top-bar">
+                <form method="get" class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" name="search" placeholder="Search" value="<?php echo htmlspecialchars($search); ?>">
+                </form>
+
+                <div class="profile-wrapper">
+                    <div class="profile-text">
+                        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
+                        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
+                    </div>
+
+                    <a href="profile.php" class="profile-avatar">
+                        <?php if (!empty($fotoProfilSrc)) : ?>
+                            <img src="<?php echo $fotoProfilSrc; ?>" alt="Foto Profil">
+                        <?php else : ?>
+                            <?php echo htmlspecialchars($inisialAdmin); ?>
+                        <?php endif; ?>
+                    </a>
                 </div>
             </div>
 
-            <?php if ($mode == "list"): ?>
-                <a href="prestasi.php?tambah=1">
-                    <button class="btn-tambah">
-                        <i class="fa-solid fa-plus"></i> Tambah
-                    </button>
-                </a>
-            <?php endif; ?>
-        </div>
-
-        <!-- FORM TAMBAH / EDIT -->
-        <?php if ($mode != "list"): ?>
-            <form method="POST" enctype="multipart/form-data">
-                <div class="form-container">
-                    <div class="form-left">
-                        <input type="hidden" name="id" value="<?= $edit['id'] ?? '' ?>">
-
-                        <label>Nama Prestasi</label>
-                        <input type="text" name="judul" required
-                               value="<?= htmlspecialchars($edit['judul'] ?? '') ?>">
-
-                        <label>Bidang</label>
-                        <input type="text" name="bidang" required
-                               value="<?= htmlspecialchars($edit['bidang'] ?? '') ?>">
-
-                        <label>Penyelenggara</label>
-                        <input type="text" name="penyelenggara"
-                               value="<?= htmlspecialchars($edit['penyelenggara'] ?? '') ?>">
-
-                        <label>Deskripsi</label>
-                        <textarea name="deskripsi" rows="5"><?= htmlspecialchars($edit['deskripsi'] ?? '') ?></textarea>
-
-                        <label>Tanggal</label>
-                        <input type="date" name="tanggal" required
-                               value="<?= $edit['tanggal'] ?? '' ?>">
-                    </div>
-
-                    <div class="form-right">
-                        <label>Upload Image</label>
-                        <div class="upload-box" id="uploadBox">
-                            <img
-                                id="previewImg"
-                                class="preview-img"
-                                src="<?php
-                                    if ($mode == 'edit' && !empty($edit['foto'])) {
-                                        echo 'data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto']);
-                                    }
-                                ?> "
-                                style="<?= ($mode == 'edit' && !empty($edit['foto'])) ? 'display:block;' : 'display:none;' ?>"
-                                alt="Preview"
-                            />
-                            <div class="upload-overlay">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <span>
-                                    <?= ($mode == "edit" && !empty($edit['foto']))
-                                        ? 'Klik untuk Ganti Gambar'
-                                        : 'Pilih Image'; ?>
-                                </span>
-                            </div>
-                            <input
-                                type="file"
-                                id="uploadFoto"
-                                name="foto"
-                                class="upload-trigger"
-                                accept="image/*"
-                            >
+            <!-- KONTEN UTAMA -->
+            <div class="content-card">
+                <div class="header-row">
+                    <div>
+                        <h2 class="page-title"><?php echo htmlspecialchars($page_title); ?></h2>
+                        <div class="breadcrumb">
+                            Prestasi /
+                            <?php if ($mode == "list"): ?>
+                                Daftar Prestasi
+                            <?php elseif ($mode == "tambah"): ?>
+                                Tambah Prestasi
+                            <?php else: ?>
+                                Edit Prestasi
+                            <?php endif; ?>
                         </div>
                     </div>
+
+                    <?php if ($mode == "list"): ?>
+                        <button class="btn-primary" onclick="window.location.href='prestasi.php?tambah=1'">+ Tambah</button>
+                    <?php endif; ?>
                 </div>
 
-                <button class="btn-simpan" type="submit" name="save_prestasi">
-                    <i class="fa-solid fa-plus"></i>
-                    <?= ($mode == "edit" ? "Update Data" : "Simpan Data") ?>
-                </button>
-                <a href="prestasi.php" class="back-btn">&larr; Kembali</a>
-            </form>
-        <?php endif; ?>
+                <!-- NOTIFIKASI -->
+                <?php if (!empty($message)): ?>
+                    <div class="alert alert-success">
+                        <?php echo $message; ?>
+                    </div>
+                <?php endif; ?>
 
-        <!-- LIST DATA -->
-        <?php if ($mode == "list"): ?>
-            <table>
-                <thead>
-                <tr>
-                    <th></th>
-                    <th style="width:60px;">No</th>
-                    <th>Nama Prestasi</th>
-                    <th>Bidang</th>
-                    <th>Penyelenggara</th>
-                    <th>Deskripsi</th>
-                    <th>Tanggal Perolehan</th>
-                    <th>Aksi</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php
-                $no = 1;
-                if (mysqli_num_rows($queryList) == 0): ?>
-                    <tr>
-                        <td colspan="8" style="text-align:center;padding:20px;color:#9ca3af;">
-                            Belum ada data prestasi.
-                        </td>
-                    </tr>
-                <?php else:
-                    while ($row = mysqli_fetch_assoc($queryList)): ?>
-                        <tr>
-                            <td>
-                                <?php if (!empty($row['foto'])): ?>
-                                    <img class="foto-prestasi"
-                                         src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto']) ?>">
-                                <?php else: ?>
-                                    <img class="foto-prestasi"
-                                         src="../assets/icons/noimage.png" alt="No Image">
-                                <?php endif; ?>
-                            </td>
-                            <td><?= $no++; ?></td>
-                            <td><?= htmlspecialchars($row['judul']) ?></td>
-                            <td><?= htmlspecialchars($row['bidang'] ?? '-') ?></td>
-                            <td><?= htmlspecialchars($row['penyelenggara'] ?? '-') ?></td>
-                            <td>
-                                <?php
-                                $maxLength = 250;
-                                $desc = strip_tags($row['deskripsi']);
-                                if (strlen($desc) > $maxLength) {
-                                    echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
-                                } else {
-                                    echo nl2br(htmlspecialchars($desc));
-                                }
-                                ?>
-                            </td>
-                            <td><?= date("d F Y", strtotime($row['tanggal'])) ?></td>
-                            <td class="aksi-btn">
-                                <a href="prestasi.php?edit=<?= $row['id'] ?>">
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
-                                <a href="javascript:void(0);" onclick="openDeleteModal(<?= $row['id']; ?>)">
-                                    <i class="fa-solid fa-trash"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endwhile;
-                endif; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-    </div> <!-- end .content-card -->
-</div> <!-- end .main -->
+                <!-- FORM TAMBAH / EDIT -->
+                <?php if ($mode != "list"): ?>
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="form-container">
+                            <div class="form-left">
+                                <input type="hidden" name="id" value="<?php echo $edit['id'] ?? ''; ?>">
 
-<!-- MODAL HAPUS PRESTASI -->
-<div id="deleteModal" class="delete-modal-backdrop">
-  <div class="delete-modal-card">
-    <div class="delete-modal-title">Hapus prestasi ini?</div>
-    <div class="delete-modal-text">
-      Data yang sudah dihapus tidak dapat dikembalikan.
-      Apakah Anda yakin ingin melanjutkan?
+                                <label>Nama Prestasi</label>
+                                <input type="text" name="judul" required
+                                       value="<?php echo htmlspecialchars($edit['judul'] ?? ''); ?>">
+
+                                <label>Bidang</label>
+                                <input type="text" name="bidang" required
+                                       value="<?php echo htmlspecialchars($edit['bidang'] ?? ''); ?>">
+
+                                <label>Penyelenggara</label>
+                                <input type="text" name="penyelenggara"
+                                       value="<?php echo htmlspecialchars($edit['penyelenggara'] ?? ''); ?>">
+
+                                <label>Deskripsi</label>
+                                <textarea name="deskripsi" rows="5"><?php echo htmlspecialchars($edit['deskripsi'] ?? ''); ?></textarea>
+
+                                <label>Tanggal</label>
+                                <input type="date" name="tanggal" required
+                                       value="<?php echo $edit['tanggal'] ?? ''; ?>">
+                            </div>
+
+                            <div class="form-right">
+                                <label>Upload Image</label>
+                                <div class="upload-box" id="uploadBox">
+                                    <img
+                                        id="previewImg"
+                                        class="preview-img"
+                                        src="<?php
+                                            if ($mode == 'edit' && !empty($edit['foto'])) {
+                                                echo 'data:' . $edit['foto_type'] . ';base64,' . base64_encode($edit['foto']);
+                                            }
+                                        ?>"
+                                        style="<?php echo ($mode == 'edit' && !empty($edit['foto'])) ? 'display:block;' : 'display:none;'; ?>"
+                                        alt="Preview"
+                                    />
+                                    <div class="upload-overlay">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                                        <span>
+                                            <?php echo ($mode == "edit" && !empty($edit['foto']))
+                                                ? 'Klik untuk Ganti Gambar'
+                                                : 'Pilih Image'; ?>
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        id="uploadFoto"
+                                        name="foto"
+                                        class="upload-trigger"
+                                        accept="image/*"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn-simpan" type="submit" name="save_prestasi">
+                            <i class="fa-solid fa-plus"></i>
+                            <?php echo ($mode == "edit" ? "Update Data" : "Simpan Data"); ?>
+                        </button>
+                        <a href="prestasi.php" class="back-btn">&larr; Kembali</a>
+                    </form>
+                <?php endif; ?>
+
+                <!-- LIST DATA -->
+                <?php if ($mode == "list"): ?>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th style="width:60px;">No</th>
+                                <th>Nama Prestasi</th>
+                                <th>Bidang</th>
+                                <th>Penyelenggara</th>
+                                <th>Deskripsi</th>
+                                <th>Tanggal Perolehan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        $no = 1;
+                        if (mysqli_num_rows($queryList) == 0): ?>
+                            <tr>
+                                <td colspan="8" style="text-align:center;padding:20px;color:#9ca3af;">
+                                    Belum ada data prestasi.
+                                </td>
+                            </tr>
+                        <?php else:
+                            while ($row = mysqli_fetch_assoc($queryList)): ?>
+                                <tr>
+                                    <td>
+                                        <?php if (!empty($row['foto'])): ?>
+                                            <img class="foto-prestasi"
+                                                 src="data:<?php echo $row['foto_type']; ?>;base64,<?php echo base64_encode($row['foto']); ?>">
+                                        <?php else: ?>
+                                            <img class="foto-prestasi"
+                                                 src="../assets/icons/noimage.png" alt="No Image">
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo $no++; ?></td>
+                                    <td><?php echo htmlspecialchars($row['judul']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['bidang'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($row['penyelenggara'] ?? '-'); ?></td>
+                                    <td>
+                                        <?php
+                                        $maxLength = 250;
+                                        $desc = strip_tags($row['deskripsi']);
+                                        if (strlen($desc) > $maxLength) {
+                                            echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
+                                        } else {
+                                            echo nl2br(htmlspecialchars($desc));
+                                        }
+                                        ?>
+                                    </td>
+                                    <td><?php echo date("d F Y", strtotime($row['tanggal'])); ?></td>
+                                    <td class="aksi-btn">
+                                        <a href="prestasi.php?edit=<?php echo $row['id']; ?>">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        <a href="javascript:void(0);" onclick="openDeleteModal(<?php echo $row['id']; ?>)">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endwhile;
+                        endif; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div> <!-- .content-card -->
+        </div> <!-- .main -->
+    </div> <!-- .app -->
+
+       <!-- MODAL HAPUS PRESTASI – SAMA DENGAN PELAYANAN & SARAN -->
+    <div id="deleteModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-icon">!</div>
+            <div class="modal-title">Hapus Prestasi?</div>
+            <div class="modal-text">
+                Data yang sudah dihapus tidak bisa dikembalikan.
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-danger" onclick="confirmDelete()">Ya, hapus</button>
+                <button type="button" class="btn-outline" onclick="closeDeleteModal()">Batal</button>
+            </div>
+        </div>
     </div>
-    <div class="delete-modal-actions">
-      <button type="button" class="btn-delete-cancel" onclick="closeDeleteModal()">Batal</button>
-      <button type="button" class="btn-delete-confirm" onclick="confirmDelete()">Ya, hapus</button>
-    </div>
-  </div>
-</div>
 
-<script>
-// logout modal
-const logoutBtn    = document.getElementById("logoutBtn");
-const logoutModal  = document.getElementById("logoutModal");
-const cancelLogout = document.getElementById("cancelLogout");
 
-if (logoutBtn) {
-  logoutBtn.onclick = function(e){
-      e.preventDefault();
-      logoutModal.classList.add("show");
-  };
-}
-if (cancelLogout) {
-  cancelLogout.onclick = function(){
-      logoutModal.classList.remove("show");
-  };
-}
+    <script>
+        // preview foto upload
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput  = document.getElementById('uploadFoto');
+            const previewImg = document.getElementById('previewImg');
+            if (!fileInput || !previewImg) return;
 
-// preview foto upload
-document.addEventListener('DOMContentLoaded', function () {
-    const fileInput  = document.getElementById('uploadFoto');
-    const previewImg = document.getElementById('previewImg');
-    if (!fileInput || !previewImg) return;
+            fileInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            });
+        });
 
-    fileInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            previewImg.src = e.target.result;
-            previewImg.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    });
-});
+        // MODAL HAPUS
+        let deleteId = null;
 
-// ===== MODAL HAPUS PRESTASI =====
-let deleteId = null;
-
-function openDeleteModal(id){
-    deleteId = id;
-    const m = document.getElementById('deleteModal');
-    if (m) m.style.display = 'flex';
-}
-function closeDeleteModal(){
-    deleteId = null;
-    const m = document.getElementById('deleteModal');
-    if (m) m.style.display = 'none';
-}
-function confirmDelete(){
-    if (!deleteId) return;
-    window.location.href = 'prestasi.php?del=' + deleteId;
-}
-</script>
+        function openDeleteModal(id){
+            deleteId = id;
+            const m = document.getElementById('deleteModal');
+            if (m) m.style.display = 'flex';
+        }
+        function closeDeleteModal(){
+            deleteId = null;
+            const m = document.getElementById('deleteModal');
+            if (m) m.style.display = 'none';
+        }
+        function confirmDelete(){
+            if (!deleteId) return;
+            window.location.href = 'prestasi.php?del=' + deleteId;
+        }
+    </script>
 </body>
 </html>

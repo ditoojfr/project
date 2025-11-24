@@ -71,7 +71,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             top: 90px;
             width: 260px;
             height: calc(100vh - 104px);
-            background: linear-gradient(200deg, #1c3f9f, #3B82F6);
+            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
             padding: 24px 20px;
             color: white;
             border-radius: 20px;

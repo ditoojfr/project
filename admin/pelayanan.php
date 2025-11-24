@@ -360,14 +360,17 @@ if (isset($_GET['msg'])) {
         .btn-primary{
             background: linear-gradient(200deg, #1c3f9f, #3B82F6);
             color:#fff;
-            border-radius:10px;
+            border-radius:8px;
             padding:10px 20px;
             font-size:13px;
             border:none;
             cursor:pointer;
             font-weight:500;
         }
-
+.btn-primary:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
         .content-card {
             background: #fff;
             border-radius: 18px;
@@ -506,9 +509,10 @@ if (isset($_GET['msg'])) {
             font-size:12px
         }
         .alert-info{
-            background:#e0f2fe;
-            color:#5E63BB
-        }
+    background:#bbf7d0;   /* hijau muda */
+    color:#166534;        /* teks hijau tua (boleh diganti kalau mau) */
+}
+
         .alert-error{background:#fee2e2;
             color:#991b1b
         }
@@ -550,62 +554,89 @@ if (isset($_GET['msg'])) {
             font-size:13px;
         }
 
-        /* MODAL KONFIRMASI HAPUS */
-        .modal-backdrop{
-            position:fixed;
-            inset:0;
-            background:rgba(15,23,42,.45);
-            display:none;
-            align-items:center;
-            justify-content:center;
-            z-index:999;
-        }
-        .modal-card{
-            background:#ffffff;
-            border-radius:18px;
-            padding:20px 24px;
-            width:320px;
-            box-shadow:0 20px 40px rgba(15,23,42,.25);
-            animation:modalIn .18s ease-out;
-        }
-        .modal-title{
-            font-size:16px;
-            font-weight:600;
-            margin-bottom:6px;
-        }
-        .modal-text{
-            font-size:13px;
-            color:#4b5563;
-            margin-bottom:16px;
-        }
-        .modal-actions{
-            display:flex;
-            justify-content:flex-end;
-            gap:8px;
-        }
-        .btn-danger{
-            background:#ef4444;
-            color:#fff;
-            border:none;
-            border-radius:999px;
-            padding:8px 16px;
-            font-size:13px;
-            cursor:pointer;
-            font-weight:500;
-        }
-        .btn-outline{
-            background:#ffffff;
-            color:#4b5563;
-            border-radius:999px;
-            padding:8px 16px;
-            font-size:13px;
-            border:1px solid #e5e7eb;
-            cursor:pointer;
-        }
-        @keyframes modalIn{
-            from{opacity:0;transform:translateY(8px) scale(.98);}
-            to{opacity:1;transform:translateY(0) scale(1);}
-        }
+       /* MODAL KONFIRMASI HAPUS – STYLE SEPERTI HALAMAN SARAN */
+.modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,0.35);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+}
+
+.modal-card{
+    background:#ffffff;
+    border-radius:18px;
+    padding:32px 40px;
+    width:420px;
+    max-width:90%;
+    box-shadow:0 20px 40px rgba(15,23,42,0.25);
+    text-align:center;
+    animation:modalIn .18s ease-out;
+}
+
+.modal-icon{
+    width:72px;
+    height:72px;
+    border-radius:999px;
+    border:3px solid #fdba74;   /* lingkaran oranye */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 18px auto;
+    color:#f97316;
+    font-size:36px;
+    font-weight:600;
+}
+
+.modal-title{
+    font-size:22px;
+    font-weight:600;
+    margin-bottom:8px;
+    color:#374151;
+}
+
+.modal-text{
+    font-size:14px;
+    color:#4b5563;
+    margin-bottom:22px;
+    line-height:1.5;
+}
+
+.modal-actions{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+}
+
+.btn-danger{
+    background:#e11d48;        /* merah seperti di contoh */
+    color:#ffffff;
+    border:none;
+    border-radius:10px;
+    padding:10px 22px;
+    font-size:14px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.btn-outline{
+    background:#4b5563;        /* abu gelap, teks putih */
+    color:#ffffff;
+    border:none;
+    border-radius:10px;
+    padding:10px 22px;
+    font-size:14px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+@keyframes modalIn{
+    from{opacity:0;transform:translateY(10px) scale(.97);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+}
+
     
 /* === FIX KONTEN KECIL / TABEL MEPET SETELAH SIDEBAR DILEBARKAN === */
 .main-wrapper {
@@ -858,19 +889,21 @@ if (isset($_GET['msg'])) {
     </div>
 
     <!-- MODAL KONFIRMASI HAPUS -->
-    <div id="deleteModal" class="modal-backdrop">
-        <div class="modal-card">
-            <div class="modal-title">Hapus data pelayanan?</div>
-            <div class="modal-text">
-                Data yang sudah dihapus tidak dapat dikembalikan.<br>
-                Apakah Anda yakin ingin melanjutkan?
-            </div>
-            <div class="modal-actions">
-                <button class="btn-outline" type="button" onclick="closeDeleteModal()">Batal</button>
-                <button class="btn-danger" type="button" onclick="confirmDelete()">Ya, hapus</button>
-            </div>
+    <!-- MODAL KONFIRMASI HAPUS -->
+<div id="deleteModal" class="modal-backdrop">
+    <div class="modal-card">
+        <div class="modal-icon">!</div>
+        <div class="modal-title">Hapus Pelayanan?</div>
+        <div class="modal-text">
+            Data yang sudah dihapus tidak bisa dikembalikan.
+        </div>
+        <div class="modal-actions">
+            <button class="btn-danger" type="button" onclick="confirmDelete()">Ya, hapus</button>
+            <button class="btn-outline" type="button" onclick="closeDeleteModal()">Batal</button>
         </div>
     </div>
+</div>
+
 
    <script>
     let deleteId = null;

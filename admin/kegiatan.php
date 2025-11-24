@@ -26,7 +26,7 @@ if (isset($_GET['del'])) {
 /* ======================================================
    2. MODE TAMPILAN (list / view / tambah / edit)
    ====================================================== */
-$action = $_GET['action'] ?? 'list';
+$action  = $_GET['action'] ?? 'list';
 $message = "";
 
 // === JUDUL DINAMIS ===
@@ -43,8 +43,8 @@ if ($action === 'tambah') {
 // === EDIT MODE ===
 $edit = null;
 if ($action === 'edit' && isset($_GET['id'])) {
-    $id = intval($_GET['id']);
-    $res = mysqli_query($conn, "SELECT * FROM kegiatan WHERE id=$id");
+    $id   = intval($_GET['id']);
+    $res  = mysqli_query($conn, "SELECT * FROM kegiatan WHERE id=$id");
     $edit = mysqli_fetch_assoc($res);
     if (!$edit) {
         header("Location: kegiatan.php");
@@ -55,12 +55,12 @@ if ($action === 'edit' && isset($_GET['id'])) {
 // === VIEW MODE ===
 $detail = null;
 if ($action === 'view' && isset($_GET['id'])) {
-    $id = intval($_GET['id']);
+    $id  = intval($_GET['id']);
     $res = mysqli_query($conn, "SELECT * FROM kegiatan WHERE id = {$id} LIMIT 1");
     $detail = mysqli_fetch_assoc($res);
     if (!$detail) {
         $message = "Data kegiatan tidak ditemukan.";
-        $action = 'list';
+        $action  = 'list';
     }
 }
 
@@ -68,16 +68,16 @@ if ($action === 'view' && isset($_GET['id'])) {
    3. SIMPAN DATA (TAMBAH / EDIT)
    ====================================================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_kegiatan'])) {
-    $judul = mysqli_real_escape_string($conn, $_POST['judul']);
-    $lokasi = mysqli_real_escape_string($conn, $_POST['lokasi']);
+    $judul     = mysqli_real_escape_string($conn, $_POST['judul']);
+    $lokasi    = mysqli_real_escape_string($conn, $_POST['lokasi']);
     $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
-    $tanggal = $_POST['tanggal'];
+    $tanggal   = $_POST['tanggal'];
 
     // upload foto (base64)
-    $foto = null;
+    $foto      = null;
     $foto_type = null;
     if (isset($_FILES['foto']) && $_FILES['foto']['size'] > 0) {
-        $foto = addslashes(file_get_contents($_FILES['foto']['tmp_name']));
+        $foto      = addslashes(file_get_contents($_FILES['foto']['tmp_name']));
         $foto_type = $_FILES['foto']['type'];
     }
 
@@ -86,20 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_kegiatan'])) {
         $id = intval($_POST['id']);
         if ($foto !== null) {
             mysqli_query($conn, "UPDATE kegiatan SET 
-                judul='$judul',
-                lokasi='$lokasi',
-                deskripsi='$deskripsi',
-                tanggal='$tanggal',
-                foto='$foto',
-                foto_type='$foto_type'
-            WHERE id=$id");
+                judul      = '$judul',
+                lokasi     = '$lokasi',
+                deskripsi  = '$deskripsi',
+                tanggal    = '$tanggal',
+                foto       = '$foto',
+                foto_type  = '$foto_type'
+            WHERE id = $id");
         } else {
             mysqli_query($conn, "UPDATE kegiatan SET 
-                judul='$judul',
-                lokasi='$lokasi',
-                deskripsi='$deskripsi',
-                tanggal='$tanggal'
-            WHERE id=$id");
+                judul      = '$judul',
+                lokasi     = '$lokasi',
+                deskripsi  = '$deskripsi',
+                tanggal    = '$tanggal'
+            WHERE id = $id");
         }
     } else {
         // TAMBAH
@@ -127,10 +127,10 @@ if ($action === 'list') {
     $search = trim($_GET['search'] ?? '');
     if ($search !== '') {
         $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
-        $sql = "
+        $sql  = "
             SELECT * FROM kegiatan
-            WHERE judul LIKE '{$like}'
-               OR lokasi LIKE '{$like}'
+            WHERE judul     LIKE '{$like}'
+               OR lokasi    LIKE '{$like}'
                OR deskripsi LIKE '{$like}'
             ORDER BY tanggal DESC, id DESC
         ";
@@ -148,16 +148,16 @@ if (isset($_GET['msg'])) {
     $message = htmlspecialchars($_GET['msg']);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($page_title) ?> - Admin</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
 
-    <!-- SweetAlert2 -->
+    <!-- SweetAlert2 (untuk toast sukses) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -177,7 +177,7 @@ if (isset($_GET['msg'])) {
             top: 90px;
             width: 260px;
             height: calc(100vh - 104px);
-            background: linear-gradient(200deg, #1c3f9f, #3B82F6);
+            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
             padding: 24px 20px;
             color: white;
             border-radius: 20px;
@@ -414,7 +414,7 @@ if (isset($_GET['msg'])) {
             display: block;
         }
 
-        /* ===== DETAIL KEGIATAN (mirip saran) ===== */
+        /* ===== DETAIL KEGIATAN ===== */
         .detail-container {
             background: #fff;
             border-radius: 18px;
@@ -591,17 +591,108 @@ if (isset($_GET['msg'])) {
             z-index: 3;
         }
 
-        /* BUTTON TAMBAH */
-        .btn-tambah {
-            background: #5E63BB;
-            padding: 10px 18px;
-            color: white;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+      .btn-tambah {
+    background: linear-gradient(200deg, #1c3f9f, #3B82F6);
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 20px;   /* sama persis seperti pelayanan */
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;             /* jarak antara ikon + dan teks */
+}
+
+
+.btn-tambah:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
+
+
+        /* MODAL KONFIRMASI HAPUS – SAMA PERSIS DENGAN PELAYANAN */
+        .modal-backdrop{
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,0.35);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:999;
+        }
+
+        .modal-card{
+            background:#ffffff;
+            border-radius:18px;
+            padding:32px 40px;
+            width:420px;
+            max-width:90%;
+            box-shadow:0 20px 40px rgba(15,23,42,0.25);
+            text-align:center;
+            animation:modalIn .18s ease-out;
+        }
+
+        .modal-icon{
+            width:72px;
+            height:72px;
+            border-radius:999px;
+            border:3px solid #fdba74;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:0 auto 18px auto;
+            color:#f97316;
+            font-size:36px;
+            font-weight:600;
+        }
+
+        .modal-title{
+            font-size:22px;
+            font-weight:600;
+            margin-bottom:8px;
+            color:#374151;
+        }
+
+        .modal-text{
+            font-size:14px;
+            color:#4b5563;
+            margin-bottom:22px;
+            line-height:1.5;
+        }
+
+        .modal-actions{
+            display:flex;
+            justify-content:center;
+            gap:12px;
+        }
+
+        .btn-danger{
+            background:#e11d48;
+            color:#ffffff;
+            border:none;
+            border-radius:10px;
+            padding:10px 22px;
+            font-size:14px;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        .btn-outline{
+            background:#4b5563;
+            color:#ffffff;
+            border:none;
+            border-radius:10px;
+            padding:10px 22px;
+            font-size:14px;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        @keyframes modalIn{
+            from{opacity:0;transform:translateY(10px) scale(.97);}
+            to{opacity:1;transform:translateY(0) scale(1);}
         }
     </style>
 </head>
@@ -681,7 +772,6 @@ if (isset($_GET['msg'])) {
             </script>
         <?php endif; ?>
 
-
         <!-- ========== LIST KEGIATAN ========== -->
         <?php if ($action === 'list'): ?>
             <div class="content-card">
@@ -691,7 +781,10 @@ if (isset($_GET['msg'])) {
                         <div class="breadcrumb">Dashboard / Kegiatan Desa / Daftar Kegiatan</div>
                     </div>
                     <a href="?action=tambah">
-                        <button class="btn-tambah"><i class="fas fa-plus"></i> Tambah</button>
+                        <button class="btn-tambah">
+    <span style="font-size:16px; margin-bottom:1px;">+</span> Tambah
+</button>
+
                     </a>
                 </div>
 
@@ -745,7 +838,7 @@ if (isset($_GET['msg'])) {
                                         <button class="icon-btn">✏️</button>
                                     </a>
                                     <button class="icon-btn delete" title="Hapus"
-                                            onclick="confirmDelete('?del=<?= $row['id'] ?>')">
+                                            onclick="openDeleteModal(<?= $row['id'] ?>)">
                                         🗑
                                     </button>
                                 </td>
@@ -845,32 +938,50 @@ if (isset($_GET['msg'])) {
                 </form>
             </div>
         <?php endif; ?>
+    </div>
+</div>
 
-
+<!-- MODAL KONFIRMASI HAPUS KEGIATAN (SAMA DENGAN PELAYANAN) -->
+<div id="deleteModal" class="modal-backdrop">
+    <div class="modal-card">
+        <div class="modal-icon">!</div>
+        <div class="modal-title">Hapus data kegiatan?</div>
+        <div class="modal-text">
+            Data yang sudah dihapus tidak dapat dikembalikan.<br>
+            Apakah Anda yakin ingin melanjutkan?
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-outline" onclick="closeDeleteModal()">Batal</button>
+            <button type="button" class="btn-danger" onclick="confirmDelete()">Ya, hapus</button>
+        </div>
     </div>
 </div>
 
 <script>
-    function confirmDelete(url) {
-        Swal.fire({
-            title: 'Hapus Kegiatan?',
-            text: 'Data yang sudah dihapus tidak bisa dikembalikan.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#e11d48',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Ya, hapus',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = url;
-            }
-        });
+    // LOGIKA MODAL HAPUS (SAMA DENGAN PELAYANAN/SARAN)
+    let deleteId = null;
+
+    function openDeleteModal(id){
+        deleteId = id;
+        const modal = document.getElementById('deleteModal');
+        if (modal) modal.style.display = 'flex';
     }
 
-    // Preview gambar
+    function closeDeleteModal(){
+        deleteId = null;
+        const modal = document.getElementById('deleteModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function confirmDelete(){
+        if (deleteId) {
+            window.location.href = 'kegiatan.php?del=' + deleteId;
+        }
+    }
+
+    // Preview gambar upload
     document.addEventListener('DOMContentLoaded', function () {
-        const fileInput = document.getElementById('uploadFoto');
+        const fileInput  = document.getElementById('uploadFoto');
         const previewImg = document.getElementById('previewImg');
 
         if (!fileInput || !previewImg) return;
