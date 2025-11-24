@@ -87,10 +87,11 @@ if (!$user) {
 // === Siapkan background cover (LONGBLOB -> base64) ===
 if (!empty($user['cover'])) {
     // asumsikan gambar umum, pakai image/jpeg (kalau mau lebih rapi bisa simpan mime type di kolom terpisah)
-    $coverStyle = "background-image: url('data:image/jpeg;base64," . base64_encode($user['cover']) . "')";
+    $coverStyle = "background-image: url('data:image/jpeg;base64," . base64_encode($user['cover']) . "');";
+
 } else {
     // fallback pakai file default
-    $coverStyle = "background-image: url('../uploads/cover.jpg')";
+    $coverStyle = "background-image: url('../uploads/cover-default.jpg')";
 }
 
 // === Siapkan foto profil (LONGBLOB -> base64) ===
@@ -135,6 +136,7 @@ body{margin:0;padding:0;background:#f7f8fa;font-family:'Inter',sans-serif;}
     width: 100%;
     height: 190px;
     background-size: cover;
+    background-position: center; /* ← Tambahan */
     border-radius: 10px 10px 0 0;
     position: relative;
     display: flex;

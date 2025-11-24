@@ -455,15 +455,26 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                        value="<?php echo htmlspecialchars($search); ?>">
             </form>
 
-            <div class="profile-wrapper">
-                <div class="profile-text">
-                    <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
-                    <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
-                </div>
-                <div class="profile-avatar">
-                    <?php echo $inisialAdmin; ?>
-                </div>
-            </div>
+           <div class="profile-wrapper">
+    <div class="profile-text">
+        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
+        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
+    </div>
+
+    <!-- avatar yang nyambung ke profile.php -->
+   <a href="profile.php" class="profile-avatar">
+    <?php if (!empty($user['foto'])): ?>
+        <img 
+            src="data:image/jpeg;base64,<?= base64_encode($user['foto']); ?>" 
+            alt="Foto Profil"
+        >
+    <?php else: ?>
+        <?= $inisialAdmin; ?>
+    <?php endif; ?>
+</a>
+
+</div>
+
         </div>
 
         <?php if ($action === 'list'): ?>

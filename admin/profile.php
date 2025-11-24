@@ -29,12 +29,20 @@ $alamat        = !empty($user['alamat']) ? $user['alamat'] : '-';
 
 // ====== HANDLE COVER (LONGBLOB) ======
 if (!empty($user['cover'])) {
-    // asumsikan jpeg, kalau kamu pakai png tinggal ganti image/png
-    $coverStyle = "background-image: url('data:image/jpeg;base64," . base64_encode($user['cover']) . "');";
+    $coverBase64 = base64_encode($user['cover']);
+
+    // untuk background cover (header)
+    $coverStyle = "background-image: url('data:image/jpeg;base64," . $coverBase64 . "');";
+
+    // untuk modal (full image)
+    $coverSrc = "data:image/jpeg;base64," . $coverBase64;
 } else {
     // fallback ke file biasa
     $coverStyle = "background-image: url('../uploads/cover-default.jpg');";
+    $coverSrc   = "../uploads/cover-default.jpg";
 }
+
+
 
 // ====== HANDLE FOTO PROFIL (LONGBLOB) ======
 if (!empty($user['foto'])) {
@@ -104,7 +112,7 @@ body {
     align-items: center;
     font-size: 15px;
 }
-.menu a.active { background: #38BDF8; }
+
 .menu a:hover { background: #3047d3; }
 
 .main {
@@ -131,6 +139,8 @@ body {
     margin: 12px 0 0 0;
     box-shadow: 0 2px 8px rgba(60,60,60,0.10);
     display: block;
+    cursor: pointer;
+    z-index: 1;
 }
 
 .profile-box {
@@ -150,6 +160,7 @@ body {
     object-fit: cover;
     background: #fff;
     box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+    z-index: 5; 
 }
 .profile-box h2 {
     margin: 6px 0 2px 0;
@@ -232,6 +243,37 @@ body {
   display: inline-block;
 }
 
+/* ===== MODAL COVER FULL ===== */
+.cover-modal {
+    display: none;                /* awalnya sembunyi */
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.cover-modal-content {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.cover-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 32px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+
 @media (max-width:900px){
     .info-grid { grid-template-columns: repeat(2, 1fr);}
     .main { padding: 8px 6px;}
@@ -294,12 +336,27 @@ body {
 </aside>
 
 <div class="main">
-    <!-- Header Cover User (LONGBLOB / default file) -->
-    <div class="profile-header" style="<?php echo $coverStyle; ?>"></div>
+    <!-- Header Cover User (klik untuk lihat full) -->
+<div class="profile-header"
+     style="<?php echo $coverStyle; ?>"
+     onclick="openCoverModal()"></div>
+
+<!-- MODAL COVER FULL -->
+<div id="coverModal" class="cover-modal" onclick="closeCoverModal()">
+    <span class="cover-modal-close" onclick="closeCoverModal(event)">&times;</span>
+    <img src="<?php echo $coverSrc; ?>" class="cover-modal-content" alt="Foto Sampul">
+</div>
+
+<!-- MODAL FOTO PROFIL FULL -->
+<div id="fotoModal" class="cover-modal" onclick="closeFotoModal()">
+    <span class="cover-modal-close" onclick="closeFotoModal(event)">&times;</span>
+    <img src="<?php echo $fotoSrc; ?>" class="cover-modal-content" alt="Foto Profil">
+</div>
+
 
     <div class="profile-box">
         <!-- Foto Profil (LONGBLOB / default file) -->
-        <img class="profile-photo" src="<?php echo $fotoSrc; ?>" alt="Foto Profil">
+        <img class="profile-photo" src="<?php echo $fotoSrc; ?>" alt="Foto Profil" onclick="openFotoModal()" style="cursor:pointer;">
         <h2><?php echo htmlspecialchars($nama_lengkap); ?></h2>
         <button class="btn-edit-profile" onclick="window.location.href='edit_profile.php'">Edit Profil</button>
     </div>
@@ -330,5 +387,42 @@ body {
     </div>
 </div>
 
+
+<script>
+function openCoverModal() {
+    var modal = document.getElementById('coverModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+// parameter event biar kita bisa stopPropagation saat klik tombol X
+function closeCoverModal(e) {
+    if (e) {
+        e.stopPropagation(); // supaya klik tombol X tidak ikut baca klik background
+    }
+    var modal = document.getElementById('coverModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// ==== FOTO PROFIL MODAL ====
+function openFotoModal() {
+    var modal = document.getElementById('fotoModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeFotoModal(e) {
+    if (e) e.stopPropagation();
+    var modal = document.getElementById('fotoModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+</script>
 </body>
 </html>

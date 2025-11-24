@@ -408,24 +408,91 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
             text-decoration:underline;
         }
 
-        .form-wrapper{margin-top:20px;max-width:900px}
-        .form-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px}
-        .card-form{border-radius:18px;border:1px solid #e5e7eb;padding:18px}
-        .form-group{margin-bottom:14px}
-        .form-group label{display:block;font-size:13px;margin-bottom:4px;font-weight:500}
-        .form-group input[type=text], .form-group textarea{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #d1d5db;font-size:13px;outline:none;resize:vertical}
-        .form-group textarea{min-height:90px}
-        .form-group input:focus, .form-group textarea:focus{border-color:#5E63BB;box-shadow:0 0 0 1px rgba(79,70,229,.1)}
-        .upload-box{border-radius:18px;border:1px dashed #d1d5db;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;color:#6b7280}
-        .upload-box input{margin-top:8px}
-        .upload-preview{margin-top:10px}
-        .upload-preview img{max-width:100%;border-radius:12px}
-        .form-actions{margin-top:16px;display:flex;gap:10px}
-        .btn-secondary{border-radius:10px;padding:9px 18px;background:#e5e7eb;border:none;font-size:13px;cursor:pointer}
-        .alert{margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12px}
-        .alert-info{background:#e0f2fe;color:#5E63BB}
-        .alert-error{background:#fee2e2;color:#991b1b}
-        pre{white-space:pre-wrap;font-family:inherit;font-size:13px}
+        .form-wrapper{
+            margin-top:20px;
+            max-width:900px
+        }
+        .form-grid{display:grid;
+            grid-template-columns:2fr 1fr;
+            gap:24px
+        }
+        .card-form{
+            border-radius:18px;
+            border:1px solid #e5e7eb;padding:18px
+        }
+        .form-group{
+            margin-bottom:14px
+        }
+        .form-group label{
+            display:block;
+            font-size:13px;
+            margin-bottom:4px;
+            font-weight:500}
+        .form-group input[type=text], .form-group textarea{
+            width:100%;
+            padding:8px 10px;border-radius:10px;
+            border:1px solid #d1d5db;
+            font-size:13px;
+            outline:none;
+            resize:vertical
+        }
+        .form-group textarea{
+            min-height:90px
+        }
+        .form-group input:focus, .form-group textarea:focus{
+            border-color:#5E63BB;
+            box-shadow:0 0 0 1px rgba(79,70,229,.1)
+        }
+        .upload-box{
+            border-radius:18px;
+            border:1px dashed #d1d5db;
+            height:100%;display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            font-size:13px;
+            color:#6b7280
+        }
+        .upload-box input{
+            margin-top:8px
+        }
+        .upload-preview{
+            margin-top:10px
+        }
+        .upload-preview img{
+            max-width:100%;
+            border-radius:12px
+        }
+        .form-actions{
+            margin-top:16px;
+            display:flex;gap:10px
+        }
+        .btn-secondary{
+            border-radius:10px;
+            padding:9px 18px;
+            background:#e5e7eb;
+            border:none;
+            font-size:13px;
+            cursor:pointer
+        }
+        .alert{
+            margin-top:10px;
+            padding:8px 12px;
+            border-radius:8px;
+            font-size:12px
+        }
+        .alert-info{
+            background:#e0f2fe;
+            color:#5E63BB
+        }
+        .alert-error{background:#fee2e2;
+            color:#991b1b
+        }
+        pre{
+            white-space:pre-wrap;
+            font-family:inherit;
+            font-size:13px
+        }
 
         /* DETAIL PELAYANAN (gambar ke-4) */
         .detail-wrapper{
@@ -566,14 +633,21 @@ $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
                 </form>
 
                 <div class="profile-wrapper">
-                    <div class="profile-text">
-                        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
-                        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
-                    </div>
-                    <div class="profile-avatar">
-                        <?php echo $inisialAdmin; ?>
-                    </div>
-                </div>
+    <div class="profile-text">
+        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
+        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
+    </div>
+
+    <!-- avatar yang nyambung ke profile.php -->
+    <a href="profile.php" class="profile-avatar">
+        <?php if (!empty($fotoProfilSrc)) : ?>
+            <img src="<?php echo $fotoProfilSrc; ?>" alt="Foto Profil">
+        <?php else : ?>
+            <?php echo $inisialAdmin; ?>
+        <?php endif; ?>
+    </a>
+</div>
+
             </div>
 
             <div class="content-card">
