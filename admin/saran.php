@@ -554,7 +554,7 @@ if (isset($_GET['msg'])) {
             <form method="get" class="search-input-wrapper">
                 <input type="hidden" name="action" value="list">
                 <span class="search-icon">🔍</span>
-                <input type="text" name="search" placeholder="Search"
+                <input type="text" name="search" placeholder="Search Saran"
                        value="<?php echo htmlspecialchars($search); ?>">
             </form>
 

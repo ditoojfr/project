@@ -684,7 +684,7 @@ if (isset($_GET['msg'])) {
                 <form method="get" class="search-input-wrapper">
                     <input type="hidden" name="action" value="list">
                     <span class="search-icon">🔍</span>
-                    <input type="text" name="search" placeholder="Search" value="<?php echo htmlspecialchars($search); ?>">
+                    <input type="text" name="search" placeholder="Search Pelayanan" value="<?php echo htmlspecialchars($search); ?>">
                 </form>
 
                 <div class="profile-wrapper">
