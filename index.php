@@ -10,7 +10,7 @@ function getAllKegiatan($conn) {
 
 // Fungsi untuk mengambil semua prestasi
 function getAllPrestasi($conn) {
-    $sql = "SELECT id, judul, keterangan, tanggal, foto, foto_type FROM prestasi ORDER BY tanggal DESC";
+    $sql = "SELECT id, judul, deskripsi, tanggal, foto, foto_type FROM prestasi ORDER BY tanggal DESC";
     $result = mysqli_query($conn, $sql);
     return $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
 }
