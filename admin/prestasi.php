@@ -53,12 +53,25 @@ if (isset($_GET['tambah'])) {
 if (isset($_GET['edit'])) {
     $mode = "edit";
 }
+if (isset($_GET['detail'])) {
+    $mode = "detail";
+}
 
 $edit = null;
+$detail = null;
+
 if ($mode === 'edit') {
     $id   = intval($_GET['edit']);
     $res  = mysqli_query($conn, "SELECT * FROM prestasi WHERE id=$id");
     $edit = mysqli_fetch_assoc($res);
+} elseif ($mode === 'detail') {
+    $id   = intval($_GET['detail']);
+    $res  = mysqli_query($conn, "SELECT * FROM prestasi WHERE id=$id");
+    $detail = mysqli_fetch_assoc($res);
+    if (!$detail) {
+        header("Location: prestasi.php?msg=Prestasi+tidak+ditemukan");
+        exit;
+    }
 }
 
 // Judul halaman
@@ -66,6 +79,8 @@ if ($mode == "tambah") {
     $page_title = "Tambah Prestasi";
 } elseif ($mode == "edit") {
     $page_title = "Edit Prestasi";
+} elseif ($mode == "detail") {
+    $page_title = "Detail Prestasi";
 } else {
     $page_title = "Daftar Prestasi";
 }
@@ -112,7 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_prestasi'])) {
             WHERE id = $id");
         }
 
-        // redirect dengan pesan sukses update
         header("Location: prestasi.php?msg=Prestasi+berhasil+diupdate");
         exit;
 
@@ -130,7 +144,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_prestasi'])) {
                 " . ($ftype ? "'$ftype'" : "NULL") . "
             )");
 
-        // redirect dengan pesan sukses tambah
         header("Location: prestasi.php?msg=Prestasi+baru+berhasil+ditambahkan");
         exit;
     }
@@ -169,7 +182,6 @@ if (isset($_GET['msg'])) {
     <meta charset="UTF-8">
     <title>Prestasi - Admin</title>
 
-    <!-- SAMA DENGAN PELAYANAN.PHP -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
@@ -429,6 +441,16 @@ if (isset($_GET['msg'])) {
             background:#e5e7eb;
         }
 
+        /* Judul prestasi menjadi link */
+        .prestasi-judul-link {
+            color: #3B82F6;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .prestasi-judul-link:hover {
+            color: #1c3f9f;
+        }
+
         .aksi-btn{
             display:flex;
             justify-content:space-between;
@@ -524,7 +546,6 @@ if (isset($_GET['msg'])) {
             font-size:14px;
         }
 
-               /* MODAL HAPUS PRESTASI – SAMA SEPERTI PELAYANAN */
         .modal-backdrop{
             position:fixed;
             inset:0;
@@ -607,6 +628,107 @@ if (isset($_GET['msg'])) {
             to{opacity:1;transform:translateY(0) scale(1);}
         }
 
+        /* ====== TAMPILAN DETAIL PRESTASI ====== */
+        .detail-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-foto {
+            width: 200px;
+            height: 200px;
+            border-radius: 16px;
+            object-fit: cover;
+            background: #e5e7eb;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .detail-info {
+            flex: 1;
+        }
+
+        .detail-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1c3f9f;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .detail-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-deskripsi {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #374151;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border-left: 4px solid #3B82F6;
+        }
+
+        .detail-breadcrumb {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-edit {
+            background: #f59e0b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-edit:hover {
+            background: #e68a00;
+        }
+
+        .btn-back {
+            background: #6b7280;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-back:hover {
+            background: #4b5563;
+        }
+
     </style>
 </head>
 <body>
@@ -680,8 +802,10 @@ if (isset($_GET['msg'])) {
                                 Daftar Prestasi
                             <?php elseif ($mode == "tambah"): ?>
                                 Tambah Prestasi
-                            <?php else: ?>
+                            <?php elseif ($mode == "edit"): ?>
                                 Edit Prestasi
+                            <?php else: ?>
+                                Detail Prestasi
                             <?php endif; ?>
                         </div>
                     </div>
@@ -699,7 +823,7 @@ if (isset($_GET['msg'])) {
                 <?php endif; ?>
 
                 <!-- FORM TAMBAH / EDIT -->
-                <?php if ($mode != "list"): ?>
+                <?php if ($mode != "list" && $mode != "detail"): ?>
                     <form method="POST" enctype="multipart/form-data">
                         <div class="form-container">
                             <div class="form-left">
@@ -766,6 +890,51 @@ if (isset($_GET['msg'])) {
                     </form>
                 <?php endif; ?>
 
+                <!-- TAMPILAN DETAIL PRESTASI -->
+                <?php if ($mode == "detail"): ?>
+                    <div class="detail-container">
+                        <div class="detail-header">
+                            <img src="<?php
+                                if (!empty($detail['foto'])) {
+                                    echo 'data:' . $detail['foto_type'] . ';base64,' . base64_encode($detail['foto']);
+                                } else {
+                                    echo '../assets/icons/noimage.png';
+                                }
+                            ?>" alt="Foto Prestasi" class="detail-foto">
+                            <div class="detail-info">
+                                <h1 class="detail-title"><?php echo htmlspecialchars($detail['judul']); ?></h1>
+                                <div class="detail-meta">
+                                    <div class="detail-meta-item">
+                                        <i class="fa-solid fa-tag"></i>
+                                        <span><?php echo htmlspecialchars($detail['bidang'] ?? '-'); ?></span>
+                                    </div>
+                                    <div class="detail-meta-item">
+                                        <i class="fa-solid fa-calendar"></i>
+                                        <span><?php echo date("d F Y", strtotime($detail['tanggal'])); ?></span>
+                                    </div>
+                                    <div class="detail-meta-item">
+                                        <i class="fa-solid fa-building"></i>
+                                        <span><?php echo htmlspecialchars($detail['penyelenggara'] ?? '-'); ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-deskripsi">
+                            <?php echo nl2br(htmlspecialchars($detail['deskripsi'])); ?>
+                        </div>
+
+                        <div class="detail-actions">
+                            <button class="btn-edit" onclick="window.location.href='prestasi.php?edit=<?php echo $detail['id']; ?>'">
+                                <i class="fa-solid fa-pen"></i> Edit
+                            </button>
+                            <button class="btn-back" onclick="window.location.href='prestasi.php'">
+                                <i class="fa-solid fa-arrow-left"></i> Kembali
+                            </button>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <!-- LIST DATA -->
                 <?php if ($mode == "list"): ?>
                     <table>
@@ -803,7 +972,12 @@ if (isset($_GET['msg'])) {
                                         <?php endif; ?>
                                     </td>
                                     <td><?php echo $no++; ?></td>
-                                    <td><?php echo htmlspecialchars($row['judul']); ?></td>
+                                    <!-- Judul prestasi menjadi link ke detail -->
+                                    <td>
+                                        <a href="prestasi.php?detail=<?php echo $row['id']; ?>" class="prestasi-judul-link">
+                                            <?php echo htmlspecialchars($row['judul']); ?>
+                                        </a>
+                                    </td>
                                     <td><?php echo htmlspecialchars($row['bidang'] ?? '-'); ?></td>
                                     <td><?php echo htmlspecialchars($row['penyelenggara'] ?? '-'); ?></td>
                                     <td>
@@ -819,6 +993,7 @@ if (isset($_GET['msg'])) {
                                     </td>
                                     <td><?php echo date("d F Y", strtotime($row['tanggal'])); ?></td>
                                     <td class="aksi-btn">
+                                        <!-- HANYA EDIT DAN HAPUS -->
                                         <a href="prestasi.php?edit=<?php echo $row['id']; ?>">
                                             <i class="fa-solid fa-pen"></i>
                                         </a>
@@ -836,7 +1011,7 @@ if (isset($_GET['msg'])) {
         </div> <!-- .main -->
     </div> <!-- .app -->
 
-       <!-- MODAL HAPUS PRESTASI – SAMA DENGAN PELAYANAN & SARAN -->
+    <!-- MODAL HAPUS -->
     <div id="deleteModal" class="modal-backdrop">
         <div class="modal-card">
             <div class="modal-icon">!</div>
@@ -851,9 +1026,7 @@ if (isset($_GET['msg'])) {
         </div>
     </div>
 
-
     <script>
-        // preview foto upload
         document.addEventListener('DOMContentLoaded', function () {
             const fileInput  = document.getElementById('uploadFoto');
             const previewImg = document.getElementById('previewImg');
@@ -871,22 +1044,19 @@ if (isset($_GET['msg'])) {
             });
         });
 
-        // MODAL HAPUS
         let deleteId = null;
-
         function openDeleteModal(id){
             deleteId = id;
-            const m = document.getElementById('deleteModal');
-            if (m) m.style.display = 'flex';
+            document.getElementById('deleteModal').style.display = 'flex';
         }
         function closeDeleteModal(){
             deleteId = null;
-            const m = document.getElementById('deleteModal');
-            if (m) m.style.display = 'none';
+            document.getElementById('deleteModal').style.display = 'none';
         }
         function confirmDelete(){
-            if (!deleteId) return;
-            window.location.href = 'prestasi.php?del=' + deleteId;
+            if (deleteId) {
+                window.location.href = 'prestasi.php?del=' + deleteId;
+            }
         }
     </script>
 </body>
