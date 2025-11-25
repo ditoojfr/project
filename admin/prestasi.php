@@ -715,7 +715,7 @@ if (isset($_GET['msg'])) {
         }
 
         .btn-back {
-            background: #6b7280;
+            background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
             padding: 8px 16px;
             border-radius: 8px;
             border: none;
@@ -725,9 +725,29 @@ if (isset($_GET['msg'])) {
             font-weight: 500;
         }
 
-        .btn-back:hover {
-            background: #4b5563;
-        }
+           .btn-back:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
+        /* Batasi lebar kolom Deskripsi */
+.table-prestasi td:nth-child(6), /* Kolom Deskripsi adalah kolom ke-6 */
+.table-prestasi th:nth-child(6) {
+    max-width: 200px; /* Atur lebar maksimum, bisa disesuaikan */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal; /* Biarkan teks bisa wrap jika perlu */
+    word-wrap: break-word;
+    padding: 8px 6px;
+}
+
+/* Pastikan kolom Tanggal dan Aksi tetap rapi */
+.table-prestasi td:nth-child(7), /* Tanggal Perolehan */
+.table-prestasi th:nth-child(7),
+.table-prestasi td:nth-child(8), /* Aksi */
+.table-prestasi th:nth-child(8) {
+    white-space: nowrap;
+    text-align: center;
+}
 
     </style>
 </head>
@@ -772,7 +792,7 @@ if (isset($_GET['msg'])) {
             <div class="top-bar">
                 <form method="get" class="search-input-wrapper">
                     <span class="search-icon">🔍</span>
-                    <input type="text" name="search" placeholder="Search" value="<?php echo htmlspecialchars($search); ?>">
+                    <input type="text" name="search" placeholder="Search Prestasi" value="<?php echo htmlspecialchars($search); ?>">
                 </form>
 
                 <div class="profile-wrapper">
@@ -937,7 +957,7 @@ if (isset($_GET['msg'])) {
 
                 <!-- LIST DATA -->
                 <?php if ($mode == "list"): ?>
-                    <table>
+                    <table class="table-prestasi">
                         <thead>
                             <tr>
                                 <th></th>

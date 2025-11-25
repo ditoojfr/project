@@ -78,7 +78,8 @@ body {
   top: 90px;
   width: 220px;
   height: calc(100vh - 152px);
-  background: #5E63BB;
+              background: linear-gradient(200deg, #1c3f9f, #3B82F6);
+
   padding: 24px 20px;
   color: white;
   border-radius: 20px;
@@ -217,7 +218,7 @@ body {
 .info-item span { font-size: 17px; color: #333; }
 
 .logout {
-  margin-top: 30px;
+  margin-top: 500px;
   padding: 0 0 0 6px;
 }
 .logout a, .logout a:visited {
@@ -232,7 +233,7 @@ body {
   gap: 10px;
 }
 .logout a:hover {
-  background: #3047d3;
+  background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
   color: #ffe28f !important;
 }
 .logout img {
