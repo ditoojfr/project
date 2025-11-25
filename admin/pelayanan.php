@@ -443,7 +443,8 @@ if (isset($_GET['msg'])) {
             margin-top:20px;
             max-width:900px
         }
-        .form-grid{display:grid;
+        .form-grid{
+            display:grid;
             grid-template-columns:2fr 1fr;
             gap:24px
         }
@@ -474,26 +475,78 @@ if (isset($_GET['msg'])) {
             border-color:#5E63BB;
             box-shadow:0 0 0 1px rgba(79,70,229,.1)
         }
-        .upload-box{
-            border-radius:18px;
-            border:1px dashed #d1d5db;
-            height:100%;display:flex;
-            flex-direction:column;
-            align-items:center;
-            justify-content:center;
-            font-size:13px;
-            color:#6b7280
-        }
-        .upload-box input{
-            margin-top:8px
-        }
-        .upload-preview{
-            margin-top:10px
-        }
-        .upload-preview img{
-            max-width:100%;
-            border-radius:12px
-        }
+        /* UPLOAD BOX STYLE – SAMA SEPERTI DI KEGIATAN.PHP */
+/* UPLOAD BOX STYLE – SAMA SEPERTI DI PRESTASI.PHP */
+.upload-box {
+    width: 100%;
+    min-height: 200px;
+    border: 2px dashed #d1d5db;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+}
+
+.upload-box:hover {
+    background: #f9fafb;
+}
+
+.preview-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+    z-index: 1;
+}
+
+.upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.upload-overlay i {
+    font-size: 36px;
+    color: #5E63BB;
+    margin-bottom: 10px;
+}
+
+.upload-overlay span {
+    font-size: 16px;
+    color: #000000ff;
+    font-weight: 500;
+}
+
+.upload-trigger {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    opacity: 0;
+    z-index: 3;
+}
+
         .form-actions{
             margin-top:16px;
             display:flex;gap:10px
@@ -840,21 +893,36 @@ if (isset($_GET['msg'])) {
                                         <textarea name="isi_panduan" required><?php echo htmlspecialchars($detail['isi_panduan'] ?? ''); ?></textarea>
                                     </div>
                                 </div>
-                                <div class="card-form">
-                                    <div class="form-group">
-                                        <label>Upload Image</label>
-                                        <div class="upload-box">
-                                            <div>Upload Image</div>
-                                            <input type="file" name="foto_pendukung" accept="image/*">
-                                            <?php if ($action === 'edit_form' && !empty($detail['foto_pendukung'])) : ?>
-                                                <div class="upload-preview">
-                                                    <img src="../<?php echo htmlspecialchars($detail['foto_pendukung']); ?>" alt="Preview">
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                
+                        <div class="card-form">
+    <div class="form-group">
+        <label>Upload Image</label>
+        <div class="upload-box" id="uploadBox">
+            <!-- Preview gambar -->
+            <img id="previewImg" class="preview-img"
+                 src="<?php
+                     if ($action === 'edit_form' && !empty($detail['foto_pendukung'])) {
+                         echo '../' . htmlspecialchars($detail['foto_pendukung']);
+                     }
+                 ?>"
+                 style="<?php echo ($action === 'edit_form' && !empty($detail['foto_pendukung'])) ? 'display:block;' : 'display:none;'; ?>"
+                 alt="Preview">
+
+            <!-- Overlay untuk teks/ikon -->
+            <div class="upload-overlay">
+                <?php if ($action === 'edit_form' && !empty($detail['foto_pendukung'])): ?>
+                    <span>Klik untuk Ganti Gambar</span>
+                <?php else: ?>
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Pilih Image</span>
+                <?php endif; ?>
+            </div>
+
+            <!-- Input file -->
+            <input type="file" id="uploadFoto" name="foto_pendukung" class="upload-trigger" accept="image/*">
+        </div>
+    </div>
+</div>
 
                             <div class="form-actions">
                                 <button type="button" class="btn-secondary" onclick="window.location.href='pelayanan.php'">← Kembali</button>
@@ -896,7 +964,6 @@ if (isset($_GET['msg'])) {
     </div>
 
     <!-- MODAL KONFIRMASI HAPUS -->
-    <!-- MODAL KONFIRMASI HAPUS -->
 <div id="deleteModal" class="modal-backdrop">
     <div class="modal-card">
         <div class="modal-icon">!</div>
@@ -932,6 +999,23 @@ if (isset($_GET['msg'])) {
             window.location.href = 'pelayanan.php?action=delete&id=' + deleteId;
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const fileInput  = document.getElementById('uploadFoto');
+    const previewImg = document.getElementById('previewImg');
+    if (!fileInput || !previewImg) return;
+
+    fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImg.src = e.target.result;
+            previewImg.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+});
 </script>
 
 </body>
