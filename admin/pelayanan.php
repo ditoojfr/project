@@ -329,6 +329,7 @@ if (isset($_GET['msg'])) {
         }
         .profile-text .name{font-weight:600}
         .profile-text .role{font-size:11px;color:#9ca3af}
+        
         .profile-avatar{
             width:38px;
             height:38px;

@@ -333,21 +333,28 @@ if (isset($_GET['msg'])) {
             font-size: 12px;
         }
 
-        .profile-text .name { font-weight: 600; }
-        .profile-text .role { font-size: 11px; color: #9ca3af; }
+        .profile-text .name{font-weight:600}
+        .profile-text .role{font-size:11px;color:#9ca3af}
+        
+        .profile-avatar{
+            width:38px;
+            height:38px;
+            border-radius:999px;
+            background:#f97316;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:600;
+            font-size:16px;
+            color:#fff;
+            overflow:hidden;
+        }
 
-        .profile-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 999px;
-            background: #f97316;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 16px;
-            color: #fff;
-            overflow: hidden;
+        .profile-avatar img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            border-radius:999px;
         }
 
         .content-card {
@@ -762,7 +769,7 @@ if (isset($_GET['msg'])) {
                 <input type="hidden" name="action" value="list">
                 <span class="search-icon">🔍</span>
                 <input type="text" name="search"
-                       placeholder="Cari kegiatan..."
+                       placeholder="Search Kegiatan"
                        value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
             </form>
 

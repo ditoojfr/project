@@ -8,25 +8,45 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// DATA PROFIL (ATAS KANAN)
-$namaAdmin    = $_SESSION['nama'] ?? $_SESSION['username'] ?? 'Administrator Utama';
-$roleAdmin    = $_SESSION['role'] ?? 'Admin';
+// =================== DATA PROFIL UNTUK TOP-BAR (profil.php style) ===================
+$user_id = (int)$_SESSION['user_id'];
+$resUser = mysqli_query($conn, "
+    SELECT nama_lengkap, role, foto
+    FROM users
+    WHERE id = $user_id
+");
+$user = mysqli_fetch_assoc($resUser);
+
+// Nama admin (dari nama_lengkap, fallback ke "Administrator")
+$namaAdmin = !empty($user['nama_lengkap'])
+    ? $user['nama_lengkap']
+    : 'Administrator';
+
+// Role
+$roleAdmin = !empty($user['role']) ? $user['role'] : 'admin';
+
+// Inisial jika tidak ada foto
 $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
 
-// Ambil statistik
+// Foto profil
+$fotoProfilSrc = null;
+if (!empty($user['foto'])) {
+    $fotoProfilSrc = "data:image/jpeg;base64," . base64_encode($user['foto']);
+}
+
+// ================================================================================
+
+// Kode statistik, grafik, dan saran tetap pakai kode asli kamu di bawah ini, JANGAN DIUBAH!
 $total_prestasi = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `prestasi`"))['total'];
 $total_kegiatan = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `kegiatan`"))['total'];
-$total_saran     = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `saran`"))['total'];
-// Asumsikan pelayanan = jumlah user role 'warga' atau sesuaikan logika
+$total_saran    = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `saran`"))['total'];
 $total_pelayanan = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `users` WHERE role = 'warga'"))['total'];
 
-// === Grafik: saran per bulan (6 bulan terakhir) ===
 $labels = [];
 $data = [];
 for ($i = 5; $i >= 0; $i--) {
     $bulan = date('Y-m', strtotime("-$i months"));
     $labels[] = date('M Y', strtotime($bulan));
-
     $stmt = mysqli_prepare($conn, "SELECT COUNT(*) FROM `saran` WHERE DATE_FORMAT(tanggal_dikirim, '%Y-%m') = ?");
     mysqli_stmt_bind_param($stmt, "s", $bulan);
     mysqli_stmt_execute($stmt);
@@ -34,13 +54,13 @@ for ($i = 5; $i >= 0; $i--) {
     $data[] = (int) $count;
 }
 
-// === 3 saran terbaru ===
 $saran_list = [];
 $result = mysqli_query($conn, "SELECT judul, email, isi_saran, tanggal_dikirim FROM `saran` ORDER BY tanggal_dikirim DESC LIMIT 3");
 while ($row = mysqli_fetch_assoc($result)) {
     $saran_list[] = $row;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -177,21 +197,28 @@ while ($row = mysqli_fetch_assoc($result)) {
             font-size: 12px;
         }
 
-        .profile-text .name { font-weight: 600; }
-        .profile-text .role { font-size: 11px; color: #9ca3af; }
+        .profile-text .name{font-weight:600}
+        .profile-text .role{font-size:11px;color:#9ca3af}
+        
+        .profile-avatar{
+            width:38px;
+            height:38px;
+            border-radius:999px;
+            background:#f97316;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:600;
+            font-size:16px;
+            color:#fff;
+            overflow:hidden;
+        }
 
-        .profile-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 999px;
-            background: #f97316;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 16px;
-            color: #fff;
-            overflow: hidden;
+        .profile-avatar img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            border-radius:999px;
         }
 
         /* ===== KONTEN ===== */
@@ -355,14 +382,20 @@ while ($row = mysqli_fetch_assoc($result)) {
         <!-- TOP BAR (tanpa search) -->
         <div class="top-bar">
             <div class="profile-wrapper">
-                <div class="profile-text">
-                    <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
-                    <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
-                </div>
-                <div class="profile-avatar">
-                    <?= $inisialAdmin; ?>
-                </div>
-            </div>
+    <div class="profile-text">
+        <div class="name"><?= htmlspecialchars($namaAdmin); ?></div>
+        <div class="role"><?= htmlspecialchars($roleAdmin); ?></div>
+    </div>
+    <!-- avatar bulat klik ke profile.php -->
+    <a href="profile.php" class="profile-avatar">
+        <?php if (!empty($fotoProfilSrc)) : ?>
+            <img src="<?= $fotoProfilSrc; ?>" alt="Foto Profil">
+        <?php else : ?>
+            <?= $inisialAdmin; ?>
+        <?php endif; ?>
+    </a>
+</div>
+
         </div>
 
         <h1 class="page-title">Dashboard</h1>
