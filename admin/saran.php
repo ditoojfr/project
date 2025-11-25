@@ -109,6 +109,8 @@ if (isset($_GET['msg'])) {
     <title>Kotak Saran - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
 
     <style>
         /* --- Reset kecil & font --- */
@@ -509,6 +511,8 @@ if (isset($_GET['msg'])) {
             from{opacity:0;transform:translateY(10px) scale(.97);}
             to{opacity:1;transform:translateY(0) scale(1);}
         }
+        .fa-trash { color: #ef4444 !important; }
+
     </style>
 </head>
 <body>
@@ -651,10 +655,11 @@ if (isset($_GET['msg'])) {
                                 <!-- AKSI HAPUS -->
                                 <td class="aksi-col">
                                     <button class="icon-btn delete"
-                                            title="Hapus"
-                                            onclick="openDeleteModal(<?php echo $row['id']; ?>)">
-                                        🗑
-                                    </button>
+        title="Hapus"
+        onclick="openDeleteModal(<?php echo $row['id']; ?>)">
+    <i class="fa-solid fa-trash" style="color: #ef4444; font-size: 20px; cursor: pointer;"></i>
+</button>
+
                                 </td>
                             </tr>
                         <?php endforeach;

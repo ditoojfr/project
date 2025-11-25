@@ -202,6 +202,9 @@ if (isset($_GET['msg'])) {
     <title>Pelayanan - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
         body{font-family:'Poppins',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:#f4f5fb;color:#333}
@@ -791,9 +794,12 @@ if (isset($_GET['msg'])) {
     ?>
 </td>
             <td class="aksi-col">
-                <button class="icon-btn edit" title="Edit" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $row['id']; ?>'">✏</button>
+                <button class="icon-btn edit" title="Edit" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $row['id']; ?>'">✏️</button>
                 <!-- PANGGIL MODAL, BUKAN confirm() -->
-                <button class="icon-btn delete" title="Hapus" onclick="openDeleteModal(<?php echo $row['id']; ?>)">🗑</button>
+                <button class="icon-btn delete" title="Hapus" onclick="openDeleteModal(<?php echo $row['id']; ?>)">
+    <i class="fa-solid fa-trash"></i>
+</button>
+
             </td>
         </tr>
     <?php endforeach; endif; ?>
