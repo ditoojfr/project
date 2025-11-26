@@ -837,12 +837,17 @@ if (isset($_GET['msg'])) {
            <td>
     <?php 
         $maxLength = 250; // batas karakter
-        $desc = strip_tags($row['isi_panduan']); // buang tag HTML kalau ada
+        $desc = $row['isi_panduan'];
+
+        // Ganti string literal '\r\n' dengan karakter baris baru sebelum diolah
+        $desc = str_replace('\\r\\n', "\r\n", $desc);
+        $desc = str_replace('\\n', "\n", $desc);
+        $desc = str_replace('\\r', "\r", $desc);
 
         if (strlen($desc) > $maxLength) {
-            echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength))) . "...";
+            echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength), ENT_QUOTES, 'UTF-8')) . "...";
         } else {
-            echo nl2br(htmlspecialchars($desc));
+            echo nl2br(htmlspecialchars($desc, ENT_QUOTES, 'UTF-8'));
         }
     ?>
 </td>
@@ -890,7 +895,14 @@ if (isset($_GET['msg'])) {
                                     </div>
                                     <div class="form-group">
                                         <label>Isi Panduan</label>
-                                        <textarea name="isi_panduan" required><?php echo htmlspecialchars($detail['isi_panduan'] ?? ''); ?></textarea>
+                                        <textarea name="isi_panduan" required><?php 
+                                        $isi_panduan = $detail['isi_panduan'] ?? '';
+                                        // Ganti string literal '\r\n' dengan karakter baris baru sebenarnya
+                                        $isi_panduan = str_replace('\\r\\n', "\r\n", $isi_panduan);
+                                        $isi_panduan = str_replace('\\n', "\n", $isi_panduan);
+                                        $isi_panduan = str_replace('\\r', "\r", $isi_panduan);
+                                        echo $isi_panduan;
+                                        ?></textarea>
                                     </div>
                                 </div>
                                 
@@ -949,7 +961,14 @@ if (isset($_GET['msg'])) {
 
                             <div class="detail-label">Isi Panduan</div>
                             <div class="detail-text">
-                                <?php echo nl2br(htmlspecialchars($detail['isi_panduan'])); ?>
+                                <?php 
+                                    $desc = $detail['isi_panduan'];
+                                    // Ganti string literal '\r\n' dengan karakter baris baru sebelum diolah
+                                    $desc = str_replace('\\r\\n', "\r\n", $desc);
+                                    $desc = str_replace('\\n', "\n", $desc);
+                                    $desc = str_replace('\\r', "\r", $desc);
+                                    echo nl2br(htmlspecialchars($desc, ENT_QUOTES, 'UTF-8'));
+                                ?>
                             </div>
 
                             <div class="form-actions" style="margin-top:18px;">
@@ -1005,7 +1024,7 @@ if (isset($_GET['msg'])) {
     const previewImg = document.getElementById('previewImg');
     if (!fileInput || !previewImg) return;
 
-    fileInput.addEventListener('change', function () {
+    fileInput.addEventListener('change', function () {ac
         const file = this.files[0];
         if (!file) return;
         const reader = new FileReader();
