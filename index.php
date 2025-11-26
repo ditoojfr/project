@@ -948,7 +948,7 @@ function displayImageFromBlob($foto, $foto_type) {
                                     </div>
                                     <div class="prestasi-content">
                                         <h3 onclick="window.location.href='detail_prestasi.php?id=<?= $prestasiList[$j]['id'] ?>'"><?= htmlspecialchars($prestasiList[$j]['judul']) ?></h3>
-                                        <p><?= htmlspecialchars(substr($prestasiList[$j]['keterangan'], 0, 150)) ?>...</p>
+                                        <p><?= htmlspecialchars(substr($prestasiList[$j]['deskripsi'], 0, 150)) ?>...</p>
                                         <div class="prestasi-date"><?= date('d F Y', strtotime($prestasiList[$j]['tanggal'])) ?></div>
                                     </div>
                                 </div>
