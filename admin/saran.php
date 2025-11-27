@@ -618,10 +618,9 @@ if (isset($_GET['msg'])) {
                             <tr>
                                 <!-- FOTO -->
                                 <td>
-                                    <?php if (!empty($row['foto_sampul'])): ?>
-                                        <img src="../<?php echo htmlspecialchars($row['foto_sampul']); ?>"
-                                             alt="foto"
-                                             class="foto-bulat">
+                                    <?php if (!empty($row['foto'])): ?>
+                                        <img src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto_sampul']) ?>"
+                                             alt="Foto" class="foto-bulat">
                                     <?php else: ?>
                                         <span class="foto-bulat"></span>
                                     <?php endif; ?>
@@ -655,10 +654,10 @@ if (isset($_GET['msg'])) {
                                 <!-- AKSI HAPUS -->
                                 <td class="aksi-col">
                                     <button class="icon-btn delete"
-        title="Hapus"
-        onclick="openDeleteModal(<?php echo $row['id']; ?>)">
-    <i class="fa-solid fa-trash" style="color: #ef4444; font-size: 20px; cursor: pointer;"></i>
-</button>
+                                            title="Hapus"
+                                            onclick="openDeleteModal(<?php echo $row['id']; ?>)">
+                                        <i class="fa-solid fa-trash" style="color: #ef4444; font-size: 20px; cursor: pointer;"></i>
+                                    </button>
 
                                 </td>
                             </tr>

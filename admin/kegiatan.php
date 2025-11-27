@@ -507,8 +507,8 @@ if (isset($_GET['msg'])) {
                                     <?= date('d F Y', strtotime($row['tanggal'])) ?>
                                 </td>
                                 <td class="aksi-col" style="display:flex; justify-content:center; align-items:center; gap:6px;">
-    <a href="?action=edit&id=<?= $row['id'] ?>" title="Edit">
-        <button class="icon-btn">✏️</button>
+                                    <a href="?action=edit&id=<?= $row['id'] ?>" title="Edit">
+                                        <button class="icon-btn">✏️</button>
                                     </a>
                                     <button class="icon-btn delete" title="Hapus" onclick="openDeleteModal(<?php echo $row['id']; ?>)">
                                         <i class="fa-solid fa-trash"></i>
