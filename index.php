@@ -913,7 +913,7 @@ function displayImageFromBlob($foto, $foto_type) {
                                         <img src="<?= displayImageFromBlob($kegiatanList[$j]['foto'], $kegiatanList[$j]['foto_type']) ?>" alt="<?= htmlspecialchars($kegiatanList[$j]['judul']) ?>">
                                     </div>
                                     <div class="kegiatan-content">
-                                        <h3 onclick="window.location.href='detail_kegiatan.php?id=<?= $kegiatanList[$j]['id'] ?>'"><?= htmlspecialchars($kegiatanList[$j]['judul']) ?></h3>
+                                        <h3 onclick="window.location.href='kegiatan_detail.php?id=<?= $kegiatanList[$j]['id'] ?>'"><?= htmlspecialchars($kegiatanList[$j]['judul']) ?></h3>
                                         <p><?= htmlspecialchars(substr($kegiatanList[$j]['deskripsi'], 0, 150)) ?>...</p>
                                         <div class="kegiatan-date"><?= date('d F Y', strtotime($kegiatanList[$j]['tanggal'])) ?></div>
                                     </div>
@@ -947,7 +947,7 @@ function displayImageFromBlob($foto, $foto_type) {
                                         <img src="<?= displayImageFromBlob($prestasiList[$j]['foto'], $prestasiList[$j]['foto_type']) ?>" alt="<?= htmlspecialchars($prestasiList[$j]['judul']) ?>">
                                     </div>
                                     <div class="prestasi-content">
-                                        <h3 onclick="window.location.href='detail_prestasi.php?id=<?= $prestasiList[$j]['id'] ?>'"><?= htmlspecialchars($prestasiList[$j]['judul']) ?></h3>
+                                        <h3 onclick="window.location.href='prestasi_detail.php?id=<?= $prestasiList[$j]['id'] ?>'"><?= htmlspecialchars($prestasiList[$j]['judul']) ?></h3>
                                         <p><?= htmlspecialchars(substr($prestasiList[$j]['deskripsi'], 0, 150)) ?>...</p>
                                         <div class="prestasi-date"><?= date('d F Y', strtotime($prestasiList[$j]['tanggal'])) ?></div>
                                     </div>

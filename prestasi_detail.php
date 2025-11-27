@@ -124,7 +124,7 @@ if(!$row){
 <div class="content-wrapper">
 
     <!-- TOMBOL KEMBALI -->
-    <a href="prestasi.php" class="back-btn">←</a>
+    <a href="index.php" class="back-btn">←</a>
 
     <!-- BREADCRUMB -->
     <div class="breadcrumb-box">
@@ -152,7 +152,7 @@ if(!$row){
 
     <!-- ARTIKEL -->
     <div class="article">
-        <p><?= nl2br(htmlspecialchars($row['keterangan'])); ?></p>
+        <p><?= nl2br(htmlspecialchars($row['deskripsi'])); ?></p>
     </div>
 
 </div>
