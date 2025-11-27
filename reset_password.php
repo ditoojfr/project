@@ -126,6 +126,7 @@ if (isset($_POST['reset'])) {
             flex-direction: column;
             gap: 8px;
             margin: 15px 0;
+            position: relative;
         }
 
         .form-group label {
@@ -136,7 +137,7 @@ if (isset($_POST['reset'])) {
         }
 
         .form-group input {
-            padding: 12px 16px;
+            padding: 12px 40px 12px 16px;
             border: 1px solid #bdc3c7;
             border-radius: 8px;
             font-size: 14px;
@@ -150,13 +151,14 @@ if (isset($_POST['reset'])) {
         }
 
         .toggle-password {
-            position: fixed;
-            right: 805px;
-            padding-top: 180px;
-            transform: translateY(-70%);
+            position: absolute;
+            right: 12px;
+            top: 65%;
+            transform: translateY(-50%);
             cursor: pointer;
             color: #7f8c8d;
-            font-size: 14px;
+            font-size: 16px;
+            z-index: 2;
         }
 
         .btn-primary {
