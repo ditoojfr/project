@@ -40,7 +40,8 @@ if (!empty($user['foto'])) {
 $total_prestasi = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `prestasi`"))['total'];
 $total_kegiatan = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `kegiatan`"))['total'];
 $total_saran    = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `saran`"))['total'];
-$total_pelayanan = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `users` WHERE role = 'warga'"))['total'];
+$total_panduan_surat = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `users` WHERE role = 'warga'"))['total'];
+$total_panduan_surat    = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `panduan_surat`"))['total'];
 
 $labels = [];
 $data = [];
@@ -435,7 +436,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 </div>
                 <div class="stat-text">
                     <div class="stat-label">Pelayanan Aktif</div>
-                    <div class="stat-value"><?= $total_pelayanan ?></div>
+                    <div class="stat-value"><?= $total_panduan_surat ?></div>
                 </div>
             </div>
         </div>
