@@ -160,7 +160,6 @@ if ($search !== '') {
         WHERE judul LIKE '$like'
            OR bidang LIKE '$like'
            OR penyelenggara LIKE '$like'
-           OR deskripsi LIKE '$like'
         ORDER BY id DESC
     ";
 } else {
@@ -748,6 +747,11 @@ if (isset($_GET['msg'])) {
     white-space: nowrap;
     text-align: center;
 }
+/* card putih untuk tambah / edit / detail (tanpa top-bar) */
+.content-card-form{
+    margin-top: 63px;  /* boleh disesuaikan 50–80px sesuai selera */
+}
+
 
     </style>
 </head>
@@ -786,13 +790,16 @@ if (isset($_GET['msg'])) {
             </div>
         </div>
 
-        <!-- MAIN -->
+                <!-- MAIN -->
         <div class="main">
-            <!-- TOP BAR -->
+
+            <?php if ($mode == 'list'): ?>
+            <!-- TOP BAR – hanya muncul di Daftar Prestasi -->
             <div class="top-bar">
                 <form method="get" class="search-input-wrapper">
                     <span class="search-icon">🔍</span>
-                    <input type="text" name="search" placeholder="Search Prestasi" value="<?php echo htmlspecialchars($search); ?>">
+                    <input type="text" name="search" placeholder="Search Prestasi"
+                           value="<?php echo htmlspecialchars($search); ?>">
                 </form>
 
                 <div class="profile-wrapper">
@@ -810,9 +817,12 @@ if (isset($_GET['msg'])) {
                     </a>
                 </div>
             </div>
+            <?php endif; ?>
 
+           
             <!-- KONTEN UTAMA -->
-            <div class="content-card">
+<div class="content-card <?php echo ($mode != 'list') ? 'content-card-form' : ''; ?>">
+
                 <div class="header-row">
                     <div>
                         <h2 class="page-title"><?php echo htmlspecialchars($page_title); ?></h2>

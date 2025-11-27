@@ -141,7 +141,6 @@ if ($action === 'list') {
             SELECT * FROM kegiatan
             WHERE judul     LIKE '{$like}'
                OR lokasi    LIKE '{$like}'
-               OR deskripsi LIKE '{$like}'
             ORDER BY tanggal DESC, id DESC
         ";
     } else {
@@ -195,7 +194,7 @@ if (isset($_GET['msg'])) {
         .profile-text .role{font-size:11px;color:#9ca3af}
         .profile-avatar{width:38px;height:38px;border-radius:999px;background:#f97316;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:#fff;overflow:hidden;}
         .profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:999px;}
-        /* Card width fix: LEBAR = kayak .content-card di prestasi.php */
+        /* Card utama */
         .content-card {
             background: #fff;
             border-radius: 18px;
@@ -207,7 +206,11 @@ if (isset($_GET['msg'])) {
             box-sizing: border-box;
             flex: 1;
         }
-        /* Detail, form: juga lebar sama */
+        /* Card ketika BUKAN daftar (detail / tambah / edit) supaya agak turun */
+        .content-card-form{
+            margin-top: 63px;
+        }
+        /* Detail container (tidak dipakai banyak, tapi biarkan) */
         .detail-container {
             background: #fff;
             border-radius: 18px;
@@ -265,8 +268,8 @@ if (isset($_GET['msg'])) {
         @keyframes modalIn { from{opacity:0;transform:translateY(10px) scale(.97);} to{opacity:1;transform:translateY(0) scale(1);} }
         .fa-trash { color: #ef4444 !important; }
         body, html, .main, .content-card {
-    overflow-x: hidden !important;
-}
+            overflow-x: hidden !important;
+        }
 
         /* STYLE KHUSUS DETAIL KEJADIAN */
         .detail-page {
@@ -396,7 +399,8 @@ if (isset($_GET['msg'])) {
 
     <!-- MAIN -->
     <div class="main">
-        <!-- TOP BAR -->
+        <?php if ($action === 'list'): ?>
+        <!-- TOP BAR (HANYA DI DAFTAR KEGIATAN) -->
         <div class="top-bar">
             <form method="get" class="search-input-wrapper">
                 <input type="hidden" name="action" value="list">
@@ -419,6 +423,7 @@ if (isset($_GET['msg'])) {
                 </a>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- NOTIF SUCCESS -->
         <?php if ($message): ?>
@@ -524,7 +529,7 @@ if (isset($_GET['msg'])) {
 
         <!-- ========== DETAIL KEGIATAN ========== -->
         <?php if ($action === 'view'): ?>
-            <div class="content-card">
+            <div class="content-card content-card-form">
                 <div class="header-row">
                     <div>
                         <h2 class="page-title">Detail Kegiatan</h2>
@@ -584,7 +589,7 @@ if (isset($_GET['msg'])) {
 
         <!-- ========== TAMBAH / EDIT FORM ========== -->
         <?php if ($action === 'tambah' || $action === 'edit'): ?>
-            <div class="content-card">
+            <div class="content-card content-card-form">
                 <div class="header-row">
                     <div>
                         <h2 class="page-title"><?= htmlspecialchars($page_title) ?></h2>
