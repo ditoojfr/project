@@ -617,14 +617,15 @@ if (isset($_GET['msg'])) {
                         foreach ($saranList as $row): ?>
                             <tr>
                                 <!-- FOTO -->
-                                <td>
-                                    <?php if (!empty($row['foto'])): ?>
-                                        <img src="data:<?= $row['foto_type'] ?>;base64,<?= base64_encode($row['foto_sampul']) ?>"
-                                             alt="Foto" class="foto-bulat">
-                                    <?php else: ?>
-                                        <span class="foto-bulat"></span>
-                                    <?php endif; ?>
-                                </td>
+                               <td>
+    <?php if (!empty($row['foto_sampul'])): ?>
+        <img src="data:image/jpeg;base64,<?= base64_encode($row['foto_sampul']) ?>"
+             alt="Foto" class="foto-bulat">
+    <?php else: ?>
+        <span class="foto-bulat"></span>
+    <?php endif; ?>
+</td>
+
 
                                 <!-- NO -->
                                 <td><?php echo $no++; ?></td>
@@ -675,12 +676,13 @@ if (isset($_GET['msg'])) {
                     <div class="detail-back" onclick="window.location.href='saran.php'">⟵</div>
 
                     <?php if (!empty($detail['foto_sampul'])): ?>
-                        <img src="../<?php echo htmlspecialchars($detail['foto_sampul']); ?>"
-                             alt="Foto Saran"
-                             class="detail-image">
-                    <?php else: ?>
-                        <div class="detail-image"></div>
-                    <?php endif; ?>
+    <img src="data:image/jpeg;base64,<?= base64_encode($detail['foto_sampul']) ?>"
+         alt="Foto Saran"
+         class="detail-image">
+<?php else: ?>
+    <div class="detail-image"></div>
+<?php endif; ?>
+
 
                     <div class="detail-date">
                         <?php
