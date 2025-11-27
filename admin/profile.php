@@ -59,16 +59,15 @@ if (!empty($user['foto'])) {
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 <style>
 html, body {
-    height: 100vh;
     margin: 0;
     padding: 0;
-    overflow: hidden;
     font-family: 'Inter', sans-serif;
     background: #f7f8fa;
+    min-height: 100vh;
+    overflow-x: hidden;  
 }
 body {
-    min-height: 100vh;
-    width: 100vw;
+    width: 100%;
 }
 
 /* ===== SIDEBAR ===== */
@@ -78,103 +77,137 @@ body {
   top: 90px;
   width: 220px;
   height: calc(100vh - 152px);
-              background: linear-gradient(200deg, #1c3f9f, #3B82F6);
-
+  background: linear-gradient(200deg, #1c3f9f, #3B82F6);
   padding: 24px 20px;
   color: white;
   border-radius: 20px;
+  display: flex;           /* <- tambah */
+  flex-direction: column;  /* <- tambah */
 }
 
-/* Logo dan desa banjardowo */
+/* Logo + teks "Desa Banjardowo" di paling atas */
 .sidebar-header {
     position: fixed;
-    top: 20px; left: 20px;
-    width: 170px;
+    top: 20px;
+    left: 20px;
     background: transparent;
-    padding: 0;
+    padding: 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    z-index:20;
+    gap: 12px;
 }
-.sidebar-header img { width: 36px; height: 36px; }
-
-.menu {
-    list-style: none;
-    padding: 0; margin: 0;
-}
-.menu a {
-    display: flex;
-    gap: 10px;
-    color: white;
-    padding: 9px 13px;
-    text-decoration: none;
-    border-radius: 10px;
-    align-items: center;
+.sidebar-header img { height: 48px; }
+.sidebar-header div {
+    color: #000000ff;
+    font-weight: 600;
     font-size: 15px;
 }
 
-.menu a:hover { background: #3047d3; }
+/* === GAYA MENU PILL (SAMA DENGAN PELAYANAN) === */
+.menu {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    list-style: none;   /* <--- tambah */
+    padding-left: 0;    /* <--- tambah, biar gak maju ke kanan */
+}
 
+/* bentuk pill item menu */
+.menu-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:999px;         /* lonjong seperti di gambar */
+    font-size:13px;
+    opacity:.9;
+    color:#e5e7ff;
+    text-decoration: none;
+}
+.menu-item img{
+    width:22px;
+}
+
+/* hover */
+.menu-item:hover{
+    background:rgba(255,255,255,.15);
+    cursor:pointer;
+    text-decoration: none;
+}
+
+/* item yang aktif (kalau mau dibold & biru muda) */
+.menu-item.active{
+    background:#38BDF8;
+    opacity:1;
+    font-weight:600;
+    color:#fff;
+    text-decoration: none; 
+}
+
+
+/* ===== MAIN FLEX WRAPPER ===== */
 .main {
     margin-left: 230px;
-    padding: 0 20px;
+    padding: 40px 20px;
     min-height: 100vh;
-    height: 100vh;
+    height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     box-sizing: border-box;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
+/* ===== PROFILE HEADER ===== */
 .profile-header {
-    width: 1427px;
-    height: 295px;
-    left: 25px;
-    top: -23px;
+    width: calc(100% - 10px);   /* <--- lebar otomatis sisa dari sidebar */
+    margin-left: 50px;          /* <--- geser ke kanan pas */
+    height: 260px;
     position: relative;
     background-size: cover;
     background-position: center;
     border-radius: 10px 10px 0 0;
-    margin: 12px 0 0 0;
+    margin-top: 50px;            /* <--- ganti dari margin:auto */
     box-shadow: 0 2px 8px rgba(60,60,60,0.10);
     display: block;
     cursor: pointer;
-    z-index: 1;
 }
 
+
+/* ===== PROFILE BOX ===== */
 .profile-box {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin-top: -120px;
+    align-items: flex-start;   /* tadinya center */
+    margin-top: -90px;
+    margin-left: -850px;        /* sejajar dengan tepi kiri konten (kanan sidebar) */
     margin-bottom: 10px;
-    margin-left: -900px;
+    position: relative;
+    z-index: 5;                /* biar di depan foto sampul */
 }
+
 .profile-photo {
     width: 180px;
     height: 180px;
     border-radius: 50%;
     border: 4px solid #fff;
-    margin-bottom: 3px;
     object-fit: cover;
     background: #fff;
     box-shadow: 0 2px 12px rgba(0,0,0,0.13);
-    z-index: 5; 
 }
+
 .profile-box h2 {
     margin: 6px 0 2px 0;
     font-size: 22px;
     font-weight: 700;
-    text-align: center;
+    text-align: center;  /* ← ini yang membuat teks tepat di bawah foto */
+    width: 100%;
 }
-.profile-box p {
-    margin-bottom: 0;
-    color: #666;
-    font-size: 15px;
-    text-align: center;
-}
+
+
+
+/* ===== EDIT PROFILE BUTTON ===== */
 .btn-edit-profile {
     background: #fa9800;
     color: white;
@@ -183,30 +216,39 @@ body {
     border: none;
     border-radius: 8px;
     margin: 16px auto 10px auto;
+    margin-left: 35px;
     cursor: pointer;
     font-weight: bold;
-    display: block;
+    display: inline-block;
     box-shadow: 0 3px 15px rgba(230,160,24,0.06);
-    margin-left: 2000px;
-    margin-top: -80px;
 }
 .btn-edit-profile:hover { background: #ffb743; }
 
+/* ===== INFO GRID (FINAL, RAPI, 2 KOLOM) ===== */
 .info-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
-  gap: 28px 100px;
-  width: 700px;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  column-gap: 120px;
+  row-gap: 28px;
+  width: 100%;
+  max-width: 800px;
   margin: 48px auto 0 auto;
-  position: relative;
+  justify-content: center;
 }
 
-.item-1 { grid-row: 1; grid-column: 1; margin-left: -50px; }
-.item-2 { grid-row: 1; grid-column: 2; margin-left: 100px; }
-.item-3 { grid-row: 2; grid-column: 1; margin-left: -50px; margin-top: 40px; }
-.item-4 { grid-row: 2; grid-column: 2; margin-left: 100px; margin-top: 40px; }
-.item-5 { grid-row: 3; grid-column: 1 / span 2; margin-left: 220px; margin-top: 40px; }
+.item-1,
+.item-2,
+.item-3,
+.item-4,
+.item-5 {
+    margin: 0;
+}
+
+/* alamat ambil 2 kolom */
+.item-5 {
+    grid-column: 1 / -1;
+    justify-self: center;
+}
 
 .info-item {
   display: flex;
@@ -214,14 +256,14 @@ body {
   font-size: 17px;
   gap: 16px;
 }
-.info-item img { display: inline-block; }
 .info-item span { font-size: 17px; color: #333; }
 
+/* ===== LOGOUT ===== */
 .logout {
-  margin-top: 500px;
+  margin-top: auto;
   padding: 0 0 0 6px;
 }
-.logout a, .logout a:visited {
+.logout a {
   display: flex;
   align-items: center;
   color: white !important;
@@ -231,6 +273,7 @@ body {
   padding: 10px 13px;
   border-radius: 10px;
   gap: 10px;
+  width: 100%;
 }
 .logout a:hover {
   background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
@@ -239,19 +282,15 @@ body {
 .logout img {
   width: 20px;
   height: 20px;
-  margin-right: 10px;
-  vertical-align: middle;
-  display: inline-block;
 }
 
-/* ===== MODAL COVER FULL ===== */
+/* ===== MODAL ===== */
 .cover-modal {
-    display: none;                /* awalnya sembunyi */
+    display: none;
     position: fixed;
     z-index: 9999;
     left: 0; top: 0;
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     background: rgba(0,0,0,0.8);
     justify-content: center;
     align-items: center;
@@ -266,25 +305,31 @@ body {
 
 .cover-modal-close {
     position: absolute;
-    top: 20px;
-    right: 30px;
+    top: 20px; right: 30px;
     font-size: 32px;
     color: #fff;
     cursor: pointer;
-    font-weight: bold;
 }
 
-
+/* ===== RESPONSIVE ===== */
 @media (max-width:900px){
-    .info-grid { grid-template-columns: repeat(2, 1fr);}
-    .main { padding: 8px 6px;}
+    .main {
+        margin-left: 0;
+        padding: 24px 12px;
+    }
+    .sidebar, .sidebar-header {
+        display:none;
+    }
 }
+
 @media (max-width:600px){
-    .sidebar, .sidebar-header { display:none;}
-    .main {margin-left:0;}
-    .info-grid {grid-template-columns:1fr;}
+    .info-grid {
+        grid-template-columns: 1fr;
+        column-gap: 0;
+    }
 }
 </style>
+
 </head>
 <body>
 <!-- SIDEBAR HEADER -->
@@ -296,37 +341,38 @@ body {
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <ul class="menu">
-    <li> 
-      <a href="dashboard.php">
-        <img src="../assets/icons/dashboard1.png" alt="Dashboard" style="width:20px; height:20px; margin-right:8px;">
-        Dashboard
-      </a>
-    </li>
-    <li> 
-      <a href="kegiatan.php" class="active">
-        <img src="../assets/icons/kegiatandesa.png" alt="Kegiatan" style="width:20px; height:20px; margin-right:8px;">
-        Kegiatan Desa
-      </a>
-    </li>
-    <li>
-      <a href="prestasi.php">
-        <img src="../assets/icons/prestasi.png" alt="Prestasi" style="width:20px; height:20px; margin-right:8px;">
-        Prestasi
-      </a>
-    </li>
-    <li>
-      <a href="saran.php">
-        <img src="../assets/icons/kotaksaran1.png" alt="Kotak Saran" style="width:20px; height:20px; margin-right:8px;">
-        Kotak Saran
-      </a>
-    </li>
-    <li>
-      <a href="pelayanan.php">
-        <img src="../assets/icons/pelayanan1.png" alt="Pelayanan" style="width:20px; height:20px; margin-right:8px;">
-        Pelayanan
-      </a>
-    </li>
-  </ul>
+  <li> 
+    <a href="dashboard.php" class="menu-item">
+      <img src="../assets/icons/dashboard1.png" alt="Dashboard">
+      Dashboard
+    </a>
+  </li>
+  <li> 
+    <a href="kegiatan.php" class="menu-item">
+      <img src="../assets/icons/kegiatandesa.png" alt="Kegiatan">
+      Kegiatan Desa
+    </a>
+  </li>
+  <li>
+    <a href="prestasi.php" class="menu-item">
+      <img src="../assets/icons/prestasi.png" alt="Prestasi">
+      Prestasi
+    </a>
+  </li>
+  <li>
+    <a href="saran.php" class="menu-item">
+      <img src="../assets/icons/kotaksaran1.png" alt="Kotak Saran">
+      Kotak Saran
+    </a>
+  </li>
+  <li>
+    <a href="pelayanan.php" class="menu-item">
+      <img src="../assets/icons/pelayanan1.png" alt="Pelayanan">
+      Pelayanan
+    </a>
+  </li>
+</ul>
+
 
   <div class="logout">
     <a href="../logout.php">
@@ -369,19 +415,21 @@ body {
             <img src="../assets/icons/icon_user.png" width="28" />
             <span><?php echo htmlspecialchars($username); ?></span>
         </div>
-        <div class="info-item item-2">
+        <div class="info-item item-2" style="margin-left: 150px;">
             <img src="../assets/icons/gmail.png" width="28" />
             <span><?php echo htmlspecialchars($email); ?></span>
         </div>
-        <div class="info-item item-3">
-            <img src="../assets/icons/jenis_kelamin.png" width="28" />
-            <span><?php echo htmlspecialchars($jenis_kelamin); ?></span>
+        <div class="info-item item-3" style="margin-top: 25px;">
+        <img src="../assets/icons/jenis_kelamin.png" width="28" />
+        <span><?php echo htmlspecialchars($jenis_kelamin); ?></span>
         </div>
-        <div class="info-item item-4">
-            <img src="../assets/icons/telpon.png" width="28" />
-            <span><?php echo htmlspecialchars($no_telp); ?></span>
+
+        <div class="info-item item-4" style="margin-top: 25px; margin-left: 150px;">
+        <img src="../assets/icons/telpon.png" width="28" />
+        <span><?php echo htmlspecialchars($no_telp); ?></span>
         </div>
-        <div class="info-item item-5">
+
+        <div class="info-item item-5" style="margin-top: 25px;">
             <img src="../assets/icons/google-maps.png" width="28" />
             <span><?php echo htmlspecialchars($alamat); ?></span>
         </div>
