@@ -29,8 +29,6 @@ if (!empty($user['foto'])) {
     $fotoProfilSrc = "data:image/jpeg;base64," . base64_encode($user['foto']);
 }
 
-
-
 /*
    =====================================
    MODE HALAMAN
@@ -61,6 +59,12 @@ if ($action === 'delete' && isset($_GET['id'])) {
    =====================================
 */
 $search    = trim($_GET['search'] ?? '');
+
+/* --- PARAM URUTAN TANGGAL --- */
+$sort      = $_GET['sort'] ?? 'desc';        // nilai default desc
+$sort      = ($sort === 'asc') ? 'asc' : 'desc';
+$orderDir  = ($sort === 'asc') ? 'ASC' : 'DESC';
+
 $saranList = [];
 $detail    = null;
 
@@ -68,14 +72,14 @@ $detail    = null;
 if ($action === 'list') {
     if ($search !== '') {
         $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
+        // ⬇⬇⬇ HANYA CARI DI JUDUL, TIDAK DI isi_saran ⬇⬇⬇
         $sql  = "
             SELECT * FROM saran
-            WHERE judul     LIKE '{$like}'
-               OR isi_saran LIKE '{$like}'
-            ORDER BY tanggal_dikirim DESC, id DESC
+            WHERE judul LIKE '{$like}'
+            ORDER BY tanggal_dikirim $orderDir, id $orderDir
         ";
     } else {
-        $sql = "SELECT * FROM saran ORDER BY tanggal_dikirim DESC, id DESC";
+        $sql = "SELECT * FROM saran ORDER BY tanggal_dikirim $orderDir, id $orderDir";
     }
 
     $res = mysqli_query($conn, $sql);
@@ -100,7 +104,8 @@ if (isset($_GET['msg'])) {
     $message = htmlspecialchars($_GET['msg']);
 }
 
-
+// nilai sort berikutnya untuk toggle ASC/DESC
+$nextSort = ($sort === 'asc') ? 'desc' : 'asc';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -110,7 +115,6 @@ if (isset($_GET['msg'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-
 
     <style>
         /* --- Reset kecil & font --- */
@@ -219,8 +223,7 @@ if (isset($_GET['msg'])) {
             min-width: 0;           
         }
 
-
-        /* BAR ATAS: SEARCH DI TENGAH + PROFIL KANAN */
+        /* BAR ATAS */
         .top-bar{
             display:flex;
             align-items:center;
@@ -368,7 +371,6 @@ if (isset($_GET['msg'])) {
             border-radius:8px;
             font-size:12px;
         }
-        /* sama seperti di pelayanan.php */
         .alert-info{
             background:#bbf7d0;
             color:#166534;
@@ -385,6 +387,13 @@ if (isset($_GET['msg'])) {
             object-fit:cover;
             background:#e5e7eb;
             display:block;
+        }
+
+        /* kolom teks saran di daftar – biar wrap rapi */
+        td.isi-saran{
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 500px;
         }
 
         /* ===== DETAIL SARAN ===== */
@@ -427,9 +436,15 @@ if (isset($_GET['msg'])) {
         .detail-text{
             font-size:13px;
             line-height:1.6;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
-        /* ===== MODAL HAPUS – SAMA SEPERTI PELAYANAN ===== */
+        .detail-page {
+            margin-top: 11px;
+        }
+
+        /* ===== MODAL HAPUS ===== */
         .modal-backdrop{
             position:fixed;
             inset:0;
@@ -512,6 +527,13 @@ if (isset($_GET['msg'])) {
             to{opacity:1;transform:translateY(0) scale(1);}
         }
         .fa-trash { color: #ef4444 !important; }
+        .content-card-form {
+    margin-top: 63px;  /* ini paling mirip tinggi top-bar sebelumnya */
+}
+.detail-page {
+    margin-top: 63px;   /* atau 63px kalau mau sama kayak halaman pelayanan */
+}
+
 
     </style>
 </head>
@@ -553,10 +575,13 @@ if (isset($_GET['msg'])) {
 
     <!-- MAIN -->
     <div class="main">
-        <!-- BAR ATAS -->
+
+        <!-- BAR ATAS – HANYA MUNCUL DI LIST -->
+        <?php if ($action === 'list'): ?>
         <div class="top-bar">
             <form method="get" class="search-input-wrapper">
                 <input type="hidden" name="action" value="list">
+                <input type="hidden" name="sort" value="<?php echo htmlspecialchars($sort); ?>">
                 <span class="search-icon">🔍</span>
                 <input type="text" name="search" placeholder="Search Saran"
                        value="<?php echo htmlspecialchars($search); ?>">
@@ -577,6 +602,7 @@ if (isset($_GET['msg'])) {
                 </a>
             </div>
         </div>
+        <?php endif; ?>
 
         <?php if ($action === 'list'): ?>
             <!-- ================= LIST SARAN ================= -->
@@ -600,7 +626,13 @@ if (isset($_GET['msg'])) {
                         <th style="width:10%;"></th>
                         <th style="width:6%;">No</th>
                         <th style="width:22%;">Judul</th>
-                        <th style="width:18%;">Tanggal Dikirim</th>
+                        <th style="width:18%;">
+                            Tanggal Dikirim
+                            <a href="saran.php?action=list&search=<?php echo urlencode($search); ?>&sort=<?php echo $nextSort; ?>">
+                                <img src="../assets/icons/sort.png" alt="Urutkan"
+                                     style="width:14px;margin-left:4px;vertical-align:middle;<?php echo ($sort === 'asc') ? 'transform:rotate(180deg);' : ''; ?>">
+                            </a>
+                        </th>
                         <th>Saran atau Kritik</th>
                         <th class="aksi-col">Aksi</th>
                     </tr>
@@ -617,20 +649,19 @@ if (isset($_GET['msg'])) {
                         foreach ($saranList as $row): ?>
                             <tr>
                                 <!-- FOTO -->
-                               <td>
-    <?php if (!empty($row['foto_sampul'])): ?>
-        <img src="data:image/jpeg;base64,<?= base64_encode($row['foto_sampul']) ?>"
-             alt="Foto" class="foto-bulat">
-    <?php else: ?>
-        <span class="foto-bulat"></span>
-    <?php endif; ?>
-</td>
-
+                                <td>
+                                    <?php if (!empty($row['foto_sampul'])): ?>
+                                        <img src="data:image/jpeg;base64,<?= base64_encode($row['foto_sampul']) ?>"
+                                             alt="Foto" class="foto-bulat">
+                                    <?php else: ?>
+                                        <span class="foto-bulat"></span>
+                                    <?php endif; ?>
+                                </td>
 
                                 <!-- NO -->
                                 <td><?php echo $no++; ?></td>
 
-                                <!-- JUDUL (bisa di klik ke detail) -->
+                                <!-- JUDUL (klik ke detail) -->
                                 <td class="text-judul">
                                     <a href="saran.php?action=view&id=<?php echo $row['id']; ?>">
                                         <?php echo htmlspecialchars($row['judul']); ?>
@@ -648,8 +679,19 @@ if (isset($_GET['msg'])) {
                                 </td>
 
                                 <!-- ISI SARAN (singkat) -->
-                                <td>
-                                    <?php echo nl2br(htmlspecialchars($row['isi_saran'])); ?>
+                                <td class="isi-saran">
+                                    <?php
+                                        $maxLength = 180; // batas karakter preview
+                                        $isiFull   = $row['isi_saran'];
+
+                                        if (mb_strlen($isiFull, 'UTF-8') > $maxLength) {
+                                            $isiShort = mb_substr($isiFull, 0, $maxLength, 'UTF-8') . '...';
+                                        } else {
+                                            $isiShort = $isiFull;
+                                        }
+
+                                        echo nl2br(htmlspecialchars($isiShort));
+                                    ?>
                                 </td>
 
                                 <!-- AKSI HAPUS -->
@@ -659,7 +701,6 @@ if (isset($_GET['msg'])) {
                                             onclick="openDeleteModal(<?php echo $row['id']; ?>)">
                                         <i class="fa-solid fa-trash" style="color: #ef4444; font-size: 20px; cursor: pointer;"></i>
                                     </button>
-
                                 </td>
                             </tr>
                         <?php endforeach;
@@ -670,19 +711,17 @@ if (isset($_GET['msg'])) {
 
         <?php elseif ($action === 'view' && $detail): ?>
             <!-- ================= DETAIL SARAN ================= -->
-            <div class="detail-container">
+            <div class="detail-container detail-page">
                 <div class="detail-inner">
-                    <!-- tombol kembali -->
                     <div class="detail-back" onclick="window.location.href='saran.php'">⟵</div>
 
                     <?php if (!empty($detail['foto_sampul'])): ?>
-    <img src="data:image/jpeg;base64,<?= base64_encode($detail['foto_sampul']) ?>"
-         alt="Foto Saran"
-         class="detail-image">
-<?php else: ?>
-    <div class="detail-image"></div>
-<?php endif; ?>
-
+                        <img src="data:image/jpeg;base64,<?= base64_encode($detail['foto_sampul']) ?>"
+                             alt="Foto Saran"
+                             class="detail-image">
+                    <?php else: ?>
+                        <div class="detail-image"></div>
+                    <?php endif; ?>
 
                     <div class="detail-date">
                         <?php
@@ -706,7 +745,7 @@ if (isset($_GET['msg'])) {
     </div>
 </div>
 
-<!-- MODAL KONFIRMASI HAPUS (SAMA DENGAN PELAYANAN) -->
+<!-- MODAL KONFIRMASI HAPUS -->
 <div id="deleteModal" class="modal-backdrop">
     <div class="modal-card">
         <div class="modal-icon">!</div>

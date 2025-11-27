@@ -161,16 +161,15 @@ $pelayananList  = [];
 $detail         = null;
 
 if ($action === 'list') {
-  if ($search !== '') {
-    $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
-    $sql  = "
-        SELECT * FROM panduan_surat
-        WHERE LOWER(judul) LIKE LOWER('{$like}')
-        ORDER BY id ASC";
-} else {
-    $sql = "SELECT * FROM panduan_surat ORDER BY id ASC";
-}
-
+    if ($search !== '') {
+        $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
+        $sql  = "
+            SELECT * FROM panduan_surat
+            WHERE LOWER(judul) LIKE LOWER('{$like}')
+            ORDER BY id ASC";
+    } else {
+        $sql = "SELECT * FROM panduan_surat ORDER BY id ASC";
+    }
 
     $res = mysqli_query($conn, $sql);
     while ($row = mysqli_fetch_assoc($res)) {
@@ -191,9 +190,6 @@ if (($action === 'edit_form' || $action === 'view') && isset($_GET['id'])) {
 if (isset($_GET['msg'])) {
     $message = htmlspecialchars($_GET['msg']);
 }
-
-
-
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -202,7 +198,7 @@ if (isset($_GET['msg'])) {
     <title>Pelayanan - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
 
 
     <style>
@@ -216,18 +212,17 @@ if (isset($_GET['msg'])) {
             left: 20px;
             top: 90px;
             width: 260px;
-            height: calc(100vh - 104px);  /* ✔ ukuran standar sidebar lain */
+            height: calc(100vh - 104px);
             background: linear-gradient(180deg, #1c3f9fff, #3B82F6);
             padding: 24px 20px;
             color: white;
             border-radius: 20px;
         }
 
-
        .sidebar-header {
             position: fixed;
             top: 20px;
-            left: 20px;  /* ✔ mepet kiri seperti sebelum sidebar dilebarkan */
+            left: 20px;
             background: transparent;
             padding: 10px;
             display: flex;
@@ -280,17 +275,16 @@ if (isset($_GET['msg'])) {
             margin-left: 260px;
             padding: 30px 40px;
             display: flex;
-            flex-direction: column; /* agar child ditumpuk vertikal */
+            flex-direction: column;
             flex: 1;
-            min-width: 0;           /* biar flexing lebar, bukan terpotong overflow */
+            min-width: 0;
         }
 
-
-        /* BAR ATAS: SEARCH DI TENGAH + PROFIL DI KANAN */
+        /* BAR ATAS: SEARCH DI TENGAH + PROFIL DI KANAN (HANYA LIST) */
         .top-bar{
             display:flex;
             align-items:center;
-            justify-content:space-between;
+            justify-content:flex-end;
             margin-bottom:14px;
         }
         .search-input-wrapper{
@@ -353,7 +347,6 @@ if (isset($_GET['msg'])) {
             border-radius:999px;
         }
 
-        /* BAR TITLE + TOMBOL TAMBAH */
         .header-row{
             display:flex;
             align-items:flex-end;
@@ -371,30 +364,25 @@ if (isset($_GET['msg'])) {
             cursor:pointer;
             font-weight:500;
         }
-.btn-primary:hover {
-    filter: brightness(1.05);
-    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
-}
+        .btn-primary:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+        }
+
         .content-card {
             background: #fff;
             border-radius: 18px;
             padding: 24px 28px;
             box-shadow: 0 8px 20px rgba(15,23,42,.06);
-            width: 100%;            /* lebar maksimum area parent (main) */
-            max-width: none;        /* nonaktifkan batas lebar, boleh dihapus atau set none */
-            margin: 0;              /* hilangkan margin auto supaya tidak di tengah dan kecil */
-            flex: 1;                /* jika parent flex, card akan meluas otomatis */
-            box-sizing: border-box; /* padding tetap dihitung agar desain tetap rapi */
+            width: 100%;
+            max-width: none;
+            margin:0;
+            flex: 1;
+            box-sizing: border-box;
         }
         
         .breadcrumb{font-size:11px;color:#9ca3af;margin-top:2px;margin-bottom:4px}
         h2.page-title{font-size:20px;margin-bottom:4px}
-        
-
-        h2.page-title{
-            font-size:20px;
-            margin-bottom:4px;
-        }
 
         table{
             width:100%;
@@ -475,77 +463,77 @@ if (isset($_GET['msg'])) {
             border-color:#5E63BB;
             box-shadow:0 0 0 1px rgba(79,70,229,.1)
         }
-        /* UPLOAD BOX STYLE – SAMA SEPERTI DI KEGIATAN.PHP */
-/* UPLOAD BOX STYLE – SAMA SEPERTI DI PRESTASI.PHP */
-.upload-box {
-    width: 100%;
-    min-height: 200px;
-    border: 2px dashed #d1d5db;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #6b7280;
-    font-size: 14px;
-    position: relative;
-    overflow: hidden;
-    background: #fff;
-}
 
-.upload-box:hover {
-    background: #f9fafb;
-}
+        /* UPLOAD BOX STYLE */
+        .upload-box {
+            width: 100%;
+            min-height: 200px;
+            border: 2px dashed #d1d5db;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+        }
 
-.preview-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 16px;
-    z-index: 1;
-}
+        .upload-box:hover {
+            background: #f9fafb;
+        }
 
-.upload-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    text-align: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
+        .preview-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            z-index: 1;
+        }
 
-.upload-overlay i {
-    font-size: 36px;
-    color: #5E63BB;
-    margin-bottom: 10px;
-}
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-.upload-overlay span {
-    font-size: 16px;
-    color: #000000ff;
-    font-weight: 500;
-}
+        .upload-overlay i {
+            font-size: 36px;
+            color: #5E63BB;
+            margin-bottom: 10px;
+        }
 
-.upload-trigger {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    opacity: 0;
-    z-index: 3;
-}
+        .upload-overlay span {
+            font-size: 16px;
+            color: #000000ff;
+            font-weight: 500;
+        }
+
+        .upload-trigger {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            opacity: 0;
+            z-index: 3;
+        }
 
         .form-actions{
             margin-top:16px;
@@ -566,9 +554,9 @@ if (isset($_GET['msg'])) {
             font-size:12px
         }
         .alert-info{
-    background:#bbf7d0;   /* hijau muda */
-    color:#166534;        /* teks hijau tua (boleh diganti kalau mau) */
-}
+            background:#bbf7d0;
+            color:#166534;
+        }
 
         .alert-error{background:#fee2e2;
             color:#991b1b
@@ -579,7 +567,7 @@ if (isset($_GET['msg'])) {
             font-size:13px
         }
 
-        /* DETAIL PELAYANAN (gambar ke-4) */
+        /* DETAIL PELAYANAN */
         .detail-wrapper{
             margin-top:20px;
             display:flex;
@@ -611,107 +599,93 @@ if (isset($_GET['msg'])) {
             font-size:13px;
         }
 
-       /* MODAL KONFIRMASI HAPUS – STYLE SEPERTI HALAMAN SARAN */
-.modal-backdrop{
-    position:fixed;
-    inset:0;
-    background:rgba(15,23,42,0.35);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:999;
+        /* MODAL KONFIRMASI HAPUS */
+        .modal-backdrop{
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,0.35);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:999;
+        }
+
+        .modal-card{
+            background:#ffffff;
+            border-radius:18px;
+            padding:32px 40px;
+            width:420px;
+            max-width:90%;
+            box-shadow:0 20px 40px rgba(15,23,42,0.25);
+            text-align:center;
+            animation:modalIn .18s ease-out;
+        }
+
+        .modal-icon{
+            width:72px;
+            height:72px;
+            border-radius:999px;
+            border:3px solid #fdba74;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:0 auto 18px auto;
+            color:#f97316;
+            font-size:36px;
+            font-weight:600;
+        }
+
+        .modal-title{
+            font-size:22px;
+            font-weight:600;
+            margin-bottom:8px;
+            color:#374151;
+        }
+
+        .modal-text{
+            font-size:14px;
+            color:#4b5563;
+            margin-bottom:22px;
+            line-height:1.5;
+        }
+
+        .modal-actions{
+            display:flex;
+            justify-content:center;
+            gap:12px;
+        }
+
+        .btn-danger{
+            background:#e11d48;
+            color:#ffffff;
+            border:none;
+            border-radius:10px;
+            padding:10px 22px;
+            font-size:14px;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        .btn-outline{
+            background:#4b5563;
+            color:#ffffff;
+            border:none;
+            border-radius:10px;
+            padding:10px 22px;
+            font-size:14px;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        @keyframes modalIn{
+            from{opacity:0;transform:translateY(10px) scale(.97);}
+            to{opacity:1;transform:translateY(0) scale(1);}
+        }
+.content-card-form {
+    margin-top: 63px;  /* ini paling mirip tinggi top-bar sebelumnya */
 }
 
-.modal-card{
-    background:#ffffff;
-    border-radius:18px;
-    padding:32px 40px;
-    width:420px;
-    max-width:90%;
-    box-shadow:0 20px 40px rgba(15,23,42,0.25);
-    text-align:center;
-    animation:modalIn .18s ease-out;
-}
-
-.modal-icon{
-    width:72px;
-    height:72px;
-    border-radius:999px;
-    border:3px solid #fdba74;   /* lingkaran oranye */
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin:0 auto 18px auto;
-    color:#f97316;
-    font-size:36px;
-    font-weight:600;
-}
-
-.modal-title{
-    font-size:22px;
-    font-weight:600;
-    margin-bottom:8px;
-    color:#374151;
-}
-
-.modal-text{
-    font-size:14px;
-    color:#4b5563;
-    margin-bottom:22px;
-    line-height:1.5;
-}
-
-.modal-actions{
-    display:flex;
-    justify-content:center;
-    gap:12px;
-}
-
-.btn-danger{
-    background:#e11d48;        /* merah seperti di contoh */
-    color:#ffffff;
-    border:none;
-    border-radius:10px;
-    padding:10px 22px;
-    font-size:14px;
-    cursor:pointer;
-    font-weight:600;
-}
-
-.btn-outline{
-    background:#4b5563;        /* abu gelap, teks putih */
-    color:#ffffff;
-    border:none;
-    border-radius:10px;
-    padding:10px 22px;
-    font-size:14px;
-    cursor:pointer;
-    font-weight:600;
-}
-
-@keyframes modalIn{
-    from{opacity:0;transform:translateY(10px) scale(.97);}
-    to{opacity:1;transform:translateY(0) scale(1);}
-}
-
-    
-/* === FIX KONTEN KECIL / TABEL MEPET SETELAH SIDEBAR DILEBARKAN === */
-.main-wrapper {
-    margin-left: 350px !important;
-    width: calc(100% - 380px) !important;
-}
-.container {
-    max-width: 100% !important;
-}
-.table-container {
-    width: 100% !important;
-}
-.profile-card, 
-.card {
-    width: 100% !important;
-}
-
-</style>
+    </style>
 </head>
 <body>
     <div class="app">
@@ -736,7 +710,9 @@ if (isset($_GET['msg'])) {
         </div>
 
         <div class="main">
-            <!-- BAR ATAS: SEARCH TENGAH + PROFIL KANAN -->
+
+            <!-- TOP BAR HANYA UNTUK LIST -->
+            <?php if ($action === 'list'): ?>
             <div class="top-bar">
                 <form method="get" class="search-input-wrapper">
                     <input type="hidden" name="action" value="list">
@@ -745,24 +721,24 @@ if (isset($_GET['msg'])) {
                 </form>
 
                 <div class="profile-wrapper">
-    <div class="profile-text">
-        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
-        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
-    </div>
+                    <div class="profile-text">
+                        <div class="name"><?php echo htmlspecialchars($namaAdmin); ?></div>
+                        <div class="role"><?php echo htmlspecialchars($roleAdmin); ?></div>
+                    </div>
 
-    <!-- avatar yang nyambung ke profile.php -->
-    <a href="profile.php" class="profile-avatar">
-        <?php if (!empty($fotoProfilSrc)) : ?>
-            <img src="<?php echo $fotoProfilSrc; ?>" alt="Foto Profil">
-        <?php else : ?>
-            <?php echo $inisialAdmin; ?>
-        <?php endif; ?>
-    </a>
-</div>
-
+                    <a href="profile.php" class="profile-avatar">
+                        <?php if (!empty($fotoProfilSrc)) : ?>
+                            <img src="<?php echo $fotoProfilSrc; ?>" alt="Foto Profil">
+                        <?php else : ?>
+                            <?php echo $inisialAdmin; ?>
+                        <?php endif; ?>
+                    </a>
+                </div>
             </div>
+            <?php endif; ?>
 
-            <div class="content-card">
+            <div class="content-card <?php echo ($action !== 'list') ? 'content-card-form' : ''; ?>">
+
                 <!-- TITLE + BREADCRUMB + TOMBOL TAMBAH -->
                 <div class="header-row">
                     <div>
@@ -808,61 +784,56 @@ if (isset($_GET['msg'])) {
                                 <th class="aksi-col">Aksi</th>
                             </tr>
                         </thead>
-                      <tbody>
-    <?php if (!$pelayananList) : ?>
-        <tr>
-            <td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">
-                Belum ada data pelayanan.
-            </td>
-        </tr>
-    <?php else : foreach ($pelayananList as $i => $row) : ?>
-        <tr>
-            <td>
-                <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>">
-                    <?php if (!empty($row['foto_pendukung'])) : ?>
-                        <img src="../<?php echo htmlspecialchars($row['foto_pendukung']); ?>" class="thumb-img" alt="Gambar">
-                    <?php else : ?>
-                        <div class="thumb-img"></div>
-                    <?php endif; ?>
-                </a>
-            </td>
-            <!-- No pakai urutan looping, bukan id -->
-            <td><?php echo $i + 1; ?></td>
-            <td>
-                <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>" class="link-judul">
-                    <?php echo htmlspecialchars($row['judul']); ?>
-                </a>
-            </td>
-            <td><?php echo nl2br(htmlspecialchars($row['deskripsi_singkat'])); ?></td>
-           <td>
-    <?php 
-        $maxLength = 250; // batas karakter
-        $desc = $row['isi_panduan'];
+                        <tbody>
+                        <?php if (!$pelayananList) : ?>
+                            <tr>
+                                <td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;">
+                                    Belum ada data pelayanan.
+                                </td>
+                            </tr>
+                        <?php else : foreach ($pelayananList as $i => $row) : ?>
+                            <tr>
+                                <td>
+                                    <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>">
+                                        <?php if (!empty($row['foto_pendukung'])) : ?>
+                                            <img src="../<?php echo htmlspecialchars($row['foto_pendukung']); ?>" class="thumb-img" alt="Gambar">
+                                        <?php else : ?>
+                                            <div class="thumb-img"></div>
+                                        <?php endif; ?>
+                                    </a>
+                                </td>
+                                <td><?php echo $i + 1; ?></td>
+                                <td>
+                                    <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>" class="link-judul">
+                                        <?php echo htmlspecialchars($row['judul']); ?>
+                                    </a>
+                                </td>
+                                <td><?php echo nl2br(htmlspecialchars($row['deskripsi_singkat'])); ?></td>
+                                <td>
+                                <?php 
+                                    $maxLength = 250;
+                                    $desc = $row['isi_panduan'];
 
-        // Ganti string literal '\r\n' dengan karakter baris baru sebelum diolah
-        $desc = str_replace('\\r\\n', "\r\n", $desc);
-        $desc = str_replace('\\n', "\n", $desc);
-        $desc = str_replace('\\r', "\r", $desc);
+                                    $desc = str_replace('\\r\\n', "\r\n", $desc);
+                                    $desc = str_replace('\\n', "\n", $desc);
+                                    $desc = str_replace('\\r', "\r", $desc);
 
-        if (strlen($desc) > $maxLength) {
-            echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength), ENT_QUOTES, 'UTF-8')) . "...";
-        } else {
-            echo nl2br(htmlspecialchars($desc, ENT_QUOTES, 'UTF-8'));
-        }
-    ?>
-</td>
-            <td class="aksi-col">
-                <button class="icon-btn edit" title="Edit" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $row['id']; ?>'">✏️</button>
-                <!-- PANGGIL MODAL, BUKAN confirm() -->
-                <button class="icon-btn delete" title="Hapus" onclick="openDeleteModal(<?php echo $row['id']; ?>)">
-    <i class="fa-solid fa-trash"></i>
-</button>
-
-            </td>
-        </tr>
-    <?php endforeach; endif; ?>
-</tbody>
-
+                                    if (strlen($desc) > $maxLength) {
+                                        echo nl2br(htmlspecialchars(substr($desc, 0, $maxLength), ENT_QUOTES, 'UTF-8')) . "...";
+                                    } else {
+                                        echo nl2br(htmlspecialchars($desc, ENT_QUOTES, 'UTF-8'));
+                                    }
+                                ?>
+                                </td>
+                                <td class="aksi-col">
+                                    <button class="icon-btn edit" title="Edit" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $row['id']; ?>'">✏️</button>
+                                    <button class="icon-btn delete" title="Hapus" onclick="openDeleteModal(<?php echo $row['id']; ?>)">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; endif; ?>
+                        </tbody>
                     </table>
 
                 <?php elseif ($action === 'add_form' || ($action === 'edit_form' && $detail)) : ?>
@@ -871,7 +842,6 @@ if (isset($_GET['msg'])) {
                             <div class="card-form">
                                 <div class="form-group">
                                     <label>No</label>
-                                    <!-- hanya tampilan, tidak dari DB lagi -->
                                     <input type="text" name="no_pelayanan_form_disabled" disabled value="<?php echo ($action === 'edit_form' && $detail) ? htmlspecialchars($detail['id']) : ''; ?>">
                                     <small style="font-size:11px;color:#9ca3af;">No akan mengikuti ID data atau urutan.</small>
                                 </div>
@@ -884,7 +854,6 @@ if (isset($_GET['msg'])) {
 
                             <div class="form-grid">
                                 <div class="card-form">
-                                    <!-- field no_pelayanan DIHAPUS dari form input -->
                                     <div class="form-group">
                                         <label>Judul</label>
                                         <input type="text" name="judul" required value="<?php echo htmlspecialchars($detail['judul'] ?? ''); ?>">
@@ -896,45 +865,42 @@ if (isset($_GET['msg'])) {
                                     <div class="form-group">
                                         <label>Isi Panduan</label>
                                         <textarea name="isi_panduan" required><?php 
-                                        $isi_panduan = $detail['isi_panduan'] ?? '';
-                                        // Ganti string literal '\r\n' dengan karakter baris baru sebenarnya
-                                        $isi_panduan = str_replace('\\r\\n', "\r\n", $isi_panduan);
-                                        $isi_panduan = str_replace('\\n', "\n", $isi_panduan);
-                                        $isi_panduan = str_replace('\\r', "\r", $isi_panduan);
-                                        echo $isi_panduan;
+                                            $isi_panduan = $detail['isi_panduan'] ?? '';
+                                            $isi_panduan = str_replace('\\r\\n', "\r\n", $isi_panduan);
+                                            $isi_panduan = str_replace('\\n', "\n", $isi_panduan);
+                                            $isi_panduan = str_replace('\\r', "\r", $isi_panduan);
+                                            echo $isi_panduan;
                                         ?></textarea>
                                     </div>
                                 </div>
                                 
-                        <div class="card-form">
-    <div class="form-group">
-        <label>Upload Image</label>
-        <div class="upload-box" id="uploadBox">
-            <!-- Preview gambar -->
-            <img id="previewImg" class="preview-img"
-                 src="<?php
-                     if ($action === 'edit_form' && !empty($detail['foto_pendukung'])) {
-                         echo '../' . htmlspecialchars($detail['foto_pendukung']);
-                     }
-                 ?>"
-                 style="<?php echo ($action === 'edit_form' && !empty($detail['foto_pendukung'])) ? 'display:block;' : 'display:none;'; ?>"
-                 alt="Preview">
+                                <div class="card-form">
+                                    <div class="form-group">
+                                        <label>Upload Image</label>
+                                        <div class="upload-box" id="uploadBox">
+                                            <img id="previewImg" class="preview-img"
+                                                 src="<?php
+                                                     if ($action === 'edit_form' && !empty($detail['foto_pendukung'])) {
+                                                         echo '../' . htmlspecialchars($detail['foto_pendukung']);
+                                                     }
+                                                 ?>"
+                                                 style="<?php echo ($action === 'edit_form' && !empty($detail['foto_pendukung'])) ? 'display:block;' : 'display:none;'; ?>"
+                                                 alt="Preview">
 
-            <!-- Overlay untuk teks/ikon -->
-            <div class="upload-overlay">
-                <?php if ($action === 'edit_form' && !empty($detail['foto_pendukung'])): ?>
-                    <span>Klik untuk Ganti Gambar</span>
-                <?php else: ?>
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Pilih Image</span>
-                <?php endif; ?>
-            </div>
+                                            <div class="upload-overlay">
+                                                <?php if ($action === 'edit_form' && !empty($detail['foto_pendukung'])): ?>
+                                                    <span>Klik untuk Ganti Gambar</span>
+                                                <?php else: ?>
+                                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                                    <span>Pilih Image</span>
+                                                <?php endif; ?>
+                                            </div>
 
-            <!-- Input file -->
-            <input type="file" id="uploadFoto" name="foto_pendukung" class="upload-trigger" accept="image/*">
-        </div>
-    </div>
-</div>
+                                            <input type="file" id="uploadFoto" name="foto_pendukung" class="upload-trigger" accept="image/*">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div class="form-actions">
                                 <button type="button" class="btn-secondary" onclick="window.location.href='pelayanan.php'">← Kembali</button>
@@ -963,7 +929,6 @@ if (isset($_GET['msg'])) {
                             <div class="detail-text">
                                 <?php 
                                     $desc = $detail['isi_panduan'];
-                                    // Ganti string literal '\r\n' dengan karakter baris baru sebelum diolah
                                     $desc = str_replace('\\r\\n', "\r\n", $desc);
                                     $desc = str_replace('\\n', "\n", $desc);
                                     $desc = str_replace('\\r', "\r", $desc);
@@ -983,22 +948,22 @@ if (isset($_GET['msg'])) {
     </div>
 
     <!-- MODAL KONFIRMASI HAPUS -->
-<div id="deleteModal" class="modal-backdrop">
-    <div class="modal-card">
-        <div class="modal-icon">!</div>
-        <div class="modal-title">Hapus Pelayanan?</div>
-        <div class="modal-text">
-            Data yang sudah dihapus tidak bisa dikembalikan.
-        </div>
-        <div class="modal-actions">
-            <button class="btn-danger" type="button" onclick="confirmDelete()">Ya, hapus</button>
-            <button class="btn-outline" type="button" onclick="closeDeleteModal()">Batal</button>
+    <div id="deleteModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-icon">!</div>
+            <div class="modal-title">Hapus Pelayanan?</div>
+            <div class="modal-text">
+                Data yang sudah dihapus tidak bisa dikembalikan.
+            </div>
+            <div class="modal-actions">
+                <button class="btn-danger" type="button" onclick="confirmDelete()">Ya, hapus</button>
+                <button class="btn-outline" type="button" onclick="closeDeleteModal()">Batal</button>
+            </div>
         </div>
     </div>
-</div>
 
 
-   <script>
+    <script>
     let deleteId = null;
 
     function openDeleteModal(id){
@@ -1020,22 +985,22 @@ if (isset($_GET['msg'])) {
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-    const fileInput  = document.getElementById('uploadFoto');
-    const previewImg = document.getElementById('previewImg');
-    if (!fileInput || !previewImg) return;
+        const fileInput  = document.getElementById('uploadFoto');
+        const previewImg = document.getElementById('previewImg');
+        if (!fileInput || !previewImg) return;
 
-    fileInput.addEventListener('change', function () {ac
-        const file = this.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            previewImg.src = e.target.result;
-            previewImg.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
     });
-});
-</script>
+    </script>
 
 </body>
 </html>
