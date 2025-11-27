@@ -362,6 +362,60 @@ if (isset($_GET['msg'])) {
             .detail-page { padding: 20px 10px; }
             .detail-image { max-height: 300px; }
         }
+        .swal2-rounded {
+    border-radius: 20px !important;
+}
+
+.btn-red {
+    background: linear-gradient(180deg, #1c3f9fff, #3B82F6) !important;
+    color: white !important;
+    padding: 8px 20px !important;
+    border-radius: 10px !important;
+    margin-right: 10px;
+    border: none !important;
+}
+
+.btn-gray {
+    background-color: #4a5568 !important;
+    color: white !important;
+    padding: 8px 20px !important;
+    border-radius: 10px !important;
+    border: none !important;
+    outline: none !important;
+}
+
+.btn-red:hover, .btn-gray:hover {
+    opacity: .9;
+}
+
+/* ======= BORDER ANIMASI UNTUK SWEETALERT ======= */
+.swal2-popup {
+    position: relative !important;
+    overflow: visible !important;
+    border-radius: 20px !important;
+    box-shadow: 0 0 25px rgba(0, 234, 255, 0.6) !important;
+    border: 2px solid #00eaff !important;
+}
+
+/* Titik kecil keliling border */
+.swal-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #00eaff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00eaff;
+    animation: walkBorder 4s linear infinite;
+    z-index: 9999;
+}
+
+@keyframes walkBorder {
+    0%   { top: -6px; left: -6px; }                          /* pojok kiri atas */
+    25%  { top: -6px; left: calc(100% - 6px); }              /* pojok kanan atas */
+    50%  { top: calc(100% - 6px); left: calc(100% - 6px); }  /* pojok kanan bawah */
+    75%  { top: calc(100% - 6px); left: -6px; }              /* pojok kiri bawah */
+    100% { top: -6px; left: -6px; }                          /* kembali kiri atas */
+}
     </style>
 </head>
 <body>
@@ -389,11 +443,12 @@ if (isset($_GET['msg'])) {
                 <img src="../assets/icons/pelayanan1.png" alt="">Pelayanan
             </a>
         </div>
-        <div class="sidebar-footer">
-            <a href="../logout.php" class="logout">
-                <img src="../assets/icons/logout1.png" alt="">
-                <span>Keluar</span>
-            </a>
+       <div class="sidebar-footer">
+    <a href="#" class="logout" onclick="confirmLogout()">
+        <img src="../assets/icons/logout1.png" alt="">
+        <span>Keluar</span>
+    </a>
+
         </div>
     </div>
 
@@ -697,6 +752,45 @@ if (isset($_GET['msg'])) {
             reader.readAsDataURL(file);
         });
     });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmLogout() {
+    Swal.fire({
+        title: "Logout?",
+        text: "Anda yakin ingin keluar dari dashboard admin?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, logout",
+        cancelButtonText: "Batal",
+        buttonsStyling: false,
+        customClass: {
+            popup: 'swal2-rounded',
+            confirmButton: 'btn-red',
+            cancelButton: 'btn-gray'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "../logout.php";
+        }
+    });
+}
+</script>
+
+<!-- Opsional: Animasi titik di border SweetAlert -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const observer = new MutationObserver(() => {
+        const popup = document.querySelector('.swal2-popup');
+        if (popup && !document.querySelector('.swal-dot')) {
+            const dot = document.createElement('div');
+            dot.classList.add('swal-dot');
+            popup.appendChild(dot);
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+});
 </script>
 </body>
 </html>
