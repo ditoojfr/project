@@ -982,11 +982,9 @@ function displayImageFromBlob($foto, $foto_type) {
         <section class="download-section">
             <h2>Download Aplikasi</h2>
             <p>Nikmati kemudahan layanan desa dari aplikasi resmi kami.</p>
-            <a href="#" class="download-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M8 1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h5zM0 5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V5zm8 0a.5.5 0 0 1 .5.5V7H10a.5.5 0 0 1 .5.5.5.5 0 0 1-.5.5H8.5v1.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V8H5a.5.5 0 0 1-.5-.5.5.5 0 0 1 .5-.5h1.5V5.5A.5.5 0 0 1 7 5h1z"/>
-                </svg>
-                DOWNLOAD APK
+            <a href="https://www.mediafire.com/file/v4rgknpjv2nlsqi/E-Deslay.apk/file" class="download-btn">
+                <img src="assets/icons/unduh.jpeg" alt="Download" width="25" height="25" padding-right="5">
+                    DOWNLOAD APK
             </a>
         </section>
 
