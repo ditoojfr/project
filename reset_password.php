@@ -161,6 +161,12 @@ if (isset($_POST['reset'])) {
             z-index: 2;
         }
 
+        .eye-icon {
+        width: 22px;
+        height: 22px;
+        opacity: 0.9;
+        }
+
         .btn-primary {
             padding: 12px 20px;
             background: #3498db;
@@ -169,7 +175,7 @@ if (isset($_POST['reset'])) {
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background-color 0.2s ease;
             width: 100%;
             margin: 20px 0;
         }
@@ -226,7 +232,7 @@ if (isset($_POST['reset'])) {
 
     <!-- Header Logo Desa di Pojok Kiri Atas -->
     <div class="header-logo">
-        <img src="assets/images/logo-nganjuk" alt="Logo Desa">
+        <img src="assets/images/logo-nganjuk.png" alt="Logo Desa">
         <div>
             <h1>Desa Banjardowo</h1>
             <p>Kecamatan Lengkong</p>
@@ -247,13 +253,17 @@ if (isset($_POST['reset'])) {
             <div class="form-group">
                 <label for="password">New Password</label>
                 <input type="password" name="password" id="password" required placeholder="Masukkan new password">
-                <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
+                <span class="toggle-password" onclick="togglePassword('password', this)">
+                <img src="assets/icons/mata_buka.png" class="eye-icon">
+                </span>
             </div>
 
             <div class="form-group">
                 <label for="confirm_password">Confirm Password</label>
                 <input type="password" name="confirm_password" id="confirm_password" required placeholder="Konfirmasi new password">
-                <span class="toggle-password" onclick="togglePassword('confirm_password')">👁️</span>
+                <span class="toggle-password" onclick="togglePassword('confirm_password', this)">
+                <img src="assets/icons/mata_buka.png" class="eye-icon">
+            </span>
             </div>
 
             <button type="submit" name="reset" class="btn-primary">Simpan new password</button>
@@ -265,12 +275,18 @@ if (isset($_POST['reset'])) {
     </div>
 
     <script>
-        function togglePassword(id) {
-            const input = document.getElementById(id);
-            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-            input.setAttribute('type', type);
-        }
-    </script>
+function togglePassword(id, el) {
+    const input = document.getElementById(id);
+    const img   = el.querySelector("img");
 
+    if (input.type === "password") {
+        input.type = "text";
+        img.src = "assets/icons/mata_tutup.png";
+    } else {
+        input.type = "password";
+        img.src = "assets/icons/mata_buka.png";
+    }
+}
+</script>
 </body>
 </html>

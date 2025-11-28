@@ -196,7 +196,7 @@ if (isset($_POST['verifikasi'])) {
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background-color 0.2s ease;
             width: 100%;
             margin: 10px 0;
         }
@@ -230,15 +230,15 @@ if (isset($_POST['verifikasi'])) {
     </style>
 </head>
 <body>
-
     <!-- Header Logo Desa di Pojok Kiri Atas -->
     <div class="header-logo">
-        <img src="assets/images/logo-nganjuk.png" alt="Logo Desa">
-        <div>
-            <h1>Desa Banjardowo</h1>
-            <p>Kecamatan Lengkong</p>
-        </div>
+    <img src="assets/images/logo-nganjuk.png" alt="Logo Desa">
+    <div>
+        <h1>Desa Banjardowo</h1>
+        <p>Kecamatan Lengkong</p>
     </div>
+</div>
+
 
     <!-- Form Card di Tengah -->
     <div class="form-card">
@@ -251,7 +251,7 @@ if (isset($_POST['verifikasi'])) {
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" name="email" id="email" placeholder="Masukkan Email" required
-                value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
+                value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" >
             </div>
 
             <div class="form-group">

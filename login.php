@@ -250,6 +250,29 @@ if (isset($_POST['login'])) {
             padding-left: 48px;
         }
 
+        /* group khusus password */
+        .password-group {
+            position: relative;  /* sudah ada dari .form-group, tapi aman */
+        }
+
+        /* kasih ruang di kanan untuk icon mata */
+        .password-group input {
+            padding-right: 12px;
+        }
+
+        /* posisi icon mata di kanan dalam input */
+        .toggle-password {
+            position: absolute;
+            right: -35px;    /* geser kanan */
+            top: 34px;      /* geser naik/turun kalau kurang pas */
+            cursor: pointer;
+        }
+
+        .toggle-password-icon {
+            width: 22px;
+            height: 22px;
+            opacity: 0.9;
+        }
 
         @media(max-width: 900px) {
             .login-container { flex-direction: column; }
@@ -260,10 +283,8 @@ if (isset($_POST['login'])) {
 </head>
 
 <body class="login-body">
-
 <header class="login-header">
     <img src="assets/images/logo-nganjuk.png" class="logo-kabupaten">
-
     <div class="desa-info">
         <h1>Desa Banjardowo</h1>
         <p>Kecamatan Lengkong, Kabupaten Nganjuk</p>
@@ -301,13 +322,24 @@ if (isset($_POST['login'])) {
         </span>
         <input type="text" name="username" required placeholder="Masukkan Username">
     </div>
-    <div class="form-group">
-        <label>Password</label>
-        <span class="icon-input">
-            <img src="assets/icons/icon_kunci.png" alt="Lock" class="input-icon-image">
-        </span>
-        <input type="password" name="password" required placeholder="Masukkan Password">
-    </div>
+
+   <div class="form-group password-group">
+    <label>Password</label>
+
+    <!-- icon kunci di kiri -->
+    <span class="icon-input">
+        <img src="assets/icons/icon_kunci.png" alt="Lock" class="input-icon-image">
+    </span>
+
+    <!-- input password (tambah id) -->
+    <input type="password" id="passwordInput" name="password" required placeholder="Masukkan Password">
+
+    <!-- icon mata di kanan -->
+    <span class="toggle-password" onclick="togglePassword()">
+        <img src="assets/icons/mata_buka.png" alt="Show Password" class="toggle-password-icon" id="eyeIcon">
+    </span>
+</div>
+
     <a href="lupa_password.php" class="forgot-password">Forgot Password?</a>
     <button type="submit" name="login" class="btn-login">LOGIN</button>
 </form>
@@ -315,5 +347,25 @@ if (isset($_POST['login'])) {
     </div>
 </div>
 
+<script>
+function togglePassword() {
+    const input = document.getElementById('passwordInput');
+    const eye   = document.getElementById('eyeIcon');
+
+    if (!input || !eye) return;
+
+    if (input.type === 'password') {
+        // password kelihatan
+        input.type = 'text';
+        eye.src = 'assets/icons/mata_tutup.png';   // mata tertutup
+        eye.alt = 'Hide Password';
+    } else {
+        // password disembunyikan
+        input.type = 'password';
+        eye.src = 'assets/icons/mata_buka.png';    // mata terbuka
+        eye.alt = 'Show Password';
+    }
+}
+</script>
 </body>
 </html>
