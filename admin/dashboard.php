@@ -56,10 +56,16 @@ for ($i = 5; $i >= 0; $i--) {
 }
 
 $saran_list = [];
-$result = mysqli_query($conn, "SELECT judul, email, isi_saran, tanggal_dikirim FROM `saran` ORDER BY tanggal_dikirim DESC LIMIT 3");
+$result = mysqli_query($conn, "
+    SELECT judul, email, isi_saran, tanggal_dikirim, foto_sampul
+    FROM `saran`
+    ORDER BY tanggal_dikirim DESC
+    LIMIT 3
+");
 while ($row = mysqli_fetch_assoc($result)) {
     $saran_list[] = $row;
 }
+
 ?>
 
 
@@ -540,10 +546,19 @@ outline: none !important;
                 <p style="text-align:center; color:#9ca3af; margin-top:20px;">Belum ada saran masuk.</p>
             <?php else: ?>
                 <?php foreach ($saran_list as $saran): ?>
+                    <a href="saran.php" class="saran-item-link">
                     <div class="saran-item">
                         <div class="saran-avatar">
-                            <?= strtoupper(substr($saran['email'] ?? 'U', 0, 1)) ?>
+                            <?php if (!empty($saran['foto_sampul'])): ?>
+                                <img src="data:image/jpeg;base64,<?= base64_encode($saran['foto_sampul']) ?>"
+                                    alt="Foto Saran"
+                                    style="width:42px;height:42px;border-radius:50%;object-fit:cover;">
+                            <?php else: ?>
+                                <?= strtoupper(substr($saran['email'] ?? 'U', 0, 1)) ?>
+                            <?php endif; ?>
                         </div>
+
+                        
                         <div class="saran-content">
                             <h5><?= htmlspecialchars($saran['judul']) ?></h5>
                             <div class="saran-date">
