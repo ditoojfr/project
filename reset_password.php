@@ -55,14 +55,14 @@ if (isset($_POST['reset'])) {
         }
 
         body {
-            background: url('assets/images/bg-bulu.jpeg') no-repeat right center;
-            background-size: auto 100%;
-            background-color: #ffffff;
-            min-height: 100vh;
+            background: url('assets/images/bg-bulu.jpeg') no-repeat center center fixed;
+            background-size: cover;
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
             padding: 20px;
+            background-color: #f0f5fa;
             position: relative;
         }
 
