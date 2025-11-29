@@ -2,101 +2,57 @@
 session_start();
 include "../config/db.php"; // koneksi MySQL
 
-
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../login.php');
     exit;
 }
+
 // =================== DATA PROFIL PENGGUNA ===================
 $uid = (int)$_SESSION['user_id'];
-
-$resUser = mysqli_query($conn, "
-    SELECT nama_lengkap, username, role, foto 
-    FROM users 
-    WHERE id = $uid
-");
+$resUser = mysqli_query($conn, "SELECT nama_lengkap, username, role, foto FROM users WHERE id = $uid");
 $user = mysqli_fetch_assoc($resUser);
 
-// Nama admin -> HANYA dari nama_lengkap (kalau kosong pakai 'Administrator')
-$namaAdmin = !empty($user['nama_lengkap'])
-    ? $user['nama_lengkap']
-    : 'Administrator';
-
-// Role (admin/editor)
+$namaAdmin = !empty($user['nama_lengkap']) ? $user['nama_lengkap'] : 'Administrator';
 $roleAdmin = !empty($user['role']) ? $user['role'] : 'admin';
-
-// Inisial (fallback jika tidak ada foto)
 $inisialAdmin = strtoupper(substr($namaAdmin, 0, 1));
-
-// Foto profil (longblob)
 $fotoProfilSrc = null;
 if (!empty($user['foto'])) {
     $fotoProfilSrc = "data:image/jpeg;base64," . base64_encode($user['foto']);
 }
 
-
-
-// =================== KONFIGURASI UPLOAD ===================
-$uploadDir       = __DIR__ . "/../assets/img/panduan_surat/"; // folder fisik BARU
-$uploadUrlPrefix = "assets/img/panduan_surat/";               // path yang disimpan di DB BARU
-
-if (!is_dir($uploadDir)) {
-    @mkdir($uploadDir, 0777, true);
-}
- 
 // =================== LOGIKA AKSI ===================
-$action  = $_GET['action'] ?? 'list';
+$action = $_GET['action'] ?? 'list';
 $message = "";
-
 
 // ---------- HAPUS ----------
 if ($action === 'delete' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
-
-    // hapus file foto_pendukung kalau ada
-    $res = mysqli_query($conn, "SELECT foto_pendukung FROM panduan_surat WHERE id={$id}");
-    if ($row = mysqli_fetch_assoc($res)) {
-        if (!empty($row['foto_pendukung'])) {
-            $file = __DIR__ . "/../" . $row['foto_pendukung'];
-            if (is_file($file)) @unlink($file);
-        }
-    }
-
     mysqli_query($conn, "DELETE FROM panduan_surat WHERE id={$id}");
     header("Location: pelayanan.php?msg=Panduan+surat+berhasil+dihapus");
     exit;
 }
 
-
 // ---------- TAMBAH ----------
 if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    // no_pelayanan DIHAPUS → tidak dipakai lagi
-    $judul             = mysqli_real_escape_string($conn, trim($_POST['judul'] ?? ''));
+    $judul = mysqli_real_escape_string($conn, trim($_POST['judul'] ?? ''));
     $deskripsi_singkat = mysqli_real_escape_string($conn, trim($_POST['deskripsi_singkat'] ?? ''));
-    $isi_panduan       = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
+    $isi_panduan = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
 
-    // proses upload foto_pendukung (opsional)
-    $fotoPath = null;
+    $fotoData = null;
+    $fotoType = 'image/jpeg'; // Default
+
     if (isset($_FILES['foto_pendukung']) && $_FILES['foto_pendukung']['error'] === UPLOAD_ERR_OK) {
-        $ext     = pathinfo($_FILES['foto_pendukung']['name'], PATHINFO_EXTENSION);
-        $newName = 'panduan_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-        $dest    = $uploadDir . $newName;
-
-        if (move_uploaded_file($_FILES['foto_pendukung']['tmp_name'], $dest)) {
-            $fotoPath = $uploadUrlPrefix . $newName; // disimpan relatif dari root project
-        }
+        $fotoData = file_get_contents($_FILES['foto_pendukung']['tmp_name']);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $fotoType = finfo_file($finfo, $_FILES['foto_pendukung']['tmp_name']);
+        finfo_close($finfo);
     }
 
     if ($judul && $deskripsi_singkat && $isi_panduan) {
-        $stmt = mysqli_prepare(
-            $conn,
-            "INSERT INTO panduan_surat (judul, deskripsi_singkat, isi_panduan, foto_pendukung) VALUES (?,?,?,?)"
-        );
-        mysqli_stmt_bind_param($stmt, "ssss", $judul, $deskripsi_singkat, $isi_panduan, $fotoPath);
+        $stmt = mysqli_prepare($conn, "INSERT INTO panduan_surat (judul, deskripsi_singkat, isi_panduan, foto_pendukung, foto_type) VALUES (?,?,?,?,?)");
+        mysqli_stmt_bind_param($stmt, "sssss", $judul, $deskripsi_singkat, $isi_panduan, $fotoData, $fotoType);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
-
-        // setelah tambah, kembali ke daftar
         header("Location: pelayanan.php?msg=Panduan+surat+berhasil+ditambahkan");
         exit;
     } else {
@@ -104,49 +60,28 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
 // ---------- UPDATE ----------
 if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id               = (int)($_POST['id'] ?? 0);
-    // no_pelayanan DIHAPUS → tidak dipakai lagi
-    $judul             = mysqli_real_escape_string($conn, trim($_POST['judul'] ?? ''));
+    $id = (int)($_POST['id'] ?? 0);
+    $judul = mysqli_real_escape_string($conn, trim($_POST['judul'] ?? ''));
     $deskripsi_singkat = mysqli_real_escape_string($conn, trim($_POST['deskripsi_singkat'] ?? ''));
-    $isi_panduan       = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
+    $isi_panduan = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
 
     if ($id && $judul && $deskripsi_singkat && $isi_panduan) {
-        // ambil data lama (untuk foto_pendukung)
-        $resOld = mysqli_query($conn, "SELECT foto_pendukung FROM panduan_surat WHERE id={$id}");
-        $old    = mysqli_fetch_assoc($resOld);
-        $fotoPath = $old['foto_pendukung'] ?? null;
+        $fotoData = null;
+        $fotoType = 'image/jpeg';
 
-        // jika ada upload baru
         if (isset($_FILES['foto_pendukung']) && $_FILES['foto_pendukung']['error'] === UPLOAD_ERR_OK) {
-            // hapus file lama
-            if (!empty($fotoPath)) {
-                $file = __DIR__ . "/../" . $fotoPath;
-                if (is_file($file)) @unlink($file);
-            }
-
-            $ext     = pathinfo($_FILES['foto_pendukung']['name'], PATHINFO_EXTENSION);
-            $newName = 'panduan_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            $dest    = $uploadDir . $newName;
-
-            if (move_uploaded_file($_FILES['foto_pendukung']['tmp_name'], $dest)) {
-                $fotoPath = $uploadUrlPrefix . $newName;
-            }
+            $fotoData = file_get_contents($_FILES['foto_pendukung']['tmp_name']);
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $fotoType = finfo_file($finfo, $_FILES['foto_pendukung']['tmp_name']);
+            finfo_close($finfo);
         }
 
-        $stmt = mysqli_prepare(
-            $conn,
-            "UPDATE panduan_surat 
-             SET judul = ?, deskripsi_singkat = ?, isi_panduan = ?, foto_pendukung = ?
-             WHERE id = ?"
-        );
-        mysqli_stmt_bind_param($stmt, "ssssi", $judul, $deskripsi_singkat, $isi_panduan, $fotoPath, $id);
+        $stmt = mysqli_prepare($conn, "UPDATE panduan_surat SET judul = ?, deskripsi_singkat = ?, isi_panduan = ?, foto_pendukung = ?, foto_type = ? WHERE id = ?");
+        mysqli_stmt_bind_param($stmt, "sssssi", $judul, $deskripsi_singkat, $isi_panduan, $fotoData, $fotoType, $id);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
-
-        // setelah update, kembali ke daftar
         header("Location: pelayanan.php?msg=Panduan+surat+berhasil+diupdate");
         exit;
     } else {
@@ -154,23 +89,18 @@ if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
 // =================== AMBIL DATA UNTUK TAMPILAN ===================
-$search         = trim($_GET['search'] ?? '');
-$pelayananList  = [];
-$detail         = null;
+$search = trim($_GET['search'] ?? '');
+$pelayananList = [];
+$detail = null;
 
 if ($action === 'list') {
     if ($search !== '') {
         $like = '%' . mysqli_real_escape_string($conn, $search) . '%';
-        $sql  = "
-            SELECT * FROM panduan_surat
-            WHERE LOWER(judul) LIKE LOWER('{$like}')
-            ORDER BY id ASC";
+        $sql = "SELECT * FROM panduan_surat WHERE LOWER(judul) LIKE LOWER('{$like}') ORDER BY id ASC";
     } else {
         $sql = "SELECT * FROM panduan_surat ORDER BY id ASC";
     }
-
     $res = mysqli_query($conn, $sql);
     while ($row = mysqli_fetch_assoc($res)) {
         $pelayananList[] = $row;
@@ -178,10 +108,9 @@ if ($action === 'list') {
 }
 
 if (($action === 'edit_form' || $action === 'view') && isset($_GET['id'])) {
-    $id    = (int)$_GET['id'];
-    $res   = mysqli_query($conn, "SELECT * FROM panduan_surat WHERE id={$id}");
+    $id = (int)$_GET['id'];
+    $res = mysqli_query($conn, "SELECT * FROM panduan_surat WHERE id={$id}");
     $detail = mysqli_fetch_assoc($res);
-
     if (!$detail) {
         $message = "Data tidak ditemukan.";
     }
@@ -199,8 +128,7 @@ if (isset($_GET['msg'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
         body{font-family:'Poppins',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:#f4f5fb;color:#333}
@@ -849,7 +777,7 @@ if (isset($_GET['msg'])) {
                                 <td>
                                     <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>">
                                         <?php if (!empty($row['foto_pendukung'])) : ?>
-                                            <img src="../<?php echo htmlspecialchars($row['foto_pendukung']); ?>" class="thumb-img" alt="Gambar">
+                                            <img src="data:<?php echo htmlspecialchars($row['foto_type']); ?>;base64,<?php echo base64_encode($row['foto_pendukung']); ?>" class="thumb-img" alt="Gambar">
                                         <?php else : ?>
                                             <div class="thumb-img"></div>
                                         <?php endif; ?>
@@ -934,7 +862,7 @@ if (isset($_GET['msg'])) {
                                             <img id="previewImg" class="preview-img"
                                                  src="<?php
                                                      if ($action === 'edit_form' && !empty($detail['foto_pendukung'])) {
-                                                         echo '../' . htmlspecialchars($detail['foto_pendukung']);
+                                                         echo 'data:' . htmlspecialchars($detail['foto_type']) . ';base64,' . base64_encode($detail['foto_pendukung']);
                                                      }
                                                  ?>"
                                                  style="<?php echo ($action === 'edit_form' && !empty($detail['foto_pendukung'])) ? 'display:block;' : 'display:none;'; ?>"
@@ -968,7 +896,7 @@ if (isset($_GET['msg'])) {
                     <div class="detail-wrapper">
                         <div class="detail-inner">
                             <?php if (!empty($detail['foto_pendukung'])) : ?>
-                                <img src="../<?php echo htmlspecialchars($detail['foto_pendukung']); ?>" class="detail-img" alt="Gambar Pelayanan">
+                                <img src="data:<?php echo htmlspecialchars($detail['foto_type']); ?>;base64,<?php echo base64_encode($detail['foto_pendukung']); ?>" class="detail-img" alt="Gambar Pelayanan">
                             <?php endif; ?>
 
                             <div class="detail-title"><?php echo htmlspecialchars($detail['judul']); ?></div>
