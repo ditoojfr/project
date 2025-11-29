@@ -704,11 +704,27 @@ $nextSort = ($sort === 'asc') ? 'desc' : 'asc';
                                 <!-- FOTO -->
                                 <td>
                                     <?php if (!empty($row['foto_sampul'])): ?>
-                                        <img src="data:image/jpeg;base64,<?= base64_encode($row['foto_sampul']) ?>"
-                                             alt="Foto" class="foto-bulat">
-                                    <?php else: ?>
-                                        <span class="foto-bulat"></span>
-                                    <?php endif; ?>
+    <?php
+        $mime = !empty($row['foto_type']) ? $row['foto_type'] : 'image/jpeg';
+        $raw  = $row['foto_sampul'];
+
+        // cek: kalau isinya hanya karakter base64 (A-Z,a-z,0-9,+,/ dan =)
+        if (preg_match('/^[A-Za-z0-9+\/=\r\n]+$/', $raw)) {
+            // berarti sudah base64 string → pakai langsung
+            $base64 = $raw;
+        } else {
+            // berarti biner (dulu dari web / manual) → baru kita encode
+            $base64 = base64_encode($raw);
+        }
+
+        $src = 'data:' . $mime . ';base64,' . $base64;
+    ?>
+    <img src="<?= $src ?>" alt="Foto" class="foto-bulat">
+<?php else: ?>
+    <span class="foto-bulat"></span>
+<?php endif; ?>
+
+
                                 </td>
 
                                 <!-- NO -->
@@ -769,12 +785,24 @@ $nextSort = ($sort === 'asc') ? 'desc' : 'asc';
                     <div class="detail-back" onclick="window.location.href='saran.php'">⟵</div>
 
                     <?php if (!empty($detail['foto_sampul'])): ?>
-                        <img src="data:image/jpeg;base64,<?= base64_encode($detail['foto_sampul']) ?>"
-                             alt="Foto Saran"
-                             class="detail-image">
-                    <?php else: ?>
-                        <div class="detail-image"></div>
-                    <?php endif; ?>
+    <?php
+        $mime = !empty($detail['foto_type']) ? $detail['foto_type'] : 'image/jpeg';
+        $raw  = $detail['foto_sampul'];
+
+        if (preg_match('/^[A-Za-z0-9+\/=\r\n]+$/', $raw)) {
+            $base64 = $raw;
+        } else {
+            $base64 = base64_encode($raw);
+        }
+
+        $src = 'data:' . $mime . ';base64,' . $base64;
+    ?>
+    <img src="<?= $src ?>" alt="Foto Saran" class="detail-image">
+<?php else: ?>
+    <div class="detail-image"></div>
+<?php endif; ?>
+
+
 
                     <div class="detail-date">
                         <?php

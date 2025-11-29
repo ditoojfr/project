@@ -44,20 +44,35 @@ $total_panduan_surat = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUN
 $total_panduan_surat    = (int) mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM `panduan_surat`"))['total'];
 
 $labels = [];
-$data = [];
+$data   = [];
+
 for ($i = 5; $i >= 0; $i--) {
-    $bulan = date('Y-m', strtotime("-$i months"));
-    $labels[] = date('M Y', strtotime($bulan));
-    $stmt = mysqli_prepare($conn, "SELECT COUNT(*) FROM `saran` WHERE DATE_FORMAT(tanggal_dikirim, '%Y-%m') = ?");
-    mysqli_stmt_bind_param($stmt, "s", $bulan);
+    $time  = strtotime("-$i months");
+
+    // label yang tampil di grafik, misalnya "Jun 2025"
+    $labels[] = date('M Y', $time);
+
+    $year  = (int)date('Y', $time);
+    $month = (int)date('m', $time);
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT COUNT(*) FROM `saran`
+         WHERE YEAR(tanggal_dikirim) = ? AND MONTH(tanggal_dikirim) = ?"
+    );
+    mysqli_stmt_bind_param($stmt, "ii", $year, $month);
     mysqli_stmt_execute($stmt);
-    $count = mysqli_fetch_array(mysqli_stmt_get_result($stmt))[0];
-    $data[] = (int) $count;
+    $result = mysqli_stmt_get_result($stmt);
+    $row    = mysqli_fetch_array($result);
+    $count  = (int)$row[0];
+
+    $data[] = $count;
 }
+
 
 $saran_list = [];
 $result = mysqli_query($conn, "
-    SELECT judul, email, isi_saran, tanggal_dikirim, foto_sampul
+    SELECT judul, email, isi_saran, tanggal_dikirim, foto_sampul, foto_type
     FROM `saran`
     ORDER BY tanggal_dikirim DESC
     LIMIT 3
@@ -548,15 +563,30 @@ outline: none !important;
                 <?php foreach ($saran_list as $saran): ?>
                     <a href="saran.php" class="saran-item-link">
                     <div class="saran-item">
+                        
                         <div class="saran-avatar">
-                            <?php if (!empty($saran['foto_sampul'])): ?>
-                                <img src="data:image/jpeg;base64,<?= base64_encode($saran['foto_sampul']) ?>"
-                                    alt="Foto Saran"
-                                    style="width:42px;height:42px;border-radius:50%;object-fit:cover;">
-                            <?php else: ?>
-                                <?= strtoupper(substr($saran['email'] ?? 'U', 0, 1)) ?>
-                            <?php endif; ?>
-                        </div>
+                        <?php if (!empty($saran['foto_sampul'])): ?>
+                            <?php
+                                // mime type dari DB, default ke image/jpeg
+                                $mime  = !empty($saran['foto_type']) ? $saran['foto_type'] : 'image/jpeg';
+                                $raw   = $saran['foto_sampul'];
+
+                                // kalau isinya sudah base64 string (huruf/angka/+/=/)
+                                if (preg_match('/^[A-Za-z0-9+\/=\r\n]+$/', $raw)) {
+                                    $base64 = $raw;              // langsung pakai
+                                } else {
+                                    $base64 = base64_encode($raw); // data biner → encode dulu
+                                }
+
+                                $src = 'data:' . $mime . ';base64,' . $base64;
+                            ?>
+                            <img src="<?= $src ?>"
+                                alt="Foto Saran"
+                                style="width:42px;height:42px;border-radius:50%;object-fit:cover;display:block;">
+                        <?php else: ?>
+                            <?= strtoupper(substr($saran['email'] ?? 'U', 0, 1)) ?>
+                        <?php endif; ?>
+                    </div>
 
                         
                         <div class="saran-content">
@@ -665,6 +695,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
 </body>
 </html>
