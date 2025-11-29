@@ -231,8 +231,6 @@ function displayImageFromBlob($foto, $foto_type) {
         .hero-img img {
             width: 100%;
             height: auto;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .hero-text {
@@ -732,21 +730,54 @@ function displayImageFromBlob($foto, $foto_type) {
                 font-size: 1.5rem;
             }
 
-            .kegiatan-slider,
-            .prestasi-slider {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
             .kegiatan-slide,
             .prestasi-slide {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
                 gap: 1rem;
+                padding: 0.5rem;
             }
-
+        
             .kegiatan-card,
             .prestasi-card {
-                min-width: 100%;
+                flex: 1 1 calc(50% - 0.75rem); /* ~2 kolom, dengan gap */
+                min-width: 140px; /* ukuran minimal agar tetap readable */
+                max-width: 200px;
+                max-height: 350px;
+            }
+        
+            .kegiatan-img, .prestasi-img {
+                height: 120px; /* lebih kecil untuk mobile */
+            }
+        
+            .kegiatan-img img, .prestasi-img img {
+                object-fit: cover;
+            }
+        
+            .kegiatan-content h3,
+            .prestasi-content h3 {
+                font-size: 0.95rem;
+            }
+        
+            .kegiatan-content p,
+            .prestasi-content p {
+                font-size: 0.8rem;
+            }
+        
+            .kegiatan-date, .prestasi-date {
+                font-size: 0.75rem;
+            }
+        
+            /* Button tetap center */
+            .kegiatan-actions, .prestasi-actions {
+                flex-direction: row;
+                gap: 0.5rem;
+            }
+        
+            .btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
             }
 
             .struktur-grid {
@@ -913,8 +944,8 @@ function displayImageFromBlob($foto, $foto_type) {
                                         <img src="<?= displayImageFromBlob($kegiatanList[$j]['foto'], $kegiatanList[$j]['foto_type']) ?>" alt="<?= htmlspecialchars($kegiatanList[$j]['judul']) ?>">
                                     </div>
                                     <div class="kegiatan-content">
-                                        <h3 onclick="window.location.href='kegiatan_detail.php?id=<?= $kegiatanList[$j]['id'] ?>'"><?= htmlspecialchars($kegiatanList[$j]['judul']) ?></h3>
-                                        <p><?= htmlspecialchars(substr($kegiatanList[$j]['deskripsi'], 0, 150)) ?>...</p>
+                                        <h4 onclick="window.location.href='kegiatan_detail.php?id=<?= $kegiatanList[$j]['id'] ?>'"><?= htmlspecialchars($kegiatanList[$j]['judul']) ?></h4>
+                                        <p><?= htmlspecialchars(substr($kegiatanList[$j]['deskripsi'], 0, 50)) ?>...</p>
                                         <div class="kegiatan-date"><?= date('d F Y', strtotime($kegiatanList[$j]['tanggal'])) ?></div>
                                     </div>
                                 </div>
@@ -947,8 +978,8 @@ function displayImageFromBlob($foto, $foto_type) {
                                         <img src="<?= displayImageFromBlob($prestasiList[$j]['foto'], $prestasiList[$j]['foto_type']) ?>" alt="<?= htmlspecialchars($prestasiList[$j]['judul']) ?>">
                                     </div>
                                     <div class="prestasi-content">
-                                        <h3 onclick="window.location.href='prestasi_detail.php?id=<?= $prestasiList[$j]['id'] ?>'"><?= htmlspecialchars($prestasiList[$j]['judul']) ?></h3>
-                                        <p><?= htmlspecialchars(substr($prestasiList[$j]['deskripsi'], 0, 150)) ?>...</p>
+                                        <h4 onclick="window.location.href='prestasi_detail.php?id=<?= $prestasiList[$j]['id'] ?>'"><?= htmlspecialchars($prestasiList[$j]['judul']) ?></h4>
+                                        <p><?= htmlspecialchars(substr($prestasiList[$j]['deskripsi'], 0, 50)) ?>...</p>
                                         <div class="prestasi-date"><?= date('d F Y', strtotime($prestasiList[$j]['tanggal'])) ?></div>
                                     </div>
                                 </div>
@@ -1016,40 +1047,83 @@ function displayImageFromBlob($foto, $foto_type) {
     </footer>
 
     <script>
-        // Fungsi untuk menggerakkan slider
-        function moveSlide(sectionId, direction) {
-            const slider = document.getElementById(sectionId + 'Slider');
-            const slideWidth = slider.parentElement.offsetWidth; // Lebar container
-            const currentScroll = slider.scrollLeft;
-            const newScroll = currentScroll + (direction * slideWidth);
-
-            // Batasi agar tidak bisa melewati batas
-            if (newScroll >= 0 && newScroll <= slider.scrollWidth - slider.clientWidth) {
-                slider.scrollTo({
-                    left: newScroll,
-                    behavior: 'smooth'
-                });
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    // Fungsi untuk menggerakkan slider (manual atau swipe)
+    function moveSlide(sectionId, direction) {
+        const slider = document.getElementById(sectionId + 'Slider');
+        if (!slider) return;
+    
+        const slideWidth = slider.parentElement.offsetWidth;
+        const currentScroll = slider.scrollLeft;
+        const newScroll = currentScroll + (direction * slideWidth);
+    
+        // Scroll halus ke slide berikutnya
+        slider.scrollTo({
+            left: newScroll,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Fungsi deteksi swipe
+    function handleTouchStart(e) {
+        touchStartX = e.touches[0].clientX;
+    }
+    
+    function handleTouchEnd(e) {
+        touchEndX = e.changedTouches[0].clientX;
+        const slider = e.currentTarget;
+        const dx = touchStartX - touchEndX; // positif = swipe kiri, negatif = swipe kanan
+        const threshold = 50; // minimal 50px gerakan untuk dianggap swipe
+    
+        if (Math.abs(dx) > threshold) {
+            if (dx > 0) {
+                // Swipe kiri → next slide
+                const sectionId = slider.id.replace('Slider', '');
+                moveSlide(sectionId, 1);
+            } else {
+                // Swipe kanan → prev slide
+                const sectionId = slider.id.replace('Slider', '');
+                moveSlide(sectionId, -1);
             }
         }
-
-        // Fungsi untuk membuka menu mobile
-        document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+    }
+    
+    // Pasang event listener ke slider saat DOM siap
+    document.addEventListener('DOMContentLoaded', function() {
+        const kegiatanSlider = document.getElementById('kegiatanSlider');
+        const prestasiSlider = document.getElementById('prestasiSlider');
+    
+        if (kegiatanSlider) {
+            kegiatanSlider.addEventListener('touchstart', handleTouchStart, { passive: true });
+            kegiatanSlider.addEventListener('touchend', handleTouchEnd, { passive: true });
+        }
+    
+        if (prestasiSlider) {
+            prestasiSlider.addEventListener('touchstart', handleTouchStart, { passive: true });
+            prestasiSlider.addEventListener('touchend', handleTouchEnd, { passive: true });
+        }
+    
+        // Mobile menu toggle (tetap ada)
+        document.querySelector('.mobile-menu-btn')?.addEventListener('click', function() {
             document.querySelector('.mobile-menu').classList.toggle('active');
         });
-
-        // Fungsi untuk menutup menu mobile saat klik tombol close
-        document.querySelector('.mobile-menu-close').addEventListener('click', function() {
+    
+        document.querySelector('.mobile-menu-close')?.addEventListener('click', function() {
             document.querySelector('.mobile-menu').classList.remove('active');
         });
-
-        // Fungsi untuk menutup menu mobile saat klik di luar menu
+    
         document.addEventListener('click', function(event) {
             const mobileMenu = document.querySelector('.mobile-menu');
             const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-            if (!mobileMenu.contains(event.target) && !mobileMenuBtn.contains(event.target) && mobileMenu.classList.contains('active')) {
+            if (mobileMenu && mobileMenu.classList.contains('active') &&
+                !mobileMenu.contains(event.target) && 
+                !mobileMenuBtn?.contains(event.target)) {
                 mobileMenu.classList.remove('active');
             }
         });
+    });
     </script>
 
 </body>
