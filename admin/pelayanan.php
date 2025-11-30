@@ -68,20 +68,55 @@ if ($action === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $isi_panduan = mysqli_real_escape_string($conn, trim($_POST['isi_panduan'] ?? ''));
 
     if ($id && $judul && $deskripsi_singkat && $isi_panduan) {
-        $fotoData = null;
-        $fotoType = 'image/jpeg';
 
-        if (isset($_FILES['foto_pendukung']) && $_FILES['foto_pendukung']['error'] === UPLOAD_ERR_OK) {
+        // cek apakah ADA file baru yang diupload
+        $hasNewFoto = isset($_FILES['foto_pendukung']) &&
+                      $_FILES['foto_pendukung']['error'] === UPLOAD_ERR_OK;
+
+        if ($hasNewFoto) {
+            // kalau ada foto baru → simpan & update kolom foto
             $fotoData = file_get_contents($_FILES['foto_pendukung']['tmp_name']);
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $fotoType = finfo_file($finfo, $_FILES['foto_pendukung']['tmp_name']);
             finfo_close($finfo);
+
+            $stmt = mysqli_prepare(
+                $conn,
+                "UPDATE panduan_surat
+                 SET judul = ?, deskripsi_singkat = ?, isi_panduan = ?, foto_pendukung = ?, foto_type = ?
+                 WHERE id = ?"
+            );
+            mysqli_stmt_bind_param(
+                $stmt,
+                "sssssi",
+                $judul,
+                $deskripsi_singkat,
+                $isi_panduan,
+                $fotoData,
+                $fotoType,
+                $id
+            );
+        } else {
+            // TIDAK ada foto baru → jangan ubah foto_pendukung & foto_type
+            $stmt = mysqli_prepare(
+                $conn,
+                "UPDATE panduan_surat
+                 SET judul = ?, deskripsi_singkat = ?, isi_panduan = ?
+                 WHERE id = ?"
+            );
+            mysqli_stmt_bind_param(
+                $stmt,
+                "sssi",
+                $judul,
+                $deskripsi_singkat,
+                $isi_panduan,
+                $id
+            );
         }
 
-        $stmt = mysqli_prepare($conn, "UPDATE panduan_surat SET judul = ?, deskripsi_singkat = ?, isi_panduan = ?, foto_pendukung = ?, foto_type = ? WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, "sssssi", $judul, $deskripsi_singkat, $isi_panduan, $fotoData, $fotoType, $id);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
+
         header("Location: pelayanan.php?msg=Panduan+surat+berhasil+diupdate");
         exit;
     } else {
@@ -119,7 +154,25 @@ if (($action === 'edit_form' || $action === 'view') && isset($_GET['id'])) {
 if (isset($_GET['msg'])) {
     $message = htmlspecialchars($_GET['msg']);
 }
+
+// helper untuk mengubah isi foto_pendukung menjadi URL yang bisa dipakai <img>
+function getFotoSrc($foto_pendukung, $foto_type)
+{
+    if (empty($foto_pendukung)) {
+        return '';
+    }
+
+    // kalau sudah berupa URL (hasil dari API Android)
+    if (filter_var($foto_pendukung, FILTER_VALIDATE_URL)) {
+        return $foto_pendukung;
+    }
+
+    // kalau masih BLOB (hasil upload dari halaman web)
+    $mime = !empty($foto_type) ? $foto_type : 'image/jpeg';
+    return 'data:' . $mime . ';base64,' . base64_encode($foto_pendukung);
+}
 ?>
+<!-- sisanya (HTML + JS) tetap sama seperti punyamu -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -776,11 +829,15 @@ if (isset($_GET['msg'])) {
                             <tr>
                                 <td>
                                     <a href="pelayanan.php?action=view&id=<?php echo $row['id']; ?>">
-                                        <?php if (!empty($row['foto_pendukung'])) : ?>
-                                            <img src="data:<?php echo htmlspecialchars($row['foto_type']); ?>;base64,<?php echo base64_encode($row['foto_pendukung']); ?>" class="thumb-img" alt="Gambar">
-                                        <?php else : ?>
-                                            <div class="thumb-img"></div>
-                                        <?php endif; ?>
+                                        <?php
+    $src = getFotoSrc($row['foto_pendukung'], $row['foto_type']);
+?>
+<?php if (!empty($src)) : ?>
+    <img src="<?php echo htmlspecialchars($src); ?>" class="thumb-img" alt="Gambar">
+<?php else : ?>
+    <div class="thumb-img"></div>
+<?php endif; ?>
+
                                     </a>
                                 </td>
                                 <td><?php echo $i + 1; ?></td>
@@ -818,112 +875,137 @@ if (isset($_GET['msg'])) {
                     </table>
 
                 <?php elseif ($action === 'add_form' || ($action === 'edit_form' && $detail)) : ?>
-                    <div class="form-wrapper">
-                        <div class="form-grid">
-                            <div class="card-form">
-                                <div class="form-group">
-                                    <label>No</label>
-                                    <input type="text" name="no_pelayanan_form_disabled" disabled value="<?php echo ($action === 'edit_form' && $detail) ? htmlspecialchars($detail['id']) : ''; ?>">
-                                    <small style="font-size:11px;color:#9ca3af;">No akan mengikuti ID data atau urutan.</small>
-                                </div>
-                            </div>
-                        </div>
-                        <form method="post" action="pelayanan.php?action=<?php echo $action === 'add_form' ? 'add' : 'edit'; ?>" enctype="multipart/form-data">
-                            <?php if ($action === 'edit_form') : ?>
-                                <input type="hidden" name="id" value="<?php echo $detail['id']; ?>">
-                            <?php endif; ?>
 
-                            <div class="form-grid">
-                                <div class="card-form">
-                                    <div class="form-group">
-                                        <label>Judul</label>
-                                        <input type="text" name="judul" required value="<?php echo htmlspecialchars($detail['judul'] ?? ''); ?>">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Deskripsi Singkat</label>
-                                        <input type="text" name="deskripsi_singkat" required value="<?php echo htmlspecialchars($detail['deskripsi_singkat'] ?? ''); ?>">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Isi Panduan</label>
-                                        <textarea name="isi_panduan" required><?php 
-                                            $isi_panduan = $detail['isi_panduan'] ?? '';
-                                            $isi_panduan = str_replace('\\r\\n', "\r\n", $isi_panduan);
-                                            $isi_panduan = str_replace('\\n', "\n", $isi_panduan);
-                                            $isi_panduan = str_replace('\\r', "\r", $isi_panduan);
-                                            echo $isi_panduan;
-                                        ?></textarea>
-                                    </div>
-                                </div>
-                                
-                                <div class="card-form">
-                                    <div class="form-group">
-                                        <label>Upload Image</label>
-                                        <div class="upload-box" id="uploadBox">
-                                            <img id="previewImg" class="preview-img"
-                                                 src="<?php
-                                                     if ($action === 'edit_form' && !empty($detail['foto_pendukung'])) {
-                                                         echo 'data:' . htmlspecialchars($detail['foto_type']) . ';base64,' . base64_encode($detail['foto_pendukung']);
-                                                     }
-                                                 ?>"
-                                                 style="<?php echo ($action === 'edit_form' && !empty($detail['foto_pendukung'])) ? 'display:block;' : 'display:none;'; ?>"
-                                                 alt="Preview">
+    <div class="form-wrapper">
+        <div class="form-grid">
+            <div class="card-form">
+                <div class="form-group">
+                    <label>No</label>
+                    <input type="text" name="no_pelayanan_form_disabled"
+                           disabled
+                           value="<?php echo ($action === 'edit_form' && $detail) ? htmlspecialchars($detail['id']) : ''; ?>">
+                    <small style="font-size:11px;color:#9ca3af;">No akan mengikuti ID data atau urutan.</small>
+                </div>
+            </div>
+        </div>
 
-                                            <div class="upload-overlay">
-                                                <?php if ($action === 'edit_form' && !empty($detail['foto_pendukung'])): ?>
-                                                    <span>Klik untuk Ganti Gambar</span>
-                                                <?php else: ?>
-                                                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                                                    <span>Pilih Image</span>
-                                                <?php endif; ?>
-                                            </div>
+        <form method="post"
+              action="pelayanan.php?action=<?php echo $action === 'add_form' ? 'add' : 'edit'; ?>"
+              enctype="multipart/form-data">
 
-                                            <input type="file" id="uploadFoto" name="foto_pendukung" class="upload-trigger" accept="image/*">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <?php if ($action === 'edit_form' && $detail) : ?>
+                <input type="hidden" name="id" value="<?php echo htmlspecialchars($detail['id']); ?>">
+            <?php endif; ?>
 
-                            <div class="form-actions">
-                                <button type="button" class="btn-secondary" onclick="window.location.href='pelayanan.php'">← Kembali</button>
-                                <button type="submit" class="btn-primary">
-                                    <?php echo $action === 'add_form' ? 'Simpan Data' : 'Update Data'; ?>
-                                </button>
-                            </div>
-                        </form>
+            <div class="form-grid">
+                <div class="card-form">
+                    <div class="form-group">
+                        <label>Judul</label>
+                        <input type="text" name="judul" required
+                               value="<?php echo htmlspecialchars($detail['judul'] ?? ''); ?>">
                     </div>
 
-                <?php elseif ($action === 'view' && $detail) : ?>
-                    <div class="detail-wrapper">
-                        <div class="detail-inner">
-                            <?php if (!empty($detail['foto_pendukung'])) : ?>
-                                <img src="data:<?php echo htmlspecialchars($detail['foto_type']); ?>;base64,<?php echo base64_encode($detail['foto_pendukung']); ?>" class="detail-img" alt="Gambar Pelayanan">
-                            <?php endif; ?>
+                    <div class="form-group">
+                        <label>Deskripsi Singkat</label>
+                        <input type="text" name="deskripsi_singkat" required
+                               value="<?php echo htmlspecialchars($detail['deskripsi_singkat'] ?? ''); ?>">
+                    </div>
 
-                            <div class="detail-title"><?php echo htmlspecialchars($detail['judul']); ?></div>
+                    <div class="form-group">
+                        <label>Isi Panduan</label>
+                        <textarea name="isi_panduan" required><?php
+                            $isi_panduan = $detail['isi_panduan'] ?? '';
+                            $isi_panduan = str_replace('\\r\\n', "\r\n", $isi_panduan);
+                            $isi_panduan = str_replace('\\n', "\n", $isi_panduan);
+                            $isi_panduan = str_replace('\\r', "\r", $isi_panduan);
+                            echo $isi_panduan;
+                        ?></textarea>
+                    </div>
+                </div>
 
-                            <div class="detail-label">Deskripsi Singkat</div>
-                            <div class="detail-text">
-                                <?php echo nl2br(htmlspecialchars($detail['deskripsi_singkat'])); ?>
+                <div class="card-form">
+                    <div class="form-group">
+                        <label>Upload Image</label>
+                        <div class="upload-box" id="uploadBox">
+                            <?php
+                                $srcForm = ($action === 'edit_form' && $detail)
+                                    ? getFotoSrc($detail['foto_pendukung'] ?? '', $detail['foto_type'] ?? '')
+                                    : '';
+                            ?>
+                            <img id="previewImg"
+                                 class="preview-img"
+                                 src="<?php echo htmlspecialchars($srcForm); ?>"
+                                 style="<?php echo !empty($srcForm) ? 'display:block;' : 'display:none;'; ?>"
+                                 alt="Preview">
+
+                            <div class="upload-overlay">
+                                <?php if (!empty($srcForm)) : ?>
+                                    <span>Klik untuk Ganti Gambar</span>
+                                <?php else : ?>
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <span>Pilih Image</span>
+                                <?php endif; ?>
                             </div>
 
-                            <div class="detail-label">Isi Panduan</div>
-                            <div class="detail-text">
-                                <?php 
-                                    $desc = $detail['isi_panduan'];
-                                    $desc = str_replace('\\r\\n', "\r\n", $desc);
-                                    $desc = str_replace('\\n', "\n", $desc);
-                                    $desc = str_replace('\\r', "\r", $desc);
-                                    echo nl2br(htmlspecialchars($desc, ENT_QUOTES, 'UTF-8'));
-                                ?>
-                            </div>
-
-                            <div class="form-actions" style="margin-top:18px;">
-                                <button type="button" class="btn-secondary" onclick="window.location.href='pelayanan.php'">← Kembali</button>
-                                <button type="button" class="btn-primary" onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $detail['id']; ?>'">Edit</button>
-                            </div>
+                            <input type="file" id="uploadFoto" name="foto_pendukung"
+                                   class="upload-trigger" accept="image/*">
                         </div>
                     </div>
-                <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary"
+                        onclick="window.location.href='pelayanan.php'">← Kembali</button>
+                <button type="submit" class="btn-primary">
+                    <?php echo $action === 'add_form' ? 'Simpan Data' : 'Update Data'; ?>
+                </button>
+            </div>
+        </form>
+    </div>
+
+<?php elseif ($action === 'view' && $detail) : ?>
+
+    <div class="detail-wrapper">
+        <div class="detail-inner">
+            <?php
+                $srcDetail = getFotoSrc($detail['foto_pendukung'] ?? '', $detail['foto_type'] ?? '');
+                if (!empty($srcDetail)) :
+            ?>
+                <img src="<?php echo htmlspecialchars($srcDetail); ?>" class="detail-img" alt="Gambar Pelayanan">
+            <?php endif; ?>
+
+            <div class="detail-title"><?php echo htmlspecialchars($detail['judul'] ?? ''); ?></div>
+
+            <div class="detail-label">Deskripsi Singkat</div>
+            <div class="detail-text">
+                <?php echo nl2br(htmlspecialchars($detail['deskripsi_singkat'] ?? '')); ?>
+            </div>
+
+            <div class="detail-label">Isi Panduan</div>
+            <div class="detail-text">
+                <?php
+                    $desc = $detail['isi_panduan'] ?? '';
+                    $desc = str_replace('\\r\\n', "\r\n", $desc);
+                    $desc = str_replace('\\n', "\n", $desc);
+                    $desc = str_replace('\\r', "\r", $desc);
+                    echo nl2br(htmlspecialchars($desc, ENT_QUOTES, 'UTF-8'));
+                ?>
+            </div>
+
+            <div class="form-actions" style="margin-top:18px;">
+                <button type="button" class="btn-secondary"
+                        onclick="window.location.href='pelayanan.php'">← Kembali</button>
+                <button type="button" class="btn-primary"
+                        onclick="window.location.href='pelayanan.php?action=edit_form&id=<?php echo $detail['id']; ?>'">
+                    Edit
+                </button>
+            </div>
+        </div>
+    </div>
+
+<?php endif; ?>
+
             </div>
         </div>
     </div>
