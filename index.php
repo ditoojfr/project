@@ -1013,7 +1013,7 @@ function displayImageFromBlob($foto, $foto_type) {
         <section class="download-section">
             <h2>Download Aplikasi</h2>
             <p>Nikmati kemudahan layanan desa dari aplikasi resmi kami.</p>
-            <a href="https://www.mediafire.com/file/1jbj781ddvt91vm/E-Deslay-1.apk/file" class="download-btn">
+            <a href="https://www.mediafire.com/file/pwagazsqup9t87d/E-Deslay.apk/file" class="download-btn">
                 <img src="assets/icons/Downloads.png" alt="Download" width="25" height="25" padding-right="5">
                     DOWNLOAD APK
             </a>
